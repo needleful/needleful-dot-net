@@ -1,6 +1,0 @@
-<!-- blog.template -->
-<?xml version="1.0" encoding="utf-8"?> 
-<template name='test'>
-	<param name='content' type='xml'/>
-	<param name='title' type='text'/>
-</template>

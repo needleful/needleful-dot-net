@@ -1,0 +1,24 @@
+<!-- Comic Formats -->
+<templates>
+	<template name='comic-needleful'>
+		<param name='title' type='text'/>
+		<param name='page' type='text,integer'/>
+		<param name='source' type='text,file'/>
+		<param name='description' type='xml'/>
+		<param required='false' name='transcript' type='text'/>
+		<content>
+			Nothing!
+		</content>
+	</template>
+
+	<template name="comic-ps">
+		<param name='title' type='text'/>
+		<param name='page' type='text,integer'/>
+		<param name='source' type='text,file'/>
+		<param name='description' type='xml'/>
+		<param required='false' name='transcript' type='text'/>
+		<content>
+			Nothing, but different!
+		</content>
+	</template>
+</templates>
