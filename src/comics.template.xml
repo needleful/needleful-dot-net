@@ -1,24 +1,25 @@
 <!-- Comic Formats -->
-<templates>
-	<template name='comic-needleful'>
-		<param name='title' type='text'/>
-		<param name='page' type='text,integer'/>
-		<param name='source' type='text,file'/>
-		<param name='description' type='xml'/>
-		<param required='false' name='transcript' type='text'/>
-		<content>
-			Nothing!
-		</content>
-	</template>
-
-	<template name="comic-ps">
-		<param name='title' type='text'/>
-		<param name='page' type='text,integer'/>
-		<param name='source' type='text,file'/>
-		<param name='description' type='xml'/>
-		<param required='false' name='transcript' type='text'/>
-		<content>
-			Nothing, but different!
-		</content>
-	</template>
-</templates>
+<template name='comic-needleful'>
+	<param name='title' type='text'/>
+	<param name='page' type='text,integer'/>
+	<param name='source' type='text,file'/>
+	<param name='description' type='xml'/>
+	<param required='false' name='transcript' type='xml'/>
+	<content>
+		<html>
+			<head>
+				<title>{{title}} (Page {{page}}, Needleful)</title>
+			</head>
+			<body>
+				<h1>{{title}}</h1>
+				<img source='{{source}}' />
+				<div class="description">
+					{{description}}
+				</div>
+				<div type="transcript">
+					{{transcript}}
+				</div>
+			</body>
+		</html>
+	</content>
+</template>
