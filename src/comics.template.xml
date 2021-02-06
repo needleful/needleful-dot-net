@@ -8,15 +8,15 @@
 	<content>
 		<html>
 			<head>
-				<title>{{title}} (Page {{page}}, Needleful)</title>
+				<title>{{title}} - Needleful</title>
 			</head>
 			<body>
 				<h1>{{title}}</h1>
 				<img source='{{source}}' />
-				<div class="description">
+				<div class='description'>
 					{{description}}
 				</div>
-				<div type="transcript">
+				<div type='transcript'>
 					{{transcript}}
 				</div>
 			</body>

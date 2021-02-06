@@ -1,9 +1,13 @@
+<!-- This comment is exculded from the page -->
 <page>
+	<!-- This comment is just above the page! -->
 	<comic-needleful>
 		<title>Confession Time</title>
 		<page>1</page>
 		<source>img/needleful/confession_time.png</source>
+		<!-- Comments outside the parameters are ignored -->
 		<description>
+			<!--Comments within the parameter are preserved!-->
 			<p>This is kind of epic!</p>
 		</description>
 		<transcript>
