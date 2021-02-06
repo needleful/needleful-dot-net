@@ -1,0 +1,14 @@
+<template name='basic-page'>
+	<param name='title' type='text'/>
+	<param name='content' type='xml'/>
+	<content>
+		<html>
+			<head>
+				<title>{{title}} - Needleful.net</title>
+			</head>
+			<body>
+				{{content}}
+			</body>
+		</html>
+	</content>
+</template>

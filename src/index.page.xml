@@ -1,0 +1,9 @@
+<page>
+	<basic-page>
+		<title>Home</title>
+		<content>
+			<p>Check this out: </p>
+			<a href='comic/needleful/1.html'>Confession Time</a>
+		</content>
+	</basic-page>
+</page>
