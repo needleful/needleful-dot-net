@@ -1,8 +1,9 @@
-<!-- Comic Formats -->
-<template name='comic-needleful'>
+<template name='comic-needleful-multipage'>
 	<param name='title' type='text'/>
 	<param name='page' type='text,integer'/>
-	<param name='source' type='text,file'/>
+	<param name='sources' type='list'>
+		<param name='source' type='text,file'/>
+	</param>
 	<param name='description' type='xml' required='false'/>
 	<param name='transcript' type='xml'/>
 	<content>
@@ -17,15 +18,10 @@
 						<li>Needleful Comics</li>
 						<li><a href='/'>Home</a></li>
 					</ul>
-					<img class='comic' src='{{source}}' alt='Comic: {{title}}'/>
-					<!--<div class='buttons'>
-						<defval name='prev' formula='page-1'>
-
-						</defval>
-						<defval name='next' formula='page+1'>
-
-						</defval>
-					</div>-->
+					<foreach list='sources' i='i'>
+						<img class='comic' src='{{source}}' alt='Comic: {{title}} page {{i}}'/>
+						<br />
+					</foreach>
 					<h1>{{title}}</h1>
 					<div class='description'>
 						{{description}}

@@ -1,0 +1,64 @@
+body{
+	color: #000;
+	font-weight:200;
+	font-family: sans-serif;
+	letter-spacing:2pt;
+}
+
+a{
+	color:#05a;
+	text-decoration:none;
+}
+
+a:hover{
+	color:#4A12E5;
+}
+
+p{
+	font-size:1rem;
+}
+
+h1{
+	font-weight:400;
+}
+
+h2{
+	letter-spacing:3px;
+	font-weight:300;
+}
+
+#content {
+	border-right: 2px solid black;
+	border-left: 2px solid black;
+	width:85%;
+	color:black;
+	max-width:800px;
+	min-width:200px; 
+	margin:auto; 
+	padding:5px 30px 10px;
+	overflow:hidden;
+	position:relative;
+	z-index:1;
+}
+
+#content:before {
+	content: "";
+	position: absolute;
+	z-index: -1;
+	top: 5px;
+	left: 5px;
+	right: 5px;
+	bottom: 5px;
+	border:inherit;
+
+}
+
+img.comic{
+	max-width:90%;
+	margin:auto;
+}
+
+.nr {
+	color:#111;
+	font-style:italic;
+}

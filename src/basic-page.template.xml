@@ -5,9 +5,12 @@
 		<html>
 			<head>
 				<title>{{title}} - Needleful.net</title>
+				<link rel='stylesheet' href='/needleful.css'/>
 			</head>
 			<body>
-				{{content}}
+				<div id='content'>
+					{{content}}
+				</div>
 			</body>
 		</html>
 	</content>
