@@ -18,36 +18,37 @@
 						<li>Needleful Comics</li>
 						<li><a href='/'>Home</a></li>
 					</ul>
-					<foreach list='sources' i='i'>
+					<ForEach list='sources' i='i'>
 						<img class='comic' src='{{source}}' alt='Comic: {{title}} page {{i}}'/>
 						<br />
-					</foreach>
+					</ForEach>
 					<div id='comic-buttons'>
-						<cond comp='{{page}}==1'>
-							<true>
+						<Match f='get' x='{{page == 1}}'>
+							<True>
+								<a href='comic/needleful/1.html' class='align-left'>First</a>
 								<p class='align-left'>
 									At the first!
 								</p>
-							</true>
-							<false>
-								<a href='/comic/needleful/{{title - 1}}.html' class='align-left'>
-									&lt;&lt; Previous
+							</True>
+							<False>
+								<a href='/comic/needleful/{{page - 1}}.html' class='align-left'>
+									Previous
 								</a>
-							</false>
-						</cond>
-						&nbsp;
-						<cond src-file-exists='comic/needleful/{{page + 1}}.page.xml'>
-							<true>
+							</False>
+						</Match>
+
+						<Match f='src-file-exists' x='comic/needleful/{{page + 1}}.page.xml'>
+							<True>
 								<a href='/comic/needleful/{{page + 1}}.html' class='align-right'>
-									Next &gt;&gt;
+									Next
 								</a>
-							</true>
-							<false>
+							</True>
+							<False>
 								<p class='align-right'>
 									Come back later!
 								</p>
-							</false>
-						</cond>
+							</False>
+						</Match>
 					</div>
 					<h1>{{title}}</h1>
 					<div class='description'>

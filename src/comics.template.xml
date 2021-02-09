@@ -19,31 +19,25 @@
 					</ul>
 					<img class='comic' src='{{source}}' alt='Comic: {{title}}'/>
 					<div id='comic-buttons'>
-						<cond comp='{{page}}==1'>
-							<true>
+						<Match f='get' x='{{page == 1}}'>
+							<True>
 								<p class='align-left'>
 									At the first!
 								</p>
-							</true>
-							<false>
-								<a href='/comic/needleful/{{title - 1}}.html' class='align-left'>
-									&lt;&lt; Previous
-								</a>
-							</false>
-						</cond>
-						&nbsp;
-						<cond src-file-exists='comic/needleful/{{page + 1}}.page.xml'>
-							<true>
-								<a href='/comic/needleful/{{page + 1}}.html' class='align-right'>
-									Next &gt;&gt;
-								</a>
-							</true>
-							<false>
-								<p class='align-right'>
-									Come back later!
-								</p>
-							</false>
-						</cond>
+							</True>
+							<False>
+								<a href='comic/needleful/1.html' class='align-left'>First</a>
+								<a href='/comic/needleful/{{page - 1}}.html' class='align-left'>Previous</a>
+							</False>
+						</Match>
+						<Match f='src-file-exists' x='comic/needleful/{{page + 1}}.page.xml'>
+							<True>
+								<a href='/comic/needleful/{{page + 1}}.html' class='align-right'>Next</a>
+							</True>
+							<False>
+								<p class='align-right'>Come back later!</p>
+							</False>
+						</Match>
 					</div>
 					<h1>{{title}}</h1>
 					<div class='description'>
