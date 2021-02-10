@@ -18,7 +18,7 @@
 						<li>Needleful Comics</li>
 						<li><a href='/'>Home</a></li>
 					</ul>
-					<ForEach list='sources' i='i'>
+					<ForEach list='sources' i='i' html-class='comic-wrapper'>
 						<img class='comic' src='{{source}}' alt='Comic: {{title}} page {{i}}'/>
 						<br />
 					</ForEach>

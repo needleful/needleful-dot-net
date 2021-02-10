@@ -53,9 +53,15 @@ h2{
 
 }
 
+.comic-wrapper {
+	width: 100%;
+	display: block;
+}
+
 img.comic{
 	max-width:90%;
 	margin:auto;
+	display:block;
 }
 
 .nr {
