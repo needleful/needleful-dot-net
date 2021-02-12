@@ -8,12 +8,12 @@
 		<!-- Comments outside the parameters are ignored -->
 		<description>
 			<!--Comments within the parameter are preserved (if the parameter's an XML type)!-->
-			<p>haha snake!!!</p>
+			<p>talk about oversharing lmao</p>
 		</description>
 		<transcript>
 			<p class='nr'>A boy and a girl sit on the couch.  The girl is under a blanket, snuggling against the boy.</p>
 			<p class='dia'>Girl: Confession time!</p>
-			<p>The boy is confused</p>
+			<p class='nr'>The boy is confused</p>
 			<p class='dia'>Girl: I tell <em>you</em> a secret, then you tell <em>me</em> one!</p>
 			<p class='dia'>Girl: I am actually a giant <em>snake</em> in an elaborate disguise!  Aided by my snake brethren, we wish to have many snake-people babies with you, who may integrate with the humans and serve as ambassadors of our kind.</p>
 			<p class='dia'>Boy: I pretend to love you because I'm scared of being alone.</p>

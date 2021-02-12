@@ -1,0 +1,21 @@
+<page>
+	<comic-needleful>
+		<title>Self Deprecation</title>
+		<page>16</page>
+		<source>img/needleful/self_deprication.png</source>
+		<description>you should avoid self-deprecation in general.  instead, try to morph it into positivity, and remind the people around you how good they are</description>
+		<transcript>
+			<p class='nr'>A tall girl and short girl are standing together.</p>
+
+			<p class='dia'>Tall girl: Sorry! I'm terrible, haha.</p>
+
+			<p class='dia'>Short girl: Hmmm....</p>
+
+			<p class='dia'>Short girl puts her hand on the tall girl's shoulder and smiles</p>
+
+			<p class='dia'>Short girl: You're right! You <em>are</em> pretty terrible!</p>
+
+			<p class='dia'>Tall girl: Oh...</p>
+		</transcript>
+	</comic-needleful>
+</page>

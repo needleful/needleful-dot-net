@@ -28,7 +28,7 @@
 								</p>
 							</True>
 							<False>
-								<a href='comic/needleful/1.html' class='align-left'>First</a>
+								<a href='/comic/needleful/1.html' class='align-left'>First</a>
 								<a href='/comic/needleful/{{page - 1}}.html' class='align-left'>Previous</a>
 							</False>
 						</Match>

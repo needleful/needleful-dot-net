@@ -25,15 +25,13 @@
 					<div id='comic-buttons'>
 						<Match f='get' x='{{page == 1}}'>
 							<True>
-								<a href='comic/needleful/1.html' class='align-left'>First</a>
 								<p class='align-left'>
 									At the first!
 								</p>
 							</True>
 							<False>
-								<a href='/comic/needleful/{{page - 1}}.html' class='align-left'>
-									Previous
-								</a>
+								<a href='/comic/needleful/1.html' class='align-left'>First</a>
+								<a href='/comic/needleful/{{page - 1}}.html' class='align-left'>Previous</a>
 							</False>
 						</Match>
 
