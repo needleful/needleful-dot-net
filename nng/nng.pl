@@ -51,15 +51,17 @@ h_process_sources(_, _, []).
 h_process_sources(S, O, ['.'|F]) :- h_process_sources(S,O,F).
 h_process_sources(S, O, ['..'|F]) :- h_process_sources(S,O,F).
 h_process_sources(SourceDir, OutDir, [S|Files]) :-
-	(	directory_file_path(SourceDir, S, SPath),
-		exists_directory(SPath),
-		directory_file_path(OutDir, S, OPath),
-		process_dir(SPath, OPath))
-	;(	directory_file_path(SourceDir, S, SPath),
-		(	atom_concat(Name, '.page.xml', SPath),
-			atom_concat(Name, '.html', OPath),
-			process_file(SPath, OPath))
-		; true),
+	(	(	directory_file_path(SourceDir, S, SPath),
+			exists_directory(SPath),
+			directory_file_path(OutDir, S, OPath),
+			process_dir(SPath, OPath))
+		;(	directory_file_path(SourceDir, S, SPath),
+			(	atom_concat(Name, '.page.xml', S),
+				atom_concat(Name, '.html', OFile),
+				!,
+				directory_file_path(OutDir, OFile, OPath),
+				process_file(SPath, OPath))
+			; true)),
 	h_process_sources(SourceDir, OutDir, Files).
 
 processor(match).
