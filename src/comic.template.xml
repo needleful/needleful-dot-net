@@ -3,7 +3,7 @@
 	<param name='title' type='text'/>
 	<param name='page' type='text,integer'/>
 	<param name='source' type='text,file'/>
-	<param name='description' type='xml' required='false'/>
+	<param name='description' type='xml' required='False'/>
 	<param name='transcript' type='xml'/>
 	<content>
 		<html>
@@ -21,7 +21,7 @@
 						<img class='comic' src='{{source}}' alt='Comic: {{title}}'/>
 					</div>
 					<div id='comic-buttons'>
-						<Match f='get' x='{{page == 1}}'>
+						<Match value='{{page == 1}}' html-class='inline-button'>
 							<True>
 								<p class='align-left'>
 									At the first!
@@ -32,7 +32,7 @@
 								<a href='/comic/needleful/{{page - 1}}.html' class='align-left'>Previous</a>
 							</False>
 						</Match>
-						<Match f='src-file-exists' x='comic/needleful/{{page + 1}}.page.xml'>
+						<Match f='src-file-exists' x='comic/needleful/{{page + 1}}.page.xml' html-class='inline-button'>
 							<True>
 								<a href='/comic/needleful/{{page + 1}}.html' class='align-right'>Next</a>
 							</True>
