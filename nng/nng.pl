@@ -42,9 +42,10 @@ process_file(SFile, OFile) :-
 	exists_file(SFile),
 	access_file(OFile, write),
 	load_xml(SFile, XML, [space(remove)]),
-	phrase(process([], XML), OutXml),
+	process([], XML, [], OutXml),
 	open(OFile, write, FdOut, []),
-	html_write(FdOut, OutXml, []),
+	print_term(OutXml, [indent_arguments(3)]),
+	xml_write(FdOut, OutXml, []),
 	close(FdOut).
 
 h_process_sources(_, _, []).
@@ -63,9 +64,3 @@ h_process_sources(SourceDir, OutDir, [S|Files]) :-
 				process_file(SPath, OPath))
 			; true)),
 	h_process_sources(SourceDir, OutDir, Files).
-
-processor(match).
-processor(foreach).
-processor(Name) :- template(Name, _, _).
-
-process(_, XML) --> [XML].
