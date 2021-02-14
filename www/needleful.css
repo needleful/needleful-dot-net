@@ -68,6 +68,10 @@ img.comic{
 	display:block;
 }
 
+.inline-button {
+	display:inline-block;
+}
+
 .nr {
 	color:#111;
 	font-style:italic;
