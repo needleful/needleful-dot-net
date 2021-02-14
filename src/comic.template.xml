@@ -20,27 +20,26 @@
 					<div class='comic-wrapper'>
 						<img class='comic' src='{{source}}' alt='Comic: {{title}}'/>
 					</div>
-					<div id='comic-buttons'>
+					<ul id='comic-buttons'>
 						<Match value='{{page == 1}}' html-class='inline-button'>
 							<True>
-								<p class='align-left'>
-									At the first!
-								</p>
+								<li>At the first!</li>
 							</True>
 							<False>
-								<a href='/comic/needleful/1.html' class='align-left'>First</a>
-								<a href='/comic/needleful/{{page - 1}}.html' class='align-left'>Previous</a>
+								<li><a href='/comic/needleful/1.html' class='align-left'>First</a></li>
+								<li><a href='/comic/needleful/{{page - 1}}.html' class='align-left'>Previous</a> </li>
 							</False>
 						</Match>
+
 						<Match f='src-file-exists' x='comic/needleful/{{page + 1}}.page.xml' html-class='inline-button'>
 							<True>
-								<a href='/comic/needleful/{{page + 1}}.html' class='align-right'>Next</a>
+								<li><a href='/comic/needleful/{{page + 1}}.html' class='align-right'>Next</a></li>
 							</True>
 							<False>
-								<p class='align-right'>Come back later!</p>
+								<li>Come back later!</li>
 							</False>
 						</Match>
-					</div>
+					</ul>
 					<h1>{{title}}</h1>
 					<div class='description'>
 						{{description}}

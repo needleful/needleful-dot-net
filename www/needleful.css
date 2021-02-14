@@ -68,8 +68,8 @@ img.comic{
 	display:block;
 }
 
-.inline-button {
-	display:inline-block;
+#comic-buttons li {
+	display: inline-flex;
 }
 
 .nr {
