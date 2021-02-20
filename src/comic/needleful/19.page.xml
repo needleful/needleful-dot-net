@@ -1,4 +1,17 @@
 <page>
-	<comic-needleful>
-	</comic-needleful>
+	<comic-needleful-multipage>
+		<title>Routine</title>
+		<page>19</page>
+		<sources>
+			<source>img/needleful/routine_p1.png</source>
+			<source>img/needleful/routine_p2.png</source>
+		</sources>
+		<description>Creativity is inherently risky.  Even playing it safe has risks</description>
+		<transcript>
+			<p class='nr'>A cube is floating in the hands of a green figure.</p>
+			<p class='nr'>The cube is speaking. "<em>Strength in routine!  Strength in routine!  Strength in routine!</em>" It says over and over.</p>
+			<p class='nr'>As the cube chants, the figure stares at it, stroking his chin</p>
+			<p class='nr'>The cube keeps speaking "<em>Strength in routine!  Strength in routine!  Strength in rout-</em>" Suddenly the figure grabs the cube between his thumb and index finger.  He pauses, examining it closely, then crushes it </p>
+		</transcript>
+	</comic-needleful-multipage>
 </page>
