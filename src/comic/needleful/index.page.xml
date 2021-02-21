@@ -5,7 +5,7 @@
 			<h1>welcome to needleful!</h1>
 			<p>Wow, hi!</p>
 			<p>I'm needleful, and this is my famous and world-renowned comic, <i>needleful</i>!</p>
-			<p>Perhaps you would like to start from <a href='/comic/needleful/1.html'>the start</a>, or you may select from the latest and freshest comics below:</p>
+			<p>Perhaps you would like to start from <a href='/comic/needleful/1.html'>the start</a>, or look at them in <a href='/comic/needleful/archive'>the archives</a> or you may select from the latest and freshest comics below:</p>
 			<iframe src='latest.html' width='100%' height='900px'/>
 		</content>
 	</basic-page>
