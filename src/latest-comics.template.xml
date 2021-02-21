@@ -13,6 +13,7 @@
 			<head>
 				<title>{{title}} - Latest</title>
 				<link rel='stylesheet' href='{{css}}'/>
+				<base target='_top'/>
 			</head>
 			<body>
 				<ul class='comics-latest'>

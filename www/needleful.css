@@ -62,7 +62,7 @@ h2{
 	display: block;
 }
 
-img.comic{
+img.comic {
 	max-width:90%;
 	margin:auto;
 	display:block;
@@ -75,4 +75,12 @@ img.comic{
 .nr {
 	color:#111;
 	font-style:italic;
+}
+
+.comics-latest li {
+	display:inline-block;
+}
+
+iframe {
+	border:none;
 }

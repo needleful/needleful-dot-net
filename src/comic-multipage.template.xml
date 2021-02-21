@@ -45,13 +45,11 @@
 						</Match>
 					</ul>
 					<h1>{{title}}</h1>
-					<div class='description'>
-						{{description}}
-					</div>
-					<div class='transcript'>
-						<p>TRANSCRIPT:</p>
-						{{transcript}}
-					</div>
+					{{description}}
+					<h2>Transcript</h2>
+					{{transcript}}
+					<h1>Latest Comics:</h1>
+					<iframe src='latest.html' width='100%'/>
 				</div>
 			</body>
 		</html>
