@@ -17,6 +17,19 @@
 				<base target='_top'/>
 			</head>
 			<body>
+				Page {{page}} |
+				<Match value='{{page==1}}'>
+					<False>
+						<!-- TODO: fix bug with page not decrementing -->
+						| <a href='1.html' target='_self'>First</a> |
+						| <a href='{{page - 1}}.html' target='_self'>Previous</a> |
+					</False>
+				</Match>
+				<Match f='src-file-exists' x='{{folder}}/archive/{{page+1}}.page.xml'>
+					<True>
+						| <a href='{{page + 1}}.html' target='_self'>Next</a>
+					</True>
+				</Match>
 				<ul class='comics-latest'>
 					<ForEach list='comics'>
 						<li>
@@ -27,18 +40,6 @@
 						</li>
 					</ForEach>
 				</ul>
-				<Match value='{{page==1}}'>
-					<False>
-						<!-- TODO: fix bug with page not decrementing -->
-						<a href='1.html' target='_self'>First</a> |
-						| <a href='{{page - 1}}.html' target='_self'>Previous</a> |
-					</False>
-				</Match>
-				<Match f='src-file-exists' x='{{folder}}/archive/{{page+1}}.page.xml'>
-					<True>
-						| <a href='{{page + 1}}.html' target='_self'>Next</a>
-					</True>
-				</Match>
 			</body>
 		</html>
 	</content>
