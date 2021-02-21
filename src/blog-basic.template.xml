@@ -1,0 +1,32 @@
+<template name='blog-basic'>
+	<param name='title' type='text'/>
+	<param name='subtitle' type='text'/>
+
+	<param name='date' type='text,date'/>
+	<param name='keywords' type='text'/>
+
+	<param name='content' type='xml'/>
+	<content>
+		<html>
+			<head>
+				<title id='title'>{{title}} - needleful's blog</title>
+				<link rel='stylesheet' href='/needleful.css'/>
+			</head>
+			<body>
+				<div id='content' class='blog'>
+					<ul class='header'>
+						<li>needleful's blog</li>
+						<li><a href='/blog'>Home</a></li>
+					</ul>
+					<h1 class='title'>{{title}}</h1>
+					<div id='sub-content'>
+						<h3 class='subtitle'>{{subtitle}}</h3>
+						<h5 class='date'>Written {{date:month}} {{date:day}}, {{date:year}}</h5>
+						{{content}}
+					</div>
+					<iframe id='browser' src='/blog/browser.html' />
+				</div>
+			</body>
+		</html>
+	</content>
+</template>

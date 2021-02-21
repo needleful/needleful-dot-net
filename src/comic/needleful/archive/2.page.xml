@@ -1,0 +1,69 @@
+<page>
+	<comic-archive>
+		<css>needleful.css</css>
+		<page>2</page>
+		<folder>comic/needleful</folder>
+		<comics>
+			<comic>
+				<title>Tattoo</title>
+				<href>comic/needleful/13.html</href>
+				<thumbnail>img/needleful/tattoo_thumb.png</thumbnail>
+			</comic>
+			<comic>
+				<title>Bob, the Awful Little Man with Big Teeth</title>
+				<href>comic/needleful/14.html</href>
+				<thumbnail>img/needleful/bob_thumb.png</thumbnail>
+			</comic>
+			<comic>
+				<title>Lost?</title>
+				<href>comic/needleful/15.html</href>
+				<thumbnail>img/needleful/lost_thumb.png</thumbnail>
+			</comic>
+			<comic>
+				<title>Self Deprecation</title>
+				<href>comic/needleful/16.html</href>
+				<thumbnail>img/needleful/self_deprication_thumb.png</thumbnail>
+			</comic>
+			<comic>
+				<title>Horoscopes</title>
+				<href>comic/needleful/17.html</href>
+				<thumbnail>img/needleful/horoscopes_thumb.png</thumbnail>
+			</comic>
+			<comic>
+				<title>Ugly Mug</title>
+				<href>comic/needleful/18.html</href>
+				<thumbnail>img/needleful/ugly_mug_thumb.png</thumbnail>
+			</comic>
+			<comic>
+				<title>Routine</title>
+				<href>comic/needleful/19.html</href>
+				<thumbnail>img/needleful/routine_thumb.png</thumbnail>
+			</comic>
+			<comic>
+				<title>On a Date</title>
+				<href>comic/needleful/20.html</href>
+				<thumbnail>img/needleful/date_thumb.png</thumbnail>
+			</comic>
+			<comic>
+				<title>Fun Game</title>
+				<href>comic/needleful/21.html</href>
+				<thumbnail>img/needleful/game_thumb.png</thumbnail>
+			</comic>
+			<comic>
+				<title>Misfortune</title>
+				<href>comic/needleful/22.html</href>
+				<thumbnail>img/needleful/misfortune_thumb.png</thumbnail>
+			</comic>
+			<comic>
+				<title>I Held My Breath</title>
+				<href>comic/needleful/23.html</href>
+				<thumbnail>img/needleful/breath_thumb.png</thumbnail>
+			</comic>
+			<comic>
+				<title>Decay</title>
+				<href>comic/needleful/24.html</href>
+				<thumbnail>img/needleful/decay_thumb.png</thumbnail>
+			</comic>
+		</comics>
+	</comic-archive>
+</page>

@@ -1,0 +1,44 @@
+<template name='comic-archive'>
+	<param name='css' type='text,file'/>
+	<param name='page' type='text,integer'/>
+	<param name='folder' type='text'/>
+	<param name='comics' type='list'>
+		<param name='comic' type='struct'>
+			<param name='title' type='text'/>
+			<param name='thumbnail' type='text,file'/>
+			<param name='href' type='text,file'/>
+		</param>
+	</param>
+	<content>
+		<html>
+			<head>
+				<title>Archives Subpage</title>
+				<link rel='stylesheet' href='{{css}}'/>
+				<base target='_top'/>
+			</head>
+			<body>
+				<ul class='comics-latest'>
+					<ForEach list='comics'>
+						<li>
+							<a href='{{comic:href}}'>
+								<img class='thumbnail' src='{{comic:thumbnail}}'/>
+								<p class='thumbnail-title'>{{comic:title}}</p>
+							</a>
+						</li>
+					</ForEach>
+				</ul>
+				<Match value='{{page==1}}'>
+					<False>
+						<a href='1.html' target='_self'>First</a> |
+						| <a href='{{page - 1}}.html' target='_self'>Previous</a> |
+					</False>
+				</Match>
+				<Match f='src-file-exists' x='{{folder}}/archive/{{page+1}}.page.xml'>
+					<True>
+						| <a href='{{page+1}}.html' target='_self'>Next</a>
+					</True>
+				</Match>
+			</body>
+		</html>
+	</content>
+</template>

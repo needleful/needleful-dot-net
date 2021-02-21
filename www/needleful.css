@@ -23,8 +23,12 @@ h1{
 }
 
 h2{
-	letter-spacing:3px;
+	letter-spacing:3pt;
 	font-weight:300;
+}
+
+.subtitle {
+	letter-spacing: 
 }
 
 .header li {
@@ -54,7 +58,17 @@ h2{
 	right: 5px;
 	bottom: 5px;
 	border:inherit;
+}
 
+.blog {
+	width:65% !important;
+	min-width: 700px !important;
+	max-width: 100% !important;
+	letter-spacing: 0pt;
+}
+
+.blog h1 h2 h3 h4 h5 h6 {
+	letter-spacing: 0pt;
 }
 
 .comic-wrapper {
@@ -79,10 +93,26 @@ img.comic {
 
 .comics-latest li {
 	display:inline-block;
+	max-width: 220px;
 }
 
 iframe {
 	border:none;
 	margin:auto;
 	max-width: 100%;
+}
+
+#sub-content {
+	float:left;
+	width:65%;
+}
+
+#browser {
+	float:right;
+	width:33%;
+}
+
+ul.browser-list {
+	padding-left:0.8em;
+	margin-left: 0;
 }

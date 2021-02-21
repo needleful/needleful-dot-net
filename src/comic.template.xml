@@ -21,7 +21,7 @@
 						<img class='comic' src='{{source}}' alt='Comic: {{title}}'/>
 					</div>
 					<ul id='comic-buttons'>
-						<Match value='{{page == 1}}' html-class='inline-button'>
+						<Match value='{{page == 1}}'>
 							<True>
 								<li>At the first!</li>
 							</True>

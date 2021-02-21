@@ -1,0 +1,10 @@
+<page>
+	<basic-page>
+		<title>Comic Archives</title>
+		<content>
+			<h1>Needleful Comic - Archives</h1>
+			<a href='/comic/needleful'>Home</a>
+			<iframe src='1.html' width='100%' height='1200px'/>
+		</content>
+	</basic-page>
+</page>
