@@ -1,5 +1,6 @@
 <template name='latest-comics'>
 	<param name='title' type='text'/>
+	<param name='css' type='text,file'/>
 	<param name='comics' type='list'>
 		<param name='comic' type='struct'>
 			<param name='title' type='text'/>
@@ -11,6 +12,7 @@
 		<html>
 			<head>
 				<title>{{title}} - Latest</title>
+				<link rel='stylesheet' href='{{css}}'/>
 			</head>
 			<body>
 				<ul class='comics-latest'>

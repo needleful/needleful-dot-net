@@ -1,6 +1,7 @@
 <page>
 	<latest-comics>
 		<title>Needleful</title>
+		<css>needleful.css</css>
 		<comics>
 			<comic>
 				<title>Morning Bacon</title>
