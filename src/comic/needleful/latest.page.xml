@@ -28,6 +28,26 @@
 				<thumbnail>img/needleful/valentine_thumb.png</thumbnail>
 				<href>comic/needleful/25.html</href>
 			</comic>
+			<comic>
+				<title>Decay</title>
+				<thumbnail>img/needleful/decay_thumb.png</thumbnail>
+				<href>comic/needleful/24.html</href>
+			</comic>
+			<comic>
+				<title>I Held My Breath</title>
+				<thumbnail>img/needleful/breath_thumb.png</thumbnail>
+				<href>comic/needleful/23.html</href>
+			</comic>
+			<comic>
+				<title>Misfortune</title>
+				<thumbnail>img/needleful/misfortune_thumb.png</thumbnail>
+				<href>comic/needleful/22.html</href>
+			</comic>
+			<comic>
+				<title>Fun Game</title>
+				<thumbnail>img/needleful/game_thumb.png</thumbnail>
+				<href>comic/needleful/21.html</href>
+			</comic>
 		</comics>
 	</latest-comics>
 </page>

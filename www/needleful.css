@@ -83,4 +83,6 @@ img.comic {
 
 iframe {
 	border:none;
+	margin:auto;
+	max-width: 100%;
 }
