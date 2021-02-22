@@ -15,8 +15,8 @@
 			<body>
 				<div id='content' class='blog'>
 					<ul class='header'>
-						<li>needleful's blog</li>
-						<li><a href='/blog'>Home</a></li>
+						<li><a href='/'>needleful dot net</a> /</li>
+						<li><a href='/comic/needleful'>needleful's blog</a></li>
 					</ul>
 					<h1 class='title'>{{title}}</h1>
 					<div id='sub-content'>

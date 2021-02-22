@@ -1,14 +1,22 @@
 <page>
 	<blog-basic>
-		<title>Perfectionism, The Project Fractal, and Why I Never Finish Anything</title>
+		<title>The Project Fractal, or Why I Never Finish Anything</title>
 		<subtitle>maximizing the ratio of effort to results</subtitle>
 
 		<date>02/22/2021</date>
 		<keywords>web development, blog, blogging, art, writing</keywords>
 
 		<content>
-			<p>I've heard that the hardest part of a project is starting.  I haven't found that to be true.  Starting something is <em>hard</em>, sure.  But the far harder part is <em>finishing</em> the project.</p>
-			<p>I have folders on my hard drive with dozens of comics, game prototypes, scripts, illustrations, and more that I started and dropped.  My high school and college notebooks are filled with plans for projects that never came to be.  I've made three websites and never did anything with any of them (this is the fourth).  The <a href='/comic/needleful'>comic</a> this website is built to host just akwardly ends, even though I have nearly a dozen pages sketched and fully intended to create a proper ending.  It feels like I start something new every single week, but nothing is finished.</p>
+			<p>I've realized I'll often start on a creative project, and it'll explode in scope.  Then I'll think to myself "<i>I'm not ready to do this.  I should make something smaller first</i>".  So I'll put that project on hold and create something new.  Then the new project will explode in scope, and I'll think to myself "<i>I'm not ready to do this.  I should make something smaller</i>". This started when I was in high school, and I just kept adding layers and layers of projects between me and what I really want to do.</p>
+
+			<p>This is the Project Fractal.</p>
+
+			<img src='/img/blog/abstract/feiganbaum_zoom_in.gif' style='margin:auto;' alt='zooming into a fractal infinitely'/>
+
+			<p>I don't know if this is a common behavior.  I don't know if there's another term for this.  I don't know if this blog will be helpful to anyone experiencing this.  But I know I have a Project Fractal and it's gone off the rails.</p>
+
+			<p>I have dozens of comics, game prototypes, scripts, illustrations, and more that I started and dropped.  My high school and college notebooks are filled with plans for projects that never came to be.  I've made three websites and never did anything with any of them (this is the fourth).  The <a href='/comic/needleful'>comic</a> this website is built to host just akwardly ends, even though I have nearly a dozen pages sketched and even more I've thought up.</p>
+
 
 			<h2>Perfectionism</h2>
 			<p>During study hall in my sophomore year of high school, I was turning in some work to my English teacher and she asked me, "why do you always turn in your work late?"</p>
@@ -24,18 +32,10 @@
 			<p>Once I've declared something is good enough to show, it's suddenly subject to criticism and scrutiny, and the quality of what I make reflects on me.  The more qualifiers I can add on the front (I only spent 20 minutes on this, I made it from scratch, I made it while working full-time), the more easily I can distance myself from criticism.</p>
 			
 
-			<h2>The Project Fractal</h2>
-
-			<p>I've realized I'll often start on a creative project, and it'll explode in scope.  Then I'll think to myself "<i>I'm not ready to do this.  I should make something smaller first</i>".  So I'll put that project on hold and create something new.  Soon enough the new project will explode in scope, and I'll think to myself "<i>I'm not ready to do this.  I should make something smaller</i>", and so on. This started probably when I was in High School, and I just kept adding layers and layers of projects between me and what I really want to do.</p>
-
-			<img src='/img/blog/abstract/feiganbaum_zoom_in.gif' style='margin:auto;' alt='zooming into a fractal infinitely'/>
-			<p class='caption'>Pictured: This mess</p>
-
-			<p>This Project Fractal has gotten out of hand.  I'm working on three video games concurrently, and none of them are the video game I was intending to make, which I've put on hold for being "too complex".  I tried to make a <i>Sailor Moon</i> parody comic that's now a sci-fi epic that incorporates elements of John Carpenter's <i>The Thing</i> and the autobiography of Nelson Mandela.</p>
-
-			<p>I stopped working on my webcomic, <i>needleful</i>, and declared I was "bored" with it, and that I should be doing bigger and better things.  For the next three years I have done nothing of interest.  If I <em>really</em> wanted to make a better comic, I could have improved and built on the one I already had.  The truth is, I scrapped my work and started over so I could go back to my comfort zone: doing nothing and sharing nothing.  I was afraid of committing to <i>needleful</i>, putting in more effort, and running the risk of not getting the attention and recognition I wanted for it.</p>
-
 			<h2>Welcome to needleful.net</h2>
+
+			<p>Three years ago I stopped working on my webcomic, <i>needleful</i>, and declared I was "bored" with it, and that I should be doing bigger and better things.  For the next three years I have done nothing of interest and have nothing to show.</p>
+			<p>If I <em>really</em> wanted to make a better comic, I could have improved and built on the one I already had.  The truth is, I scrapped my work and started over so I could go back to my comfort zone: doing nothing and sharing nothing.  I was afraid of committing to <i>needleful</i>, putting in more effort, and running the risk of not getting the attention and recognition I wanted for it.</p>
 
 			<p>This blog marks the completion of needleful.net, my new website.  It's not an especially robust site, but it's flexible and cheap to maintain, since it's just static files made with a templating system.</p>
 			<p>Funny enough, it's a perfect microcosm of all the behaviors I've described.  I decided to make this site because I didn't want to work on my games or comics.  I also decided to make my own static site generator instead of using one of the numerous pre-existing generators.  When the generator was 90% complete I started to rewrite it in SWI-Prolog.  So I added three layers to my Project Fractal before I realized what I was doing. After that, I made it a point to finish the site as quickly as possible.  And I'm still procrastinating on things such as the landing page, comments, and other useful components.</p>

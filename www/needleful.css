@@ -94,6 +94,7 @@ img.comic {
 .comics-latest li {
 	display:inline-block;
 	max-width: 220px;
+	padding: 0px 10px;
 }
 
 iframe {
@@ -115,4 +116,9 @@ iframe {
 ul.browser-list {
 	padding-left:0.8em;
 	margin-left: 0;
+}
+
+.caption {
+	font-size:0.8em;
+	font-style:italic;
 }
