@@ -4,7 +4,8 @@
 		<content>
 			<ul class='header'>
 				<li><a href='/'>needleful dot net</a> /</li>
-				<li><a href='/comic/needleful'>needleful comic</a></li>
+				<li><a href='/comic/needleful'>needleful comic</a> /</li>
+				<li>archive</li>
 			</ul>
 			<h1>Needleful Comic - Archives</h1>
 			<a href='/comic/needleful'>Home</a>

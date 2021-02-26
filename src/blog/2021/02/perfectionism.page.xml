@@ -7,38 +7,56 @@
 		<keywords>web development, blog, blogging, art, writing</keywords>
 
 		<content>
-			<p>I've realized I'll often start on a creative project, and it'll explode in scope.  Then I'll think to myself "<i>I'm not ready to do this.  I should make something smaller first</i>".  So I'll put that project on hold and create something new.  Then the new project will explode in scope, and I'll think to myself "<i>I'm not ready to do this.  I should make something smaller</i>". This started when I was in high school, and I just kept adding layers and layers of projects between me and what I really want to do.</p>
+			<p class='note'> Note: Anybody who has a self-help blog <em>will</em> try to talk you into joining their MLM program at some point.  This is fact.  This is indisputable.  Thankfully this is basically just my diary and not a self-help blog, so you can read on without fear.</p>
+
+			<p>I've realized I'll often start on a creative project, and it'll explode in scope.  Then I'll think to myself "<i>I'm not ready to do this.  I should make something smaller first</i>".  So I'll put that project on hold and create something new.  Then the new project will explode in scope, and I'll think to myself "<i>I'm not ready to do this.  I should make something smaller</i>". This started when I was in high school, and I just kept adding more and more projects between me and what I really want to do.</p>
 
 			<p>This is the Project Fractal.</p>
 
 			<img src='/img/blog/abstract/feiganbaum_zoom_in.gif' style='margin:auto;' alt='zooming into a fractal infinitely'/>
+			<p class='caption'>"All I wanted was to write Sonic the Hedgehog fanfiction..."</p>
 
 			<p>I don't know if this is a common behavior.  I don't know if there's another term for this.  I don't know if this blog will be helpful to anyone experiencing this.  But I know I have a Project Fractal and it's gone off the rails.</p>
 
-			<p>I have dozens of comics, game prototypes, scripts, illustrations, and more that I started and dropped.  My high school and college notebooks are filled with plans for projects that never came to be.  I've made three websites and never did anything with any of them (this is the fourth).  The <a href='/comic/needleful'>comic</a> this website is built to host just akwardly ends, even though I have nearly a dozen pages sketched and even more I've thought up.</p>
+			<p>A couple years ago I started developing a simple 3D platformer using Godot, because my original game idea had gotten too large.</p>
+
+			<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/K0mXhDUFvQo" frameborder="0" allow="picture-in-picture" allowfullscreen=''>whoops!</iframe>
+
+			<p>I decided the only way the game would work would be if it were open world.  I soon realized an open world game would be too much for one person, so I decided to make a much simpler game, just a single character sending one-way text messages... and then I decided to make it in <a href='https://github.com/needleful/lantana-engine'>my own game engine</a>.</p>
+
+			<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/kJCsEYgr6kM" frameborder="0" allow="picture-in-picture" allowfullscreen=''>Embebbed Bideo</iframe>
+
+			<p>When the engine was in a working state and the game was coming along, I realized writing a game entirely about a character monologuing is quite difficult if you can't write a compelling monologue, so I dropped it and started a new game in the engine, which was basically Animal Crossing with fancy AI.</p>
+
+			<p>I soon realized I didn't actually know <em>how</em> to build the fancy AI I wanted (also I needed to make hundreds of animations for the various actions the characters could perform).  Inspired by a fun Sonic fangame I played, I decided to suspend this project and make a linear 3D platformer starring Sonic.</p>
+
+			<iframe width='560' height='315' src='https://www.youtube-nocookie.com/embed/ex4PvUhACQY' frameborder='0' allow='picture-in-picture' style='margin:auto;' allowfullscreen=''>This youtube embed is broken!! yikes!</iframe>
+
+			<p>But this game got quite complex, especially the animation logic. I decided to take a break and start on a little first person shooter.  Just an easy little thing, you know?</p>
+
+			<iframe width='560' height='315' src='https://www.youtube-nocookie.com/embed/YgGR2CKed74' frameborder='0' allow='picture-in-picture' allowfullscreen=''>for some reason these youtube embeds only work if i write text in the tags. the other iframes on this site work just fine, but not the youtube ones for some reason</iframe>
+
+			<p>The animation logic for this game is the most complicated animation logic I have ever developed. I even discovered some <a href='https://github.com/godotengine/godot/issues/46038'>quirky lil' bugs</a> in Godot's animation system and had to create a custom branch of the engine to fix them.  I was in over my head, but implementing the AI for the enemies gave me insight on how to continue the Animal Crossing ripoff, so I then looped back to that.  But then I saw some Sonic fangames and was inspired to keep working on <em>that</em>.  And <em>now</em> I want to pick up the first 3D platformer again but with the gimmick that the character jumps by firing a shotgun into the ground and getting flung by recoil (original idea it is now pattented* sorry).</p>
+
+			<p>This is already tedious to read, and I skipped like <em>half</em> the games I made in this time, and haven't even touched on the comics, short stories, and music I haven't completed.</p>
+
+			<p>If I had spent the past 2 years working on any one of these projects, it may well have been completed by now.  If I had spent the time working on any one of the <em>literally dozens of other things</em> I started, I could have a whole library of stuff to show.</p>
+
+			<p>But I didn't.  I made prototype after prototype, draft after draft, sketch after sketch, and once it got to a certain point, I found some reason to quit and start something else, usually by blowing up the scope of the project to an unreasonable scale.  But why?  Why do I do this to myself?  I've spent an enormous amount of time and effort working and I'm denying myself the satisfaction of completing anything.</p>
 
 
-			<h2>Perfectionism</h2>
-			<p>During study hall in my sophomore year of high school, I was turning in some work to my English teacher and she asked me, "why do you always turn in your work late?"</p>
-			<p>I hadn't thought about it much before.  I always did my work at the last minute, and usually turned it in late.  I still did pretty well in school, so I didn't have a reason to worry about it.  "I don't know," I said.  "Overconfidence, I guess?"</p>
-			<p>"I don't think that's it." She said. "You want to know what I think? I think you do it because you're scared of trying as hard as you can, and then coming up short. <i>"Oh man, I only got a 97 on this paper? I worked so hard on it.."</i>  You'd rather do everything at the last minute and do worse, because then you can say <i>"oh well of course I only got a 90 or whatever, I threw this together at the last minute.  That's actually really good."</i> It gives you an out if you don't do that great. It's a way of defending yourself."</p>
-			<p>I didn't know what to make of what she said, or how to respond.  I just nodded, made a noise, and sat back down at my desk.  I didn't agree with it.  "She's really over-analyzing this", I thought.  "I'm not afraid."</p>
-			<p>I was, and I am.</p>
+			<h2>20% of the work, 80% of the fun</h2>
 
-			<p>The idea that perfectionism can be a cause of procrastination is not a novel idea.  <em>"Perfect is the enemy of good"</em> and all that.  But this was the first time that idea had entered into my head, at 16 or so.</p>
-
-			<p>I've always considered myself smart, and I've always tried to come off as smart.  A lot of my earliest memories involve me doing things I thought smart people were supposed to do.  In first grade I tried reading a college algebra textbook I found (I "learned" that <i>x</i> equals 1 and <i>y</i> equals 8, which I proudly wrote on my next math assignment to impress the teacher.  She wasn't impressed). I was always trying to impress people.</p>
-			<p>If I do my best and my work isn't good, then I'm not smart, am I?</p>  
-			<p>Once I've declared something is good enough to show, it's suddenly subject to criticism and scrutiny, and the quality of what I make reflects on me.  The more qualifiers I can add on the front (I only spent 20 minutes on this, I made it from scratch, I made it while working full-time), the more easily I can distance myself from criticism.</p>
+			<p>Projects are just more fun at the start.  Going from nothing to something in a couple days feels a lot better than going from 10% of a finished project to 11% in two weeks.
 			
 
-			<h2>Welcome to needleful.net</h2>
+			<h2>Welcome to needleful dot net</h2>
 
-			<p>Three years ago I stopped working on my webcomic, <i>needleful</i>, and declared I was "bored" with it, and that I should be doing bigger and better things.  For the next three years I have done nothing of interest and have nothing to show.</p>
-			<p>If I <em>really</em> wanted to make a better comic, I could have improved and built on the one I already had.  The truth is, I scrapped my work and started over so I could go back to my comfort zone: doing nothing and sharing nothing.  I was afraid of committing to <i>needleful</i>, putting in more effort, and running the risk of not getting the attention and recognition I wanted for it.</p>
+			<p>I made this site as a way to counter the project fractal. Specifically I made it to upload my <a href='comic/needleful'>comic series</a>, which I had up on hiatus for three years to work on something else (which I never completed before going to something else, etc.). I wanted a place where I could publically anounce anything I was making, regardless of what it was or how far along it was, and make myself commit to it.</p>
 
-			<p>This blog marks the completion of needleful.net, my new website.  It's not an especially robust site, but it's flexible and cheap to maintain, since it's just static files made with a templating system.</p>
-			<p>Funny enough, it's a perfect microcosm of all the behaviors I've described.  I decided to make this site because I didn't want to work on my games or comics.  I also decided to make my own static site generator instead of using one of the numerous pre-existing generators.  When the generator was 90% complete I started to rewrite it in SWI-Prolog.  So I added three layers to my Project Fractal before I realized what I was doing. After that, I made it a point to finish the site as quickly as possible.  And I'm still procrastinating on things such as the landing page, comments, and other useful components.</p>
+			<p>Ironically, making this site is a microcosm of the Project Fractal.  I started on the website to avoid working on my game.  I decided to make <a href='https://github.com/needleful/npsg'>my own static site generator</a> instead of just using Hugo or something.  And when I ran into issues with the generator, I started working on a total rewrite using SWI-Prolog before I realized what I was doing and made myself finish the site.</p>
+
+			<p class='note'>* not patented, <em>pattented</em></p>
 		</content>
 	</blog-basic>
 </page>

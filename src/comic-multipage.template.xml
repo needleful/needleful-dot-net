@@ -16,7 +16,8 @@
 				<div id='content'>
 					<ul class='header'>
 						<li><a href='/'>needleful dot net</a> /</li>
-						<li><a href='/comic/needleful'>needleful comic</a></li>
+						<li><a href='/comic/needleful'>needleful comic</a> /</li>
+						<li>page {{page}} </li>
 					</ul>
 					<div class='comic-wrapper'>
 						<ForEach list='sources' i='i' html-class='comic-wrapper'>
