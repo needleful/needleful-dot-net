@@ -1,0 +1,21 @@
+<page>
+	<blog-basic>
+		<title>I tried to make the perfect blog post</title>
+		<subtitle>i have given up on the endeavor</subtitle>
+
+		<date>03/01/2021</date>
+		<keywords>web development, blog, blogging, art, writing</keywords>
+
+		<content>
+			<p>I tried to make the perfect blog post, the blog post that would expand your mind and make you see how cool and intelligent I am.</p>
+
+			<p>But after a week of writing, I was nearly tempted to give up entirely.  The stress was too much for my small brain.</p>
+
+			<p>Then I thought to myself... "what if I just make an OK blog post".</p>
+
+			<p>I don't have subscribers.  I don't have ad contracts.  Odds are the only person who'll see this for the next few months are friends and family.  So why not take it easy for a bit.</p>
+
+			<p>So this is my OK blog post.  You're welcome.</p>
+		</content>
+	</blog-basic>
+</page>
