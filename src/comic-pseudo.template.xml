@@ -1,0 +1,66 @@
+<template name='comic-pseudo'>
+	<param name='issue' type='text,integer'/>
+	<param name='page' type='text,integer'/>
+	<param name='source' type='text,file'/>
+	<param name='description' type='xml' required='False'/>
+	<content>
+	<html>
+		<head>
+			<title>Superior Pseudo - Issue {{issue}} Page {{page}}</title>
+			<link rel='stylesheet' href='/needleful.css'/>
+		</head>
+		<body>
+			<div id='content'>
+				<ul class='header'>
+					<li><a href='/'>needleful dot net</a> /</li>
+					<li><a href='/comic/pseudo'>Superior Pseudo</a> /</li>
+					<li><a href='/comic/pseudo/{{issue}}'>Issue {{issue}}</a> /</li>
+					<li>Page {{page}} </li>
+				</ul>
+
+				<div class='comic-wrapper'>
+					<img class='comic' src='{{source}}' alt='Issue {{issue}} Page {{page}}'/>
+				</div>
+				<ul id='comic-buttons'>
+					<li><a href='/comic/pseudo/1'>First Issue</a> |</li>
+					<Match value='{{issue != 1}}'>
+						<True>
+							<li>| <a href='/comic/pseudo/{{issue - 1}}'>Previous Issue</a> |</li>
+						</True>
+						<False>
+							<li>| <a href='#'>Previous Issue</a> |</li>
+						</False>
+					</Match>
+					<li>| <a href='/comic/pseudo/{{issue}}'>Cover</a> |</li>
+					<Match value='{{page!=0}}'>
+						<True>
+							<li>| <a href='/comic/pseudo/{{issue}}/{{page - 1}}.html'>Previous Page</a> |</li>
+						</True>
+						<False>
+							<li>| <a href='#'>Previous Page</a> |</li>
+						</False>
+					</Match>
+					<li>| <a href='/comic/pseudo/archive'>Archive</a> |</li>
+					<Match f='src-file-exists' x='/comic/pseudo/{{issue}}/{{page+1}}'>
+						<True>
+							<li>| <a class='link-enabled-True' href='/comic/pseudo/{{issue}}/{{page+1}}'>Next Page</a> |</li>
+						</True>
+						<False>
+							<li>| <a class='link-enabled-False' href='#'>Next Page</a> |</li>
+						</False>
+					</Match>
+
+					<Match f='src-dir-exists' x='/comic/pseudo/{{issue+1}}'>
+						<True>
+							<li>| <a class='link-enabled-True' href='/comic/pseudo/{{issue + 1}}'>Next Issue</a></li>
+						</True>
+						<False>
+							<li>| <a class='link-enabled-False' href='#'>Next Issue</a></li>
+						</False>
+					</Match>
+				</ul>
+			</div>
+		</body>
+	</html>
+	</content>
+</template>
