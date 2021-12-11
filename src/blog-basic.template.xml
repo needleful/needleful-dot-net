@@ -11,13 +11,23 @@
 			<head>
 				<title id='title'>{{title}} - needleful's blog</title>
 				<link rel='stylesheet' href='/needleful.css'/>
+				<script type='text/javascript' src='/needleful.js'/>
 			</head>
 			<body>
 				<div id='content' class='blog'>
-					<ul class='header'>
-						<li><a href='/'>needleful dot net</a> /</li>
-						<li><a href='/blog'>needleful's blog</a></li>
-					</ul>
+					<div id='titlebar'>
+						<ul class='navbar'>
+							<li><a href="/">needleful dot net</a> /</li>
+							<li><a href='/blog'>needleful's blog</a></li>
+						</ul>
+						<button id='burger-button' class='not-clicked' aria-label='burger button' onclick='burgerClicked()'>
+							<img id='burger-img' alt='burger button' src='/burger.svg'/>
+						</button>
+						<div id='burger-block' class='noshow'>
+							<img class='full-line' style='min-width: 400px;' src='/img/burger.jpg'/>
+							<p class='epic full-line'>Burger.</p>
+						</div>
+					</div>
 					<h1 class='title'>{{title}}</h1>
 					<div id='sub-content'>
 						<h3 class='subtitle'>{{subtitle}}</h3>

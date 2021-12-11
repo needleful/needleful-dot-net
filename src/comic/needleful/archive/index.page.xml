@@ -2,11 +2,6 @@
 	<basic-page>
 		<title>Comic Archives</title>
 		<content>
-			<ul class='header'>
-				<li><a href='/'>needleful dot net</a> /</li>
-				<li><a href='/comic/needleful'>needleful comic</a> /</li>
-				<li>archive</li>
-			</ul>
 			<h1>Needleful Comic - Archives</h1>
 			<a href='/comic/needleful'>Home</a>
 			<iframe src='1.html' width='100%' height='1200px'/>

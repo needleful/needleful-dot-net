@@ -27,14 +27,6 @@ h2{
 	font-weight:300;
 }
 
-.subtitle {
-	letter-spacing: 
-}
-
-.header li {
-	display: inline;
-}
-
 #content {
 	border-right: 2px solid black;
 	border-left: 2px solid black;
@@ -84,6 +76,7 @@ img.comic {
 
 #comic-buttons li {
 	display: inline-flex;
+	margin-right: 3em;
 }
 
 .nr {
@@ -125,4 +118,60 @@ ul.browser-list {
 
 .note {
 	font-size:0.8em;
+}
+
+#titlebar {
+	height: 3em;
+	width: 100%;
+	position: relative;
+}
+#burger-button{
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+	float: right;
+}
+.not-clicked {
+	background: white;
+}
+.clicked {
+	background: #5af;
+}
+#burger-block {
+	padding: 8px;
+	background: white;
+	border-right: 2px solid black;
+	border-left: 2px solid black;
+	position: absolute;
+	top: 100%;
+	right: 0%;
+}
+.noshow {
+	display: none;
+}
+.show {
+	.display: block;
+}
+#burger-img {
+	height: 2em;
+}
+.navbar {
+	display: inline;
+}
+.navbar li {
+	display: inline;
+	font-size: 1.6em;
+	padding-top: 0.7em;
+	padding-bottom: 0.7em;
+}
+.normal li {
+	margin-bottom: 1em;
+}
+.epic {
+	font-size: 2em;
+	font-family: serif;
+}
+.full-line {
+	margin: auto;
+	width: 100%;
+	text-align: center;
 }

@@ -8,6 +8,7 @@
 		<head>
 			<title>Superior Pseudo - Issue {{issue}} Page {{page}}</title>
 			<link rel='stylesheet' href='/needleful.css'/>
+			<script type='text/javascript' src='/needleful.js'></script>
 		</head>
 		<body>
 			<div id='content'>
