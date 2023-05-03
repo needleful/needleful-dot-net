@@ -1,7 +1,7 @@
 <template name='basic-page'>
 	<param name='title' type='text'/>
 	<param name='content' type='xml'/>
-	<param name='custom-content-class' type='text' required='so'/>
+	<param name='custom-content-class' type='text' required='False'/>
 	<content>
 		<html>
 			<head>
