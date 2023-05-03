@@ -29,6 +29,11 @@
 				<href>comic/needleful/29.html</href>
 				<thumbnail>img/needleful/morning_bacon_thumb.png</thumbnail>
 			</comic>
+			<comic>
+				<title>Inktober: Eyeball</title>
+				<href>comic/needleful/30.html</href>
+				<thumbnail>img/needleful/inktober_eyeball_thumb.png</thumbnail>
+			</comic>
 		</comics>
 	</comic-archive>
 </page>

@@ -4,6 +4,11 @@
 		<css>needleful.css</css>
 		<comics>
 			<comic>
+				<title>Inktober: Eyeball</title>
+				<href>comic/needleful/30.html</href>
+				<thumbnail>img/needleful/inktober_eyeball_thumb.png</thumbnail>
+			</comic>
+			<comic>
 				<title>Morning Bacon</title>
 				<thumbnail>img/needleful/morning_bacon_thumb.png</thumbnail>
 				<href>comic/needleful/29.html</href>
@@ -42,11 +47,6 @@
 				<title>Misfortune</title>
 				<thumbnail>img/needleful/misfortune_thumb.png</thumbnail>
 				<href>comic/needleful/22.html</href>
-			</comic>
-			<comic>
-				<title>Fun Game</title>
-				<thumbnail>img/needleful/game_thumb.png</thumbnail>
-				<href>comic/needleful/21.html</href>
 			</comic>
 		</comics>
 	</latest-comics>
