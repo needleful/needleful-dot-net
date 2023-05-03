@@ -2,12 +2,12 @@
 	<blog-browser>
 		<blogs>
 			<blog>
-				<title>I tried to make the perfect blog post</title>
-				<href>blog/2021/03/perfectionism.html</href>
-			</blog>
-			<blog>
 				<title>I'm tired of Web3, let's go back to Web 1</title>
 				<href>blog/2021/12/web3.html</href>
+			</blog>
+			<blog>
+				<title>I tried to make the perfect blog post</title>
+				<href>blog/2021/03/perfectionism.html</href>
 			</blog>
 		</blogs>
 	</blog-browser>
