@@ -1,0 +1,24 @@
+<template name='blog-browser'>
+	<param name='blogs' type='list'>
+		<param name='blog' type='struct'>
+			<param name='title' type='text'/>
+			<param name='href' type='text,file'/>
+		</param>
+	</param>
+	<content>
+		<html>
+			<head>
+				<title>blog banner</title>
+				<link rel='stylesheet' href='/needleful.css'/>
+				<base target='_top'/>
+			</head>
+			<body>
+				<ul class='browser-list'>
+					<ForEach list='blogs'>
+						<li> <a href='{{blog:href}}'>{{blog:title}}</a></li>
+					</ForEach>
+				</ul>
+			</body>
+		</html>
+	</content>
+</template>
