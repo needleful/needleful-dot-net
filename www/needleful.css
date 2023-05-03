@@ -2,7 +2,7 @@ body{
 	color: #000;
 	font-weight:200;
 	font-family: sans-serif;
-	letter-spacing:2pt;
+	letter-spacing:2px;
 }
 
 a{
@@ -50,6 +50,11 @@ h2{
 	right: 5px;
 	bottom: 5px;
 	border:inherit;
+}
+
+.wide {
+	width:85% !important;
+	max-width:100% !important;
 }
 
 .blog {

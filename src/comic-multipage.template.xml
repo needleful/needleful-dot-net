@@ -17,7 +17,7 @@
 				<div id='content'>
 					<div id='titlebar'>
 						<ul class='navbar'>
-							<li><a href='/'>needleful dot net</a> /</li>
+							<li><a href='/'>needleful dot net</a> / </li>
 							<li><a href='/comic/needleful'>needleful comic</a> /</li>
 							<li>page {{page}} </li>
 						</ul>

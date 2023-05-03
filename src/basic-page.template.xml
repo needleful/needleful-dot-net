@@ -1,6 +1,7 @@
 <template name='basic-page'>
 	<param name='title' type='text'/>
 	<param name='content' type='xml'/>
+	<param name='custom-content-class' type='text' required='so'/>
 	<content>
 		<html>
 			<head>
@@ -9,10 +10,10 @@
 				<script type='text/javascript' src='/needleful.js'/>
 			</head>
 			<body>
-				<div id='content'>
+				<div id='content' class='{{custom-content-class}}'>
 					<div id='titlebar'>
 						<ul class='navbar'>
-							 <li><a href="/">needleful dot net</a> /</li>
+							 <li><a href="/">needleful dot net</a> / </li>
 							<li>{{title}}</li>
 						</ul>
 						<button id='burger-button' class='not-clicked' aria-label='burger button' onclick='burgerClicked()'>

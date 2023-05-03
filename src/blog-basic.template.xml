@@ -17,7 +17,7 @@
 				<div id='content' class='blog'>
 					<div id='titlebar'>
 						<ul class='navbar'>
-							<li><a href="/">needleful dot net</a> /</li>
+							<li><a href="/">needleful dot net</a> / </li>
 							<li><a href='/blog'>needleful's blog</a></li>
 						</ul>
 						<button id='burger-button' class='not-clicked' aria-label='burger button' onclick='burgerClicked()'>
