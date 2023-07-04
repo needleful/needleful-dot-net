@@ -4,4 +4,4 @@ When adding a new comic:
 	Size: pages are 975px wide, thumbnails are 200px wide
 When adding a blog:
 	date must be a valid en-US format
-	update browser.html
+	update browser.page.xml

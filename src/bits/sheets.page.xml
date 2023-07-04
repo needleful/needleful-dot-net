@@ -2,6 +2,12 @@
 	<basic-page>
 		<title>NP Sheets</title>
 		<custom-content-class>wide</custom-content-class>
+		<custom-nav-list>
+			<el>
+				<link>/bits</link>
+				<title>Bits</title>
+			</el>
+		</custom-nav-list>
 		<content>
 			<h1>NP Sheets</h1>
 			<p>This is my attempt at a spreadsheet software because I wanted to do my taxes but don't have Excel any more.</p>

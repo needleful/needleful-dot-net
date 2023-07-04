@@ -1,6 +1,12 @@
 <page>
 	<basic-page>
 		<title>WASM Test</title>
+		<custom-nav-list>
+			<el>
+				<link>/bits</link>
+				<title>Bits</title>
+			</el>
+		</custom-nav-list>
 		<content>
 			<script type='text/javascript' src='wasm.js'/>
 			<p>I'm trying some Wasm! I needed to test a few things:</p>
