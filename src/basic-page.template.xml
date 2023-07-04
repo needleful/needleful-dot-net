@@ -21,7 +21,7 @@
 						<ul class='navbar'>
 							<li><a href="/">needleful dot net</a> / </li>
 							<ForEach list='custom-nav-list' i='el'>
-								<li><a href="{{el:link}}">{{el:title}}</a></li>
+								<li><a href="{{el:link}}">{{el:title}}</a> / </li>
 							</ForEach>
 							<li>{{title}}</li>
 						</ul>
