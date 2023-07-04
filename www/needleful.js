@@ -11,3 +11,14 @@ var burgerClicked = function() {
 		block.className = 'show';
 	}
 }
+
+function makeChild(parent, tag, attributes) {
+	let item = document.createElement(tag);
+	parent.appendChild(item);
+	if (attributes) {
+		Object.keys(attributes).map(function(key) {
+			item.setAttribute(key, attributes[key]);
+		});
+	}
+	return item;
+}

@@ -26,17 +26,6 @@ function isNumeric(str) {
 	return !isNaN(str) && !isNaN(parseFloat(str));
 }
 
-function makeChild(parent, tag, attributes) {
-	let item = document.createElement(tag);
-	parent.appendChild(item);
-	if (attributes) {
-		Object.keys(attributes).map(function(key) {
-			item.setAttribute(key, attributes[key]);
-		});
-	}
-	return item;
-}
-
 function onTableInputFocus(id) {
 	return function() {
 		if (id in scripts){

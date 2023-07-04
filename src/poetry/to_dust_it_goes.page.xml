@@ -1,0 +1,40 @@
+<page>
+	<basic-page>
+		<title>To Dust it Goes</title>
+		<custom-nav-list>
+			<el>
+				<link>/poetry</link>
+				<title>Poetry</title>
+			</el>
+		</custom-nav-list>
+		<content>
+			<p>
+				The grass turns to ash beneath his feet. <br />
+				That's all of him the common man will see.<br />
+				These modern days, he just takes the road<br />
+				As he makes his daily sweep.<br />
+			</p>
+
+			<p>
+				There are flowers laid for him<br />
+				By whom he never knows.<br />
+				He takes his timid lover's gift<br />
+				And then to dust it goes.<br />
+			</p>
+
+			<p>
+				She's lying still in bed, alone.<br />
+				These are the folks he's always known.<br />
+				He puts his hand upon her head<br />
+				Where they go is never said.<br />
+			</p>
+
+			<p>
+				He sees by her a single flower,<br />
+				A pale and lonely rose.<br />
+				He takes his timid lover's gift<br />
+				And then to dust it goes.<br />
+			</p>
+		</content>
+	</basic-page>
+</page>

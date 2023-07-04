@@ -2,6 +2,12 @@
 	<param name='title' type='text'/>
 	<param name='content' type='xml'/>
 	<param name='custom-content-class' type='text' required='False'/>
+	<param name='custom-nav-list' type='list' required='False'>
+		<param name='el' type='struct'>
+			<param name='link' type='text'/>
+			<param name='title' type='text'/>
+		</param>
+	</param>
 	<content>
 		<html>
 			<head>
@@ -13,7 +19,10 @@
 				<div id='content' class='{{custom-content-class}}'>
 					<div id='titlebar'>
 						<ul class='navbar'>
-							 <li><a href="/">needleful dot net</a> / </li>
+							<li><a href="/">needleful dot net</a> / </li>
+							<ForEach list='custom-nav-list' i='el'>
+								<li><a href="{{el:link}}">{{el:title}}</a></li>
+							</ForEach>
 							<li>{{title}}</li>
 						</ul>
 						<button id='burger-button' class='not-clicked' aria-label='burger button' onclick='burgerClicked()'>
