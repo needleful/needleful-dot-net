@@ -5,9 +5,9 @@
 		<subtitle>look at this!</subtitle>
 		<keywords>list</keywords>
 		<content>
-			- Item 1
-			- Item 2
-			- Item 3
+			- Item 1 and _italics_ of *differnt* types
+			- Item 2 and __bold text__ of **other types**
+			- Item 3 with **arbitrary*_text_`~**
 		</content>
 	</blog-basic>
 </page>
