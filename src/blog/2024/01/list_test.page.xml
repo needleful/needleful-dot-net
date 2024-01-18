@@ -1,0 +1,13 @@
+<page>
+	<blog-basic>
+		<date>01/17/2024</date>
+		<title>A cool list tester</title>
+		<subtitle>look at this!</subtitle>
+		<keywords>list</keywords>
+		<content>
+			- Item 1
+			- Item 2
+			- Item 3
+		</content>
+	</blog-basic>
+</page>
