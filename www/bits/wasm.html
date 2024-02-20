@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html><html><head><title>WASM Test - Needleful.net</title><link rel="stylesheet" href="/needleful.css"></link><script type="text/javascript" src="/needleful.js"></script></head><body><div id="content" class="{{custom-content-class}}"><div id="titlebar"><ul class="navbar"><li><a href="/">needleful dot net</a> / </li><li><a href="/bits">Bits</a> / </li><li>WASM Test</li></ul><button id="burger-button" class="not-clicked" aria-label="burger button" onclick="burgerClicked()"><img id="burger-img" alt="burger button" src="/burger.svg"></img></button><div id="burger-block" class="noshow"><img class="full-line" style="min-width: 400px;" src="/img/burger.jpg"></img><p class="epic full-line">Burger.</p></div></div>
-					<script type="text/javascript" src="wasm.js"></script><p>I'm trying some Wasm! I needed to test a few things:</p><ul><li>Can I compile WASM in the browser?</li><li>Do I understand the binary format?</li></ul><p>So I made this Wasm "compiler" where you write out the data in hexadecimal. It ignores every character that isn't 0-9 or a-f (case insensitive), so you can use some spacing. I also made it so you can put comments in regular parentheses <code>()</code>.</p><p>The header bytes (magic and version) are automatically added.</p><p>If it compiles successfully, it'll tell you what the exported functions are. Otherwise you'll need to check the console etc.</p><p>To call the function, you'd call <code>wasm_module.instance.exports.{your function}</code> in the console.</p><textarea id="byte_text" rows="15" cols="110">
+					<script type="text/javascript" src="wasm.js"></script><script type="text/javascript" src="parser.js"></script><p>I'm trying some Wasm! I needed to test a few things:</p><ul><li>Can I compile WASM in the browser?</li><li>Do I understand the binary format?</li></ul><p>So I made this Wasm "compiler" where you write out the data in hexadecimal. It ignores every character that isn't 0-9 or a-f (case insensitive), so you can use some spacing. I also made it so you can put comments in regular parentheses <code>()</code>.</p><p>The header bytes (magic and version) are automatically added.</p><p>If it compiles successfully, it'll tell you what the exported functions are. Otherwise you'll need to check the console etc.</p><p>To call the function, you'd call <code>wasm_module.instance.exports.{your function}</code> in the console.</p><textarea id="byte_text" rows="15" cols="110">
 (-- types section --)
 01
 (of 7 bytes with 1 type)
@@ -33,5 +33,20 @@
 20 00
 20 01
 6a 0f 0b
-			</textarea><br></br><button onclick="compile()">Compile</button><br></br><div id="result">Result here</div>
+			</textarea><br></br><button onclick="compile()">Compile</button><br></br><div id="result">Result here</div><h2>The parser</h2><p>The reason I'm researching WASM is for a secret project: an Algol 60 to WASM compiler</p><p>After making the test thing above and more robust assembler library, the next step is a parser for an Algol syntax.</p><p>Algol 60 has a specification that simultaneously quite loose and has very odd requirements, like distinct characters for opening and closing strings, so I had to go my own way making a compliant parser.</p><p>Here's a sample code snippet.</p><textarea id="code" rows="30" cols="110">
+begin
+	comment Donald Knuth's famous "Man or boy" test;
+	real procedure A(k, x1, x2, x3, x4, x5);
+	value k; integer k; 
+	real x1, x2, x3, x4, x5;
+	begin
+		real procedure B;
+		begin k := k - 1;
+			B := A := A(k, B, x1, x2, x3, x4)
+		end;
+		if k ≤ 0 then A := x4 + x5 else B
+	end;
+	outreal(1, A(10, 1, -1, -1, 1, 0))
+end
+			</textarea><br></br><button onclick="parse()">Parse</button><br></br><div id="parse-result">Result here</div>
 				</div></body></html>
