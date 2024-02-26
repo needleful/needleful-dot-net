@@ -9,7 +9,10 @@
 		</custom-nav-list>
 		<content>
 			<script type='text/javascript' src='wasm.js'/>
-			<script type='text/javascript' src='parser.js'/>
+			<script type='text/javascript' src='np-algol/assembler.js'/>
+			<script type='text/javascript' src='np-algol/ir.js'/>
+			<script type='text/javascript' src='np-algol/parser.js'/>
+			<script type='text/javascript' src='np-algol/parser_test.js'/>
 			<p>I'm trying some Wasm! I needed to test a few things:</p>
 			<ul>
 				<li>Can I compile WASM in the browser?</li>
@@ -58,32 +61,21 @@
 			<button onclick='compile()'>Compile</button>
 			<br />
 			<div id='result'>Result here</div>
-
-			<h2>The parser</h2>
-			<p>The reason I'm researching WASM is for a secret project: an Algol 60 to WASM compiler</p>
-			<p>After making the test thing above and more robust assembler library, the next step is a parser for an Algol syntax.</p>
-			<p>Algol 60 has a specification that simultaneously quite loose and has very odd requirements, like distinct characters for opening and closing strings, so I had to go my own way making a compliant parser.</p>
-			<p>Here's a sample code snippet.</p>
-			<textarea id='code' rows='30' cols='110'>
+			<h2>Parsing</h2>
+			<textarea id='algol-text' rows='15' cols='110'>
 begin
-	comment Donald Knuth's famous "Man or boy" test;
-	real procedure A(k, x1, x2, x3, x4, x5);
-	value k; integer k; 
-	real x1, x2, x3, x4, x5;
 	begin
-		real procedure B;
-		begin k := k - 1;
-			B := A := A(k, B, x1, x2, x3, x4)
-		end;
-		if k ≤ 0 then A := x4 + x5 else B
 	end;
-	outreal(1, A(10, 1, -1, -1, 1, 0))
-end
-			</textarea> 
+	begin
+		begin
+		end;
+	end;
+end I don't have anything else;
+			</textarea>
 			<br/>
-			<button onclick='parse()'>Parse</button>
+			<button onclick='testParser()'>Parse</button>
 			<br />
-			<div id='parse-result'>Result here</div>
+			<div id='parser-results'>Parser results here</div>
 		</content>
 	</basic-page>
 </page>
