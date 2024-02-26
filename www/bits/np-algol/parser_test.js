@@ -3,7 +3,7 @@ function testParser() {
 	let results = document.getElementById("parser-results");
 	results.innerText = "parsing...";
 	try {
-		let parseTree = parseAlgol(text);
+		let parseTree = parseAlgol(text, {multiWordIdents:true});
 		console.log("Parsing results:", parseTree);
 		results.innerText = "Your program, sir:";
 		function show(list, item) {
@@ -21,7 +21,7 @@ function testParser() {
 				}
 			}
 			if("declare" in item) {
-				add_item(item.declare + " "+item.vars.join(", ") + ";");
+				add_item((item.own? "own " : "" ) + item.declare + " "+item.vars.join(", ") + ";");
 			}
 		}
 		show(makeChild(results, "ul"), parseTree);
@@ -29,7 +29,7 @@ function testParser() {
 	catch(error) {
 		results.innerText = "Failed to parse!";
 		let p1 = makeChild(results, "p");
-		console.log(error);
-		p1.innerText = `At line ${error.location[0]}, column ${error.location[1]}: ${error.text}`;
+		console.log("Parsing error:", error);
+		p1.innerText = `At line ${error.location.line}, column ${error.location.column}: ${error.text}`;
 	}
 }
