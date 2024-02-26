@@ -13,7 +13,14 @@ function testParser() {
 				return li;
 			}
 
-			if("block" in item) {
+			if("call" in item) {
+				let li = add_item("Call "+item.call);
+				for(let i2 of item.block) {
+					let list2 = makeChild(li, "ul");
+					show(list2, i2);
+				}
+			}
+			else if("block" in item) {
 				let li = add_item("Begin:");
 				for(let i2 of item.block) {
 					let list2 = makeChild(li, "ul");
@@ -31,5 +38,6 @@ function testParser() {
 		let p1 = makeChild(results, "p");
 		console.log("Parsing error:", error);
 		p1.innerText = `At line ${error.location.line}, column ${error.location.column}: ${error.text}`;
+		throw error;
 	}
 }

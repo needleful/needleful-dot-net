@@ -1,12 +1,15 @@
-// Next up: 
+// Next up: procedure calls
 function parseAlgol(text, options = {}) {
 	const Ps = {
-		Start: 0,
-		Block: 1,
-		Declaration: 2,
+		Start: 1,
+		Block: 2,
+		Declaration: 3,
+		OwnDeclaration: 4,
+		ProcedureCall: 5,
 
 		BlockEnd: 99,
-		ProgramEnd: 100
+		ProgramEnd: 100,
+		ParserBroke: 0
 	};
 
 	const Pc = {
@@ -67,7 +70,7 @@ function parseAlgol(text, options = {}) {
 
 	function pwarn(location, context, text) {
 		let [loc, start, end] = getPositions(location, context.start, context.end);
-		console.log(text, "at: ", loc, "in context:", {start:start, end:end});
+		console.log("Warning: ", text, "at: ", loc, "in context:", {start:start, end:end});
 	}
 
 	let state = Ps.Start;
@@ -103,7 +106,6 @@ function parseAlgol(text, options = {}) {
 		let startIndex = context.start[2] + 3;
 		return(text.substr(startIndex, c - startIndex).includes("end"));
 	}
-
 	function startDeclaration(type, owned) {
 		if(tree.nested_blocks) {
 			perr(context.start, context, `You cannot declare more variables after a nested block.`);
@@ -114,8 +116,17 @@ function parseAlgol(text, options = {}) {
 		tree = declaration;
 		state = Ps.Declaration;
 	}
+	function startProcCall(procName) {
+		let pcall = {call: procName, block: [], up: tree};
+		tree.block.push(pcall);
+		tree = pcall;
+		state = Ps.ProcedureCall;
+	}
 	
 	for(let c = 0; c < text.length; c++) {
+		if(!state) {
+			perr(c, context, "Parser Bug: something broke the parser before this location.");
+		}
 		let old_c = c;
 		let char = text[c];
 		if(isWhiteSpace(char)){}
@@ -143,20 +154,29 @@ function parseAlgol(text, options = {}) {
 				tree = new_tree;
 				c += Pc.begin.length - 1;
 			}
+			else if(nextKeyword(Pc.comment, c)) {
+				context.start = c;
+				let commentEnd = text.indexOf(Pc.semicol, c);
+				if(commentEnd == -1) {
+					context.end = text.length;
+					perr(c, context, "Comment was not punctuated with a semicolon.");
+				}
+				c = context.start = context.end = commentEnd;
+			}
 			else if(isAlpha(char)) {
 				context.start = c;
 				let word;
 				[word, c, char] = grabWord(c);
 				context.end = c;
 				if(word == Pc.own) {
-					state = Ps.OwnedDeclaration;
+					state = Ps.OwnDeclaration;
 				}
 				else if(Pc.types.includes(word)) {
 					startDeclaration(word, false);
 					// Undo the for-loop's witch craft
 				}
 				else {
-					perr(c, context, `I don't know what this is: {${word}}`);
+					startProcCall(word);
 				}
 				c--;
 			}
@@ -177,7 +197,7 @@ function parseAlgol(text, options = {}) {
 			context.end = c;
 			let listEnd = text.indexOf(Pc.semicol, c);
 			if(listEnd == -1) {
-				perr(c, context, "File ended unexpectedly.");
+				perr(c, context, "File ended unexpectedly in declaration.");
 			}
 			let subc = c;
 			let decl = text.substr(c, listEnd-c);
@@ -201,7 +221,7 @@ function parseAlgol(text, options = {}) {
 					index = varname.indexOf(ec);
 					context.end = subc+varname.length;
 					perr(subc + index, context, 
-						`Unexpected invalid character {${ec}} in identifier {${varname}}`)
+						`Unexpected invalid character {${ec}} in identifier {${varname}}. Identifiers are only letters and numbers.`);
 				}
 				if(tree.vars.includes(v)) {
 					context.end = subc + varname.length;
@@ -225,6 +245,9 @@ function parseAlgol(text, options = {}) {
 			tree = tree.up;
 			c = listEnd;
 			state = Ps.Block;
+		}
+		else if(state == Ps.ProcedureCall) {
+			
 		}
 		else if(state == Ps.BlockEnd) {
 			// Any text between the "end" bracket and the semicolon is a comment. Coolio!
