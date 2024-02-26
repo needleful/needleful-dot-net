@@ -5,33 +5,7 @@ function testParser() {
 	try {
 		let parseTree = parseAlgol(text, {multiWordIdents:true});
 		console.log("Parsing results:", parseTree);
-		results.innerText = "Your program, sir:";
-		function show(list, item) {
-			function add_item(text) {
-				let li = makeChild(list, "li");
-				li.innerText = text;
-				return li;
-			}
-
-			if("call" in item) {
-				let li = add_item("Call "+item.call);
-				for(let i2 of item.block) {
-					let list2 = makeChild(li, "ul");
-					show(list2, i2);
-				}
-			}
-			else if("block" in item) {
-				let li = add_item("Begin:");
-				for(let i2 of item.block) {
-					let list2 = makeChild(li, "ul");
-					show(list2, i2);
-				}
-			}
-			if("declare" in item) {
-				add_item((item.own? "own " : "" ) + item.declare + " "+item.vars.join(", ") + ";");
-			}
-		}
-		show(makeChild(results, "ul"), parseTree);
+		results.innerText = "Your program, sir: "+JSON.stringify(parseTree);
 	}
 	catch(error) {
 		results.innerText = "Failed to parse!";

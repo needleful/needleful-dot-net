@@ -1,36 +1,26 @@
-// Next up: procedure calls
+
 function parseAlgol(text, options = {}) {
-	const Ps = {
-		Start: 1,
-		Block: 2,
-		Declaration: 3,
-		OwnDeclaration: 4,
-		ProcedureCall: 5,
-
-		BlockEnd: 99,
-		ProgramEnd: 100,
-		ParserBroke: 0
-	};
-
 	const Pc = {
 		begin: 'begin',
 		end: 'end',
 		comment: 'comment',
+		own: 'own',
+		types: ['real', 'integer', 'Boolean'],
+		procedure: 'procedure',
 		semicol: ';',
 		comma: ',',
 		assign: ':=',
-		own: 'own',
-		types: ['real', 'integer', 'Boolean']
+		postComment: /^([^;]*);/,
+		identPart: /^\p{Alpha}[\p{Alpha}\d]*/u,
+		ofType:/^(real|integer|Boolean)/,
+		anyToken:/^\S+/
 	};
-
 	const keywords = Object.values(Pc).flat();
 
 	function getPositions(...indeces) {
 		let result = {};
 		let keys = Array.from(indeces).sort();
-		let column = 0;
-		let line = 0;
-		let next_result = 0;
+		let column = 0, line = 0, next_result = 0;
 		for(let c = 0; c < text.length && next_result < keys.length; c++){
 			while(c == keys[next_result]) {
 				result[keys[next_result]] = {line:line, column:column};
@@ -51,242 +41,160 @@ function parseAlgol(text, options = {}) {
 		return indeces.map(i => result[i]);
 	}
 
-	function isWhiteSpace(char) {
-		return char.match(/\s/);
+	function perr(location, text) {
+		let [loc] = getPositions(location);
+		throw {text:text, location:loc};
 	}
 
-	function isDigit(char) {
-		return char.match(/\d/);
+	function pwarn(location, text) {
+		let [loc] = getPositions(location);
+		console.log("Warning: ", text, "at: ", loc);
 	}
 
-	function isAlpha(char) {
-		return char.match(/\p{Alpha}/u);
+	let c = 0;
+
+	function good() {
+		return c < text.length;
 	}
 
-	function perr(location, context, text) {
-		let [loc, start, end] = getPositions(location, context.start, context.end);
-		throw {text:text, location:loc, context:{start:start, end:end}};
-	}
-
-	function pwarn(location, context, text) {
-		let [loc, start, end] = getPositions(location, context.start, context.end);
-		console.log("Warning: ", text, "at: ", loc, "in context:", {start:start, end:end});
-	}
-
-	let state = Ps.Start;
-	let context = {start:0, end:0};
-	let top_tree = {block: []};
-	let tree = top_tree;
-
-	function nextKeyword(substring, start) {
-		if(!text.startsWith(substring, start)) {
+	function declaration(type, own = false) {
+		let vars = [];
+		function checkWord(word) {
+			if (keywords.includes(word)) {
+				pwarn(c, `Variable name includes keyword: {${word}}. Is that correct?`);
+				return true;
+			}
 			return false;
 		}
-		else if(text.length <= start + substring.length) {
-			return true;
-		}
-		else {
-			let lastChar = text[start + substring.length];
-			return (isWhiteSpace(lastChar) || lastChar == Pc.semicol);
-		}
-	}
-	function grabWord(c) {
-		let start = c;
-		let char;
-		do{ char = text[++c]; } while(isAlpha(char) || isDigit(char));
-		return [text.substr(start, c-start), c, char];
-	}
-
-	function endCommentHint() {
-		let [start] = getPositions(context.start);
-		return ` Are you missing a semicolon after 'end' on line ${start.line}, column ${start.column}?`;
-	}
-	function missingBlockHeuristic(c) {
-		// There's at least one extra 'end' between the real 'end' and the semicolon, implying too much code was commented out.
-		let startIndex = context.start[2] + 3;
-		return(text.substr(startIndex, c - startIndex).includes("end"));
-	}
-	function startDeclaration(type, owned) {
-		if(tree.nested_blocks) {
-			perr(context.start, context, `You cannot declare more variables after a nested block.`);
-		}
-		context.start = context.end;
-		let declaration = {declare: type, own:owned, vars: [], up: tree};
-		tree.block.push(declaration);
-		tree = declaration;
-		state = Ps.Declaration;
-	}
-	function startProcCall(procName) {
-		let pcall = {call: procName, block: [], up: tree};
-		tree.block.push(pcall);
-		tree = pcall;
-		state = Ps.ProcedureCall;
-	}
-	
-	for(let c = 0; c < text.length; c++) {
-		if(!state) {
-			perr(c, context, "Parser Bug: something broke the parser before this location.");
-		}
-		let old_c = c;
-		let char = text[c];
-		if(isWhiteSpace(char)){}
-		else if(state == Ps.Start) {
-			if(!nextKeyword(Pc.begin, c)) {
-				context.start = 0;
-				context.end = c;
-				perr(c, context,`Expected keyword '${Pc.begin}' to start the program.`);
-			}
-			context.start = c;
-			state = Ps.Block;
-			c += Pc.begin.length - 1;
-		}
-		else if(state == Ps.Block) {
-			if(nextKeyword(Pc.end, c)) {
-				state = Ps.BlockEnd;
-				context.start = c;
-				c += Pc.end.length - 1;
-			}
-			else if(nextKeyword(Pc.begin, c)) {
-				context.start = c;
-				let new_tree = {block: [], up: tree};
-				tree.nested_blocks = true;
-				tree.block.push(new_tree);
-				tree = new_tree;
-				c += Pc.begin.length - 1;
-			}
-			else if(nextKeyword(Pc.comment, c)) {
-				context.start = c;
-				let commentEnd = text.indexOf(Pc.semicol, c);
-				if(commentEnd == -1) {
-					context.end = text.length;
-					perr(c, context, "Comment was not punctuated with a semicolon.");
+		let declEnd = false;
+		while(good() && !declEnd) {
+			let word = grabToken(Pc.identPart);
+			if(!word) {
+				if(grabToken(Pc.comma)) {
+					perr(c, `Empty item (or extra comma) in declarations list`);
 				}
-				c = context.start = context.end = commentEnd;
-			}
-			else if(isAlpha(char)) {
-				context.start = c;
-				let word;
-				[word, c, char] = grabWord(c);
-				context.end = c;
-				if(word == Pc.own) {
-					state = Ps.OwnDeclaration;
+				else if(grabToken(Pc.semicol)) {
+					perr(c, `Declarations list can't be empty.`);
 				}
-				else if(Pc.types.includes(word)) {
-					startDeclaration(word, false);
-					// Undo the for-loop's witch craft
+				else{
+					perr(c, `Expected an identifier, found {${grabToken(Pc.anyToken)}}`);
+				}
+			}
+			checkWord(word, options);
+			let wordEnd = false;
+			while(good() && !wordEnd) {
+				let w2 = grabToken(Pc.identPart);
+				if(w2) {
+					checkWord(w2);
+					word += w2;
+				}
+				else if(grabToken(Pc.comma)){
+					wordEnd = true;
+				}
+				else if(grabToken(Pc.semicol)){
+					wordEnd = true;
+					declEnd = true;
 				}
 				else {
-					startProcCall(word);
+					perr(c, `Unexpected token during variable declaration: {${grabToken(Pc.anyToken)}}`);
 				}
-				c--;
 			}
+			vars.push(word);
 		}
-		else if(state == Ps.OwnDeclaration) {
-			let word;
-			[word, c, char] = grabWord(c);
-			context.end = c;
-			if(Pc.types.includes(word)){
-				startDeclaration(word, true);
-				c--;
+		return {decl: type, own: own, vars:vars};
+	}
+
+	function blockHead() {
+		let declarations = [];
+		while(good()) {
+			if(peekToken(Pc.begin) || peekToken(Pc.end)) {
+				break;
+			}
+			let word = grabToken(/^\p{Alpha}+/u);
+			if(word == Pc.own) {
+				let next = grabToken(Pc.ofType);
+				if (!next){
+					perr(c, `Expected one of [${Pc.types}] after {own}. Found {${next}}`)
+				}
+				declarations.push(declaration(next, true));
+			}
+			else if(word == Pc.comment) {
+				grabToken(Pc.postComment);
+			}
+			else if(Pc.types.includes(word)) {
+				declarations.push(declaration(word));
+			}
+			else if(grabToken(Pc.semicol)) {
+				break;
 			}
 			else {
-				perr(c, context, `Expected one of [${Pc.types}] for own variable declaration, found {${word}}`);
+				perr(c, 'Unexpected token in block head: '+word);
 			}
 		}
-		else if(state == Ps.Declaration) {
-			context.end = c;
-			let listEnd = text.indexOf(Pc.semicol, c);
-			if(listEnd == -1) {
-				perr(c, context, "File ended unexpectedly in declaration.");
+		return declarations;
+	}
+
+	function blockTail() {
+		let block = [];
+		while(good()) {
+			let word = grabToken(Pc.identPart);
+			if(word == Pc.own) {
+				perr(c, "Cannot declare new variables after the block head");
 			}
-			let subc = c;
-			let decl = text.substr(c, listEnd-c);
-			if(!decl.match(/\S/)) {
-				context.end = listEnd;
-				perr(c, context, "No variables declared for type "+tree.declare);
+			else if(word == Pc.begin) {
+				let head = blockHead();
+				let tail = blockTail();
+				block.push({head:head, tail:tail});
 			}
-			for(let varname of decl.split(Pc.comma)) {
-				let v = varname.replaceAll(/\s/g, '');
-				if(v.length == 0) {
-					context.end = subc + varname.length;
-					perr(c, context, "Empty item in declarator list. Expected an identifier.");
-				}
-				if(!isAlpha(v[0])) {
-					context.end = subc + varname.length;
-					perr(subc, context, 
-						`Unexpected symbols instead of a variable name: {${varname}}`);
-				}
-				let ec = v.match(/[^\p{Alpha}\d]/u);
-				if(ec) {
-					index = varname.indexOf(ec);
-					context.end = subc+varname.length;
-					perr(subc + index, context, 
-						`Unexpected invalid character {${ec}} in identifier {${varname}}. Identifiers are only letters and numbers.`);
-				}
-				if(tree.vars.includes(v)) {
-					context.end = subc + varname.length;
-					perr(subc, context, "Duplicate variable declared: " + v);
-				}
-				let vt = varname.trim().replaceAll(/\s+/g, ' ');
-				if(v != vt && !options.multiWordIdents) {
-					pwarn(subc, context, `Whitespace in identifier {${vt}}. Reading as {${v}}.`)
-				}
-				if(keywords.includes(vt)) {
-					pwarn(subc, context, `Variable {${tree.declare} ${vt}} has the same name as a keyword. Is this deliberate?`);
-				}
-				tree.vars.push(v);
-				
-				subc += varname.length + 1;
-				context.end = subc;
+			else if(word == Pc.end) {
+				grabToken(Pc.postComment);
+				break;
 			}
-			if(tree.vars.length == 0) {
-				perr(c, context, "No variables were declared of type: "+tree.declare);
-			}
-			tree = tree.up;
-			c = listEnd;
-			state = Ps.Block;
-		}
-		else if(state == Ps.ProcedureCall) {
-			
-		}
-		else if(state == Ps.BlockEnd) {
-			// Any text between the "end" bracket and the semicolon is a comment. Coolio!
-			if(char == Pc.semicol) {
-				context.end = c;
-				if(missingBlockHeuristic(c)){
-					pwarn(context.end, context, endCommentHint());
-				}
-				if(!tree.up) {
-					state = Ps.ProgramEnd;
-				}
-				else {
-					tree = tree.up;
-					state = Ps.Block;
-				}
+			else {
+				pwarn(c, "I don't know what this means in this context: ", word);
 			}
 		}
-		else if(state == Ps.ProgramEnd) {
-			if(!isWhiteSpace(char)) {
-				context.end = c;
-				perr(c, context, "You've added more code after the final 'end;': "+text.substr(c)); 
-			}
+		return block;
+	}
+
+	function skipWhiteSpace(){
+		let s1 = text.substr(c, 10);
+		while(c < text.length && text[c].match(/\s/)) {
+			c++;
 		}
 	}
 
-	if(tree != top_tree) {
-		context.end = text.length;
-		console.log("Program: ", top_tree, "Final tree:", tree);
-		perr(context.end, context, "Program ended with more 'begin's than 'end's." + (state == Ps.BlockEnd ? endCommentHint() : ""));
+	// peek at the token, and advance if it exists.
+	function grabToken(query) {
+		console.log("Grab ", query, "from", text.substr(c, 10));
+		let r = peekToken(query);
+		if(r) {
+			c += r.length;
+			console.log("TOKEN:", r);
+		}
+		return r;
 	}
-	else if(state != Ps.ProgramEnd) {
-		if(state != Ps.BlockEnd) {
-			context.end = text.length;
-			perr(context.end, context, "Missing the final 'end' bracket." + missingBlockHeuristic(text.length)? endCommentHint() : "");
+
+	// Match string or regex
+	// Regexes should have ^ at the front
+	function peekToken(query) {
+		skipWhiteSpace();
+		if(typeof(query) == 'string') {
+			return text.startsWith(query, c) ? query : false;
 		}
 		else {
-			context.end = text.length;
-			pwarn(context.end, context, "A semicolon is recommended at the end of the program.");
+			let m = text.substr(c).match(query);
+			return m? m[0] : null; 
 		}
 	}
-	return top_tree;
+
+	if(!grabToken(Pc.begin)) {
+		perr(c, 'Expected keyword {begin} to start the program.');
+	}
+	let head = blockHead();
+	let tail = blockTail();
+	if(!grabToken(Pc.postComment)) {
+		pwarn(c, 'Programs should be terminated with a semicolon.');
+	}
+	return {head: head, tail: tail};
 }
