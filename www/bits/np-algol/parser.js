@@ -10,7 +10,7 @@ function parseAlgol(text, options = {}) {
 		semicol: ';',
 		comma: ',',
 		assign: ':=',
-		postComment: /^([^;]*);/,
+		postComment: /^([^;]*);?/,
 		identPart: /^\p{Alpha}[\p{Alpha}\d]*/u,
 		ofType:/^(real|integer|Boolean)/,
 		anyToken:/^\S+/
@@ -136,6 +136,7 @@ function parseAlgol(text, options = {}) {
 
 	function blockTail() {
 		let block = [];
+		let ended = false;
 		while(good()) {
 			let word = grabToken(Pc.identPart);
 			if(word == Pc.own) {
@@ -147,12 +148,22 @@ function parseAlgol(text, options = {}) {
 				block.push({head:head, tail:tail});
 			}
 			else if(word == Pc.end) {
-				grabToken(Pc.postComment);
+				let comment = grabToken(Pc.postComment);
+				if(!comment) {
+					pwarn(c, `Expected a semicolon after 'end'.`);
+				}
+				else if(comment.indexOf('\n') >= 0 && comment.indexOf('end') >= 0) {
+					pwarn(c, `Comment after 'end' extends more than one line. Is that intentional?`);
+				}
+				ended = true;
 				break;
 			}
 			else {
 				pwarn(c, "I don't know what this means in this context: ", word);
 			}
+		}
+		if(!ended) {
+			perr(c, 'Document ended with more `begin` than `end` brackets.');
 		}
 		return block;
 	}
@@ -166,11 +177,9 @@ function parseAlgol(text, options = {}) {
 
 	// peek at the token, and advance if it exists.
 	function grabToken(query) {
-		console.log("Grab ", query, "from", text.substr(c, 10));
 		let r = peekToken(query);
 		if(r) {
 			c += r.length;
-			console.log("TOKEN:", r);
 		}
 		return r;
 	}
@@ -193,8 +202,5 @@ function parseAlgol(text, options = {}) {
 	}
 	let head = blockHead();
 	let tail = blockTail();
-	if(!grabToken(Pc.postComment)) {
-		pwarn(c, 'Programs should be terminated with a semicolon.');
-	}
 	return {head: head, tail: tail};
 }
