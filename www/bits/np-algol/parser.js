@@ -141,8 +141,11 @@ function parseAlgol(text, options = {}) {
 
 		let foundOp = grab(op);
 		if(foundOp) {
-			let rhs = expect(parseBinary(ops, top, primary, index + 1), `Missing the right-hand side of {${foundOp}}`);
-			return {op: foundOp, left:lhs, right:rhs}
+			return {
+				op: foundOp, 
+				left:lhs, 
+				right: expect(parseBinary(ops, top, primary, index), `Missing the right-hand side of {${foundOp}}`)
+			};
 		}
 		else {
 			return lhs;
