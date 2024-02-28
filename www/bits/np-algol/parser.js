@@ -42,7 +42,6 @@ function parseAlgol(text, options = {}) {
 			/^\^/
 		],
 	};
-	// Forgive me
 	const keywords = Object.values(Pc).flat().filter(e => typeof(e) == 'string');
 
 	function getPositions(...indeces) {
@@ -87,33 +86,27 @@ function parseAlgol(text, options = {}) {
 	}
 
 	function identifier() {
-		return grab(Pc.identPart);
-	}
-
-	function stroppedIdentifier() {
-		function checkWord(word) {
-			if (keywords.includes(word)) {
-				pwarn(c, `Variable name includes keyword: {${word}}. Is that correct?`);
-				return true;
-			}
-			return false;
-		}
 		let word = grab(Pc.identPart);
 		if(!word) {
 			return null;
 		}
-		checkWord(word, options);
-		let wordEnd = false;
+		if(keywords.includes(word)) {
+			backtrack(word);
+			return null;
+		}
 		let wordParts = 1;
-		while(good() && !wordEnd) {
+		while(good()) {
 			let w2 = grab(Pc.identPart);
 			if(w2) {
-				checkWord(w2);
+				if(keywords.includes(w2)) {
+					backtrack(w2);
+					break;
+				}
 				word += w2;
 				wordParts += 1;
 			}
 			else {
-				wordEnd = true;
+				break;
 			}
 		}
 		if(wordParts > 1) {
@@ -123,10 +116,17 @@ function parseAlgol(text, options = {}) {
 	}
 
 	function parseBinary(ops, top, primary, index = 0) {
+		let start = c;
 		if(index >= ops.length) {
 			return primary();
 		}
 		let op = ops[index];
+
+		let extra_op = grab(op)
+		if(extra_op) {
+			perr(c, `Extra operator found: {${extra_op}}`);
+		}
+
 		let lhs;
 		if(grab(Pc.parenOpen)) {
 			lhs = top();
@@ -136,15 +136,20 @@ function parseAlgol(text, options = {}) {
 			lhs = parseBinary(ops, top, primary, index + 1);
 		}
 		if(!lhs) {
+			c = start;
 			return null;
 		}
 
 		let foundOp = grab(op);
 		if(foundOp) {
+			let rhs = parseBinary(ops, top, primary, index);
+			if (!rhs) {
+				perr(c, `Missing the right-hand side of {${foundOp}}. Found {${grab(Pc.anyToken)}}`);
+			}
 			return {
 				op: foundOp, 
 				left:lhs, 
-				right: expect(parseBinary(ops, top, primary, index), `Missing the right-hand side of {${foundOp}}`)
+				right: rhs
 			};
 		}
 		else {
@@ -176,7 +181,6 @@ function parseAlgol(text, options = {}) {
 			return val;
 		}
 		else {
-			let sign = grab(Pc.sign);
 			let uint = digits();
 			let decimal = grab(Pc.decimal);
 			let lowDigits = decimal ? 
@@ -187,7 +191,7 @@ function parseAlgol(text, options = {}) {
 				expect(digits(), 'A value is required for the exponent') 
 				: digits();
 
-			val = [sign, uint, decimal, lowDigits, exp, expDigits].filter(e => e).join('');
+			val = [uint, decimal, lowDigits, exp, expDigits].filter(e => e).join('');
 			if(exp && !uint && !lowDigits) {
 				val = val.replace(Pc.exponent, '1'+Pc.exponent);
 			}
@@ -210,40 +214,71 @@ function parseAlgol(text, options = {}) {
 
 	function booleanPrimary() {
 		let not_op = grab(Pc.logical_not);
-		let val = comparison();
-		if(!val) {
-			val = grab(Pc.logicalVal);
-			val = val? Boolean(val) : identifier();
+		let val = grab(Pc.logicalVal);
+		if(val) {
+			val = Boolean(val);
 		}
-		if(typeof(val) == 'number' || 
-			typeof(val) == 'object' && 'op' in val && !val.op.match(Pc.relationOps)) 
-		{
-			perr(c, 'Expected a boolean expression, found arithmetic instead');
+		else {
+			val = comparison();
+			if(typeof(val) == 'number') {
+				return null;
+			} 
+			else if( typeof(val) == 'object' && 'op' in val && !val.op.match(Pc.relationOps)) {
+				return null;
+			}
 		}
 		if(not_op) {
-			return {op: not_op, arg: expect(val)};
+			return {op: not_op, arg: val};
 		}
 		else {
 			return val;
 		}
 	}
 
-	function simpleArithmetic() {
+	function unsignedSimpleArithmetic() {
 		return parseBinary(Pc.arithmeticOps, arithmetic, arithmeticPrimary);
 	}
 
-	function simpleBoolean() {
-		return parseBinary(Pc.logicOps, boolean, booleanPrimary);
+	function simpleArithmetic() {
+		let start = c;
+		let ops = Pc.arithmeticOps;
+		let sign_op = grab(ops[0]);
+		if(sign_op) {
+			let lhs = {
+				op: sign_op,
+				arg: expect(parseBinary(ops, arithmetic, arithmeticPrimary, 1), "Expected an expression for the sign operator")
+			};
+			let next_op = grab(ops[0]);
+			if(next_op) {
+				return {
+					op: next_op,
+					lhs: lhs,
+					rhs: expect(unsignedSimpleArithmetic(), "Expected the right-hand side of the expression")
+				};
+			}
+			return lhs;
+		}
+		else {
+			let exa = unsignedSimpleArithmetic();
+			if(!exa) { c = start; }
+			return exa;
+		}
 	}
 
-	function ifElse(lhs, rhs) {
+	function simpleBoolean() {
+		let start = c;
+		let exp = parseBinary(Pc.logicOps, boolean, booleanPrimary);
+		if(!exp) { c = start; }
+		return exp;
+	}
+
+	function ifElse(lhs = null, rhs = null) {
 		let lif = ifClause();
 		if(lif) {
 			grabOrDie(Pc.cond_then);
 			let then_do = expect(lhs(), `No condition after then-clause for conditional expression`);
 			grabOrDie(Pc.cond_else, "{else} clause is mandatory for conditional expressions.");
-
-			let else_do = expect(arithmetic(), `No expression found after {else}`);
+			let else_do = expect(rhs(), `No expression found after {else}`);
 			
 			return {
 				cond:lif, 
@@ -254,7 +289,19 @@ function parseAlgol(text, options = {}) {
 		else {
 			return lhs();
 		}
-	} 
+	}
+
+	function simpleExpression() {
+		let ex = simpleBoolean();
+		if (!ex) {
+			return simpleArithmetic();
+		}
+		return ex;
+	}
+
+	function expression() {
+		return ifElse(simpleExpression, expression);
+	}
 
 	function arithmetic() {
 		return ifElse(simpleArithmetic, arithmetic);
@@ -298,7 +345,7 @@ function parseAlgol(text, options = {}) {
 			if(grab(Pc.semicol) || peek(Pc.end)) {
 				perr(c, `Assignment to {${firstVar}} without a value on the right-hand side`);
 			}
-			let next = arithmetic();
+			let next = expression();
 			if(typeof(next) == 'string') {
 				if (grab(Pc.assign)) {
 					result.vars.push(next);
@@ -386,8 +433,13 @@ function parseAlgol(text, options = {}) {
 				break;
 			}
 			else if(word) {
+				backtrack(word);
+				word = identifier();
 				if(grab(Pc.assign)) {
 					block.push(assignment(word));
+				}
+				else {
+					perr(`Unknown operation after {${word}}: {${grab(Pc.anyToken)}}`);
 				}
 			}
 			else if(grab(Pc.semicol)){
