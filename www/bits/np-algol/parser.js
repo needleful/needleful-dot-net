@@ -15,8 +15,10 @@ function parseAlgol(text, options = {}) {
 		assign: ':=',
 		parenOpen: '(',
 		parenClose: ')',
+		colon: ':',
 		postComment: /^([^;]*);?/,
 		identPart: /^\p{Alpha}[\p{Alpha}\d]*/u,
+		letterString: /^\p{Alpha}+/u,
 		ofType:/^(real|integer|Boolean)/,
 		anyToken:/^\S+/,
 		sign:/^(\+|-)/,
@@ -178,7 +180,12 @@ function parseAlgol(text, options = {}) {
 	function arithmeticPrimary() {
 		let val = identifier();
 		if (val) {
-			return val;
+			if(grab(Pc.parenOpen)) {
+				return procDesignator(val);
+			}
+			else {
+				return val;
+			}
 		}
 		else {
 			let uint = digits();
@@ -208,7 +215,10 @@ function parseAlgol(text, options = {}) {
 		if(!lhs) { return null; }
 		let op = grab(Pc.relationOps);
 		if(!op) {return lhs;}
-		let rhs = expect(arithmetic(), "Expression expected on the right side of a comparison.");
+		let rhs = arithmetic();
+		if (!rhs) {
+			perr(c, `Expression expected on the right side of a comparison. Found {${grab(Pc.anyToken)}}`);
+		}
 		return {op: op, lhs:lhs, rhs: rhs}
 	}
 
@@ -342,7 +352,7 @@ function parseAlgol(text, options = {}) {
 	function assignment(firstVar) {
 		let result = {vars:[firstVar]};
 		while(good()) {
-			if(grab(Pc.semicol) || peek(Pc.end)) {
+			if(peek(Pc.semicol) || peek(Pc.end)) {
 				perr(c, `Assignment to {${firstVar}} without a value on the right-hand side`);
 			}
 			let next = expression();
@@ -351,7 +361,7 @@ function parseAlgol(text, options = {}) {
 					result.vars.push(next);
 					continue;
 				}
-				else if(grab(Pc.semicol) || peek(Pc.end)) {
+				else if(peek(Pc.semicol) || peek(Pc.end)) {
 					result.value = next;
 					break;
 				}
@@ -361,7 +371,7 @@ function parseAlgol(text, options = {}) {
 			}
 			else if(next) {
 				result.value = next;
-				if(grab(Pc.semicol) || peek(Pc.end)) {
+				if(peek(Pc.semicol) || peek(Pc.end)) {
 					break;
 				}
 				else if(grab(Pc.assign)) {
@@ -408,20 +418,98 @@ function parseAlgol(text, options = {}) {
 		return declarations;
 	}
 
+	// This assumes the opening bracket has been grabbed
+	function procDesignator(name) {
+		let result = {func: name, args: []};
+		if(grab(Pc.parenClose)) {
+			pwarn(c, 'Procedures with no arguments do not have empty brackets: ()');
+			return result;
+		}
+		while(good()) {
+			let argument = expression();
+			if(!argument) {
+				perr(c, "Expected an expression as an argument");
+			}
+			result.args.push(argument);
+			if(grab(Pc.comma)) {
+				continue;
+			}
+			else if(grab(Pc.parenClose)) {
+				let longComma = grab(Pc.letterString);
+				if(!longComma || keywords.includes(longComma)) {
+					backtrack(longComma);
+					break;
+				}
+				else if(!grab(Pc.colon) || !grab(Pc.parenOpen)) {
+					perr(c, `Expected {${Pc.colon}${Pc.parenOpen}} after string ${longComma}, or a separator before it.`)
+				}
+				if(!result.delimeters) {
+					result.delimeters = [];
+				}
+				result.delimeters.push({
+					longComma: longComma, 
+					position: result.args.length
+				});
+				continue;
+			}
+		}
+		return result;
+	}
+
+	function statement() {
+		let word = grab(Pc.identPart)
+		if(!word) {
+			return null;
+		}
+
+		if(word == Pc.own || Pc.types.includes(word)) {
+			perr(c, "Cannot declare new variables in a statement");
+		}
+		else if(word == Pc.begin) {
+			let head = blockHead();
+			let tail = blockTail();
+			return {head:head, tail:tail};
+		}
+		// Let the caller figure it out
+		else if(keywords.includes(word)) {
+			backtrack(word);
+			return null;
+		}
+		else if(word) {
+			backtrack(word);
+			let oldWord = word;
+			word = identifier();
+			if(!word) {
+				perr(c, `PARSER BUG: Tried to grab ${oldWord} as an identifier`);
+			}
+			if(grab(Pc.assign)) {
+				return assignment(word);
+			}
+			else if(grab(Pc.parenOpen)) {
+				return procDesignator(word);
+			}
+			else {
+				return {func: word, args: []};
+			}
+		}
+	}
+
 	function blockTail() {
 		let block = [];
 		let ended = false;
 		while(good()) {
-			let word = grab(Pc.identPart);
-			if(word == Pc.own) {
-				perr(c, "Cannot declare new variables after the block head");
+			let s = statement();
+			if(s) {
+				console.log('Statement: ', s);
+				block.push(s);
 			}
-			else if(word == Pc.begin) {
-				let head = blockHead();
-				let tail = blockTail();
-				block.push({head:head, tail:tail});
+			else {
+				pwarn(c, 'Empty statement');
 			}
-			else if(word == Pc.end) {
+			if(grab(Pc.semicol)) {
+				continue;
+			}
+			if(grab(Pc.end)) {
 				let comment = grab(Pc.postComment);
 				if(!comment) {
 					pwarn(c, `Expected a semicolon after 'end'.`);
@@ -432,22 +520,8 @@ function parseAlgol(text, options = {}) {
 				ended = true;
 				break;
 			}
-			else if(word) {
-				backtrack(word);
-				word = identifier();
-				if(grab(Pc.assign)) {
-					block.push(assignment(word));
-				}
-				else {
-					perr(`Unknown operation after {${word}}: {${grab(Pc.anyToken)}}`);
-				}
-			}
-			else if(grab(Pc.semicol)){
-				// Dummy statement
-				continue;
-			}
 			else {
-				pwarn(c, "Unexpected text: ", grab(Pc.anyToken));
+				perr(c, `Unexpected text in block: {${grab(Pc.anyToken)}}`);
 			}
 		}
 		expect(ended, 'Document ended with more `begin` than `end` brackets.');
@@ -498,6 +572,9 @@ function parseAlgol(text, options = {}) {
 	}
 
 	function backtrack(token) {
+		if(!token) {
+			return;
+		}
 		let end = text.substr(c-token.length, token.length);
 		if(end != token) {
 			perr(c, `PARSER BUG: Tried to backtrack on token {${token}}, but the value was {${end}}` );

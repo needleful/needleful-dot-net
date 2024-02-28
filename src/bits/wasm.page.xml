@@ -64,12 +64,13 @@
 			<h2>Parsing</h2>
 			<textarea id='algol-text' rows='15' cols='110'>
 begin
-	begin
-	end;
-	begin
-		begin
-		end;
-	end;
+	integer i, k;
+	real x, min x, max x;
+	Boolean bounds exceeded;
+	x := 10;
+	min x := 8;
+	max x := 30;
+	bounds exceeded := min x &lt; x and x &lt; max x;
 end I don't have anything else;
 			</textarea>
 			<br/>
