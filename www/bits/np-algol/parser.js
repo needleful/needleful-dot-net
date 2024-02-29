@@ -7,7 +7,9 @@ function parseAlgol(text, options = {}) {
 		own: 'own',
 		types: ['real', 'integer', 'Boolean'],
 		procedure: 'procedure',
+		value: 'value',
 		semicol: ';',
+		statementEnd: /^(;|end)/,
 		cond_if: 'if',
 		cond_then: 'then',
 		cond_else: 'else',
@@ -16,7 +18,7 @@ function parseAlgol(text, options = {}) {
 		parenOpen: '(',
 		parenClose: ')',
 		colon: ':',
-		postComment: /^([^;]*);?/,
+		postComment: /^([^;]*)/,
 		identPart: /^\p{Alpha}[\p{Alpha}\d]*/u,
 		letterString: /^\p{Alpha}+/u,
 		ofType:/^(real|integer|Boolean)/,
@@ -25,6 +27,7 @@ function parseAlgol(text, options = {}) {
 		decimal:'.',
 		digits: /^\d+/,
 		exponent:'_e',
+		typelessProc: 'void', // Just for internal validation
 		signedExponent: /^_e(\+|-)?/,
 		logicalVal:/^(true|false)/,
 		// From highest to lowest in the parsing tree, binary ops only
@@ -88,6 +91,7 @@ function parseAlgol(text, options = {}) {
 	}
 
 	function identifier() {
+		let identStart = c, identEnd = c;
 		let word = grab(Pc.identPart);
 		if(!word) {
 			return null;
@@ -104,6 +108,7 @@ function parseAlgol(text, options = {}) {
 					backtrack(w2);
 					break;
 				}
+				identEnd = c;
 				word += w2;
 				wordParts += 1;
 			}
@@ -112,7 +117,20 @@ function parseAlgol(text, options = {}) {
 			}
 		}
 		if(wordParts > 1) {
-			pwarn(c, `Identifier contains whitespace. Reading as {${word}}`);;
+			if(options.warnOnWhitespaceName) {
+				pwarn(c, `Identifier contains whitespace. Reading as {${word}}`);
+			}
+
+			let [start, end] = getPositions(identStart, identEnd);
+			if(start.line < end.line) {
+				let message = `Identifier {${word}} spans multiple lines. Are you missing a semicolon?`;
+				if(options.multiLineIdentifiers) {
+					pwarn(c, message);
+				}
+				else {
+					perr(c, message)
+				}
+			}
 		}
 		return word;
 	}
@@ -181,7 +199,7 @@ function parseAlgol(text, options = {}) {
 		let val = identifier();
 		if (val) {
 			if(grab(Pc.parenOpen)) {
-				return procDesignator(val);
+				return procDesignator(val, expression, 'procedure call');
 			}
 			else {
 				return val;
@@ -233,7 +251,7 @@ function parseAlgol(text, options = {}) {
 			if(typeof(val) == 'number') {
 				return null;
 			} 
-			else if( typeof(val) == 'object' && 'op' in val && !val.op.match(Pc.relationOps)) {
+			else if(!val || typeof(val) == 'object' && 'op' in val && !val.op.match(Pc.relationOps)) {
 				return null;
 			}
 		}
@@ -321,132 +339,232 @@ function parseAlgol(text, options = {}) {
 		return ifElse(simpleBoolean, boolean);
 	}
 
-	function declaration(type, own = false) {
-		let vars = [];
-		let declEnd = false;
+	function specifier() {
+		let result = {};
+		let type = grab(Pc.ofType);
+		if(type) {
+			if(grab(Pc.procedure)) {
+				result.proc_type = type;
+			}
+			else {
+				result.type = type;
+			}
+		}
+		else if(grab(Pc.ofType)) {
+			result.proc_type = Pc.typelessProc;
+		}
+		else {
+			return null;
+		}
+		result.values = listOf(identifier, 'parameter specifier');
+		expect(result.values.length, 'Expected identifiers after specifier');
+		return result;
+	}
+
+	function procDeclaration(type) {
+		let name = expect(identifier(), 'Procedure does not have a name');
+		let designator, values = [], specifiers = [], body = null;
+
+		if(grab(Pc.parenOpen)) {
+			designator = expect(procDesignator(name, identifier, 'procedure declaration'), "Procedure does not have a proper header");
+		}
+		else {
+			designator = {args:[], delimiters:[]};
+		}
+		grabOrDie(Pc.semicol, 'Semicolon required after procedure header');
+		if(grab(Pc.value)) {
+			values = listOf(identifier, 'value parameters');
+			expect(values.length, 'Expected identifiers after {value}');
+			grabOrDie(Pc.semicol, 'Semicolon required after value parameters');
+		}
+		specifiers = listOf(specifier, 'specifier list', Pc.semicol);
+		if(specifiers.length) {
+			grabOrDie(Pc.semicol, 'Semicolon required after last specifier.');
+		}
+		body = statement();
+		grabOrDie(Pc.semicol, 'Semicolon required after function body' + (body? '' : ' (even an empty body)'));
+
+		return {
+			type: type,
+			proc: name,
+			parameters: designator.args,
+			delimiters: designator.delimiters,
+			specifiers: specifiers,
+			values: values,
+			body: body
+		}
+	}
+
+	function listOf(item, description, delimiter = Pc.comma, end = Pc.semicol, allowEmpty = false, specialFailure = null) {
+		let result = [];
+		let ended = false;
+		let start = c;
+		let implicitEnd = delimiter == end;
+		function unexpectedEnd() {
+			perr(c, `File ended in the middle of a ${description}. Are you missing {${end}}?`);
+		}
 		while(good()) {
-			let nextVar = identifier();
-			if(!nextVar) {
-				 if(grab(Pc.semicol)) {
-					perr(c, `Declarations list can't be empty.`);
+			if(!implicitEnd && peek(end)) {
+				ended = true;
+				break;
+			}
+			else if(grab(delimiter)) {
+				if(allowEmpty) {
+					continue;
 				}
-				else if(grab(Pc.comma)) {
-					perr(c, `Empty item (or extra comma) in declarations list`);
+				else if(implicitEnd && !result.length) {
+					return null;
 				}
 				else {
-					perr(c, `Expected an identifier, found {${grab(Pc.anyToken)}}`);
+					perr(c, `Cannot have empty items or extra {${delimiter}} in ${description}`);
 				}
 			}
-			vars.push(nextVar);
+			let nextItem = item();
+			if(!nextItem) {
+				if(!result.length) {
+					return null;
+				}
+				else if(implicitEnd) {
+					backtrack(delimiter);
+					ended = true;
+					break;
+				}
+				else if(peek(end)) {
+					ended = true;
+					break;
+				}
+				else if (!specialFailure || !specialFailure()) {
+					let next = grab(Pc.anyToken);
+					if(next) {
+						perr(c, `Unexpected text in ${description}: {${next}}. Expected {${delimiter}} to continue or {${end}} to end it.`);
+					}
+					else {
+						unexpectedEnd();
+					}
+				}
+			}
+			result.push(nextItem);
 
-			if(grab(Pc.semicol)){
+			if(!implicitEnd && peek(end)) {
+				ended = true;
 				break;
 			}
 			else {
-				grabOrDie(Pc.comma);
+				grab(delimiter);
+				if(!delimiter) {
+					perr(c, `Expected {${delimiter}} or {${end}} in ${description}. Got {${grab(Pc.anyToken)}}`);
+				}
 			}
+		}
+		if(!ended){
+			unexpectedEnd();
+		}
+		return result;
+	}
+
+	function typeDeclaration(type, own = false) {
+		if(grab(Pc.procedure)) {
+			expect(!own, `The 'own' specifier is invalid for procedures.`);
+			return procDeclaration(type);
+		}
+		let vars = listOf(identifier, 'type declaration list');
+		if(!vars.length) {
+			perr(c, `Declarations list can't be empty`);
 		}
 		return {decl: type, own: own, vars:vars};
 	}
 
 	function assignment(firstVar) {
-		let result = {vars:[firstVar]};
-		while(good()) {
-			if(peek(Pc.semicol) || peek(Pc.end)) {
-				perr(c, `Assignment to {${firstVar}} without a value on the right-hand side`);
-			}
-			let next = expression();
-			if(typeof(next) == 'string') {
-				if (grab(Pc.assign)) {
-					result.vars.push(next);
-					continue;
-				}
-				else if(peek(Pc.semicol) || peek(Pc.end)) {
-					result.value = next;
-					break;
-				}
-				else {
-					perr(c, `Unexpected text in assignment {${result.vars} := ${next}}: {${grab(Pc.anyToken)}}`);
-				}
-			}
-			else if(next) {
-				result.value = next;
-				if(peek(Pc.semicol) || peek(Pc.end)) {
-					break;
-				}
-				else if(grab(Pc.assign)) {
-					perr(c, `Cannot assign more variables after expression {${next}}`);
-				}
-				else {
-					perr(c, `Unexpected tokens after assignment {${result.vars} := ${next}}: {${grab(Pc.anyToken)}}. Missing semicolon?`)
-				}
-			}
-			else {
-				perr(c, 'Invalid arithmetic expression in assignment');
+		let list = [firstVar].concat(
+			listOf(expression, 'assignment list', Pc.assign, Pc.statementEnd));
+		if(list.length < 2) {
+			perr(c, `No value assigned to {${firstVar}}`);
+		}
+		for(let i = 0; i < list.length - 1; i++){ 
+			if(typeof(list[i]) != 'string') {
+				perr(c, `Expression {${JSON.stringify(list[i])}} cannot be assigned to`);
 			}
 		}
-		return result;
+		let value = list.pop();
+		return {
+			vars:list,
+			assign:value
+		}
+	}
+
+	function declaration() {
+		let start = c;
+		if(grab(Pc.own)) {
+			let next = expect(grab(Pc.ofType), 
+				`Expected one of [${Pc.types}] after {own}. Found {${next}}`)
+			return typeDeclaration(next, true);
+		}
+		let type = grab(Pc.ofType);
+		if(type) {
+			if(grab(Pc.procedure)) {
+				return procDeclaration(type);
+			}
+			else {
+				return typeDeclaration(type);
+			}
+		}
+		if(grab(Pc.procedure)) {
+			return procDeclaration(Pc.typelessProc);
+		}
+		// Backtrack and cancel
+		c = start;
+		return null;
 	}
 
 	function blockHead() {
-		let declarations = [];
-		while(good()) {
-			if(peek(Pc.begin) || peek(Pc.end)) {
-				break;
+		return listOf(declaration, 'block declarations', Pc.semicol, Pc.semicol, false, () => {
+			if(statement()) {
+				perr(c, 'Expected a semicolon after declarations.');
+				return true;
 			}
-			let word = grab(/^\p{Alpha}+/u);
-			if(word == Pc.own) {
-				let next = expect(grab(Pc.ofType), 
-					`Expected one of [${Pc.types}] after {own}. Found {${next}}`)
-				declarations.push(declaration(next, true));
+			else {
+				return false;
 			}
-			else if(word == Pc.comment) {
-				grab(Pc.postComment);
-			}
-			else if(Pc.types.includes(word)) {
-				declarations.push(declaration(word));
-			}
-			else if(word) {
-				// Let the block tail figure it out
-				backtrack(word);
-				break;
-			}
-			else if(grab(Pc.semicol)) {
-				continue;
-			}
-		}
-		return declarations;
+		});
 	}
 
 	// This assumes the opening bracket has been grabbed
-	function procDesignator(name) {
+	function procDesignator(name, arg, description) {
 		let result = {func: name, args: []};
 		if(grab(Pc.parenClose)) {
 			pwarn(c, 'Procedures with no arguments do not have empty brackets: ()');
 			return result;
 		}
 		while(good()) {
-			let argument = expression();
+			if(grab(Pc.comma)) {
+				perr(c, 'Extra comma (or missing value) in arguments list');
+			}
+			let argument = arg();
 			if(!argument) {
-				perr(c, "Expected an expression as an argument");
+				perr(c, `Expected an argument to procedure {${name}}`);
 			}
 			result.args.push(argument);
 			if(grab(Pc.comma)) {
 				continue;
 			}
 			else if(grab(Pc.parenClose)) {
+				let beforeLongComma = c;
 				let longComma = grab(Pc.letterString);
 				if(!longComma || keywords.includes(longComma)) {
 					backtrack(longComma);
 					break;
 				}
 				else if(!grab(Pc.colon) || !grab(Pc.parenOpen)) {
-					perr(c, `Expected {${Pc.colon}${Pc.parenOpen}} after string ${longComma}, or a separator before it.`)
+					let [before, after] = getPositions(beforeLongComma, c);
+					if (before.line < after.line) {
+						perr(c, `A missing semicolon after ${description}, presumably.`);
+					}
+					perr(c, `Did you mean to write { ) ${longComma}:( } as a long comma, or are you missing separator to end the ${description}?`)
 				}
-				if(!result.delimeters) {
-					result.delimeters = [];
+				if(!result.delimiters) {
+					result.delimiters = [];
 				}
-				result.delimeters.push({
+				result.delimiters.push({
 					longComma: longComma, 
 					position: result.args.length
 				});
@@ -457,74 +575,41 @@ function parseAlgol(text, options = {}) {
 	}
 
 	function statement() {
-		let word = grab(Pc.identPart)
-		if(!word) {
-			return null;
-		}
-
-		if(word == Pc.own || Pc.types.includes(word)) {
+		if(grab(Pc.own) || grab(Pc.ofType)) {
 			perr(c, "Cannot declare new variables in a statement");
 		}
-		else if(word == Pc.begin) {
+		else if(grab(Pc.begin)) {
 			let head = blockHead();
 			let tail = blockTail();
 			return {head:head, tail:tail};
 		}
-		// Let the caller figure it out
-		else if(keywords.includes(word)) {
-			backtrack(word);
+		else if (grab(Pc.comment)) {
+			let comment = grab(Pc.postComment);
+			return {comment:comment};
+		}
+
+		let exp = expression();
+		if(!exp) {
 			return null;
 		}
-		else if(word) {
-			backtrack(word);
-			let oldWord = word;
-			word = identifier();
-			if(!word) {
-				perr(c, `PARSER BUG: Tried to grab ${oldWord} as an identifier`);
-			}
-			if(grab(Pc.assign)) {
-				return assignment(word);
-			}
-			else if(grab(Pc.parenOpen)) {
-				return procDesignator(word);
-			}
-			else {
-				return {func: word, args: []};
-			}
+		else if(grab(Pc.assign)) {
+			return assignment(exp);
 		}
+		else if(typeof(exp) == 'string') {
+			return {func: exp, args: []};
+		}
+		else if(typeof(exp) != 'object' || !('func' in exp)) {
+			perr(c, `Standalone expressions are not allowed: ${JSON.stringify(exp)}`);
+		}
+		return exp;
 	}
 
 	function blockTail() {
-		let block = [];
-		let ended = false;
-		while(good()) {
-			let s = statement();
-			if(s) {
-				console.log('Statement: ', s);
-				block.push(s);
-			}
-			else {
-				pwarn(c, 'Empty statement');
-			}
-			if(grab(Pc.semicol)) {
-				continue;
-			}
-			if(grab(Pc.end)) {
-				let comment = grab(Pc.postComment);
-				if(!comment) {
-					pwarn(c, `Expected a semicolon after 'end'.`);
-				}
-				else if(comment.indexOf('\n') >= 0 && comment.indexOf('end') >= 0) {
-					pwarn(c, `Comment after 'end' extends more than one line. Is that intentional?`);
-				}
-				ended = true;
-				break;
-			}
-			else {
-				perr(c, `Unexpected text in block: {${grab(Pc.anyToken)}}`);
-			}
+		let block = listOf(statement, 'statement list', Pc.semicol, Pc.end, true);
+		let comment = grab(Pc.postComment);
+		if(comment.indexOf('\n') >= 0 && comment.indexOf('end') >= 0) {
+			pwarn(c, `Comment after 'end' extends more than one line. Is that intentional?`);
 		}
-		expect(ended, 'Document ended with more `begin` than `end` brackets.');
 		return block;
 	}
 
@@ -559,7 +644,7 @@ function parseAlgol(text, options = {}) {
 	function grabOrDie(query, error) {
 		var g = grab(query);
 		if (!g) {
-			perr(c, `Expected token {${query}} found {${grab(Pc.anyToken)}}, ${error? error : ""}`);
+			perr(c, `Expected token {${query}} found {${grab(Pc.anyToken)}}. ${error? error : ""}`);
 		}
 		return g;
 	}
@@ -575,15 +660,14 @@ function parseAlgol(text, options = {}) {
 		if(!token) {
 			return;
 		}
-		let end = text.substr(c-token.length, token.length);
-		if(end != token) {
-			perr(c, `PARSER BUG: Tried to backtrack on token {${token}}, but the value was {${end}}` );
-		}
-		c -= token.length;
+		c = text.substr(0, c).lastIndexOf(token);
 	}
 
 	grabOrDie(Pc.begin, "Keyword {begin} is required at the start of a program.");
 	let head = blockHead();
 	let tail = blockTail();
+	if(!grab(Pc.semicolon)) {
+		pwarn(c, "Make sure to end your program with a semicolon");
+	}
 	return {head: head, tail: tail};
 }
