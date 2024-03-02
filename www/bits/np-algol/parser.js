@@ -30,24 +30,51 @@ function parseAlgol(text, options = {}) {
 		typelessProc: 'void', // Just for internal validation
 		signedExponent: /^_e(\+|-)?/,
 		logicalVal:/^(true|false)/,
-		// From highest to lowest in the parsing tree, binary ops only
-		logicOps:[
-			// Logical operators
-			'is', // Logical equivalence, not numeric equality
-			'implies', // Implication
-			'or', 
-			'and',
-		],
+		// Binary operators
+		logicOps:[ 'is', 'implies', 'or', 'and',],
 		logicalNot: 'not',
-		relationOps:/^(<|<=|=|>=|>|!=)/,
-		arithmeticOps:[
-			// Arithmetic
-			/^(\+|-)/,	
-			/^(\*|\/|%)/,
-			/^\^/
-		],
+		relationOps:['<', '<=', '>=', '>', '!=', '='],
+		arithmeticOps:['+','-','*','/','%','^'],
 	};
 	const keywords = Object.values(Pc).flat().filter(e => typeof(e) == 'string');
+	const opPrecedence = {
+		is:9, implies:8, or:7, and:6, not:5,
+		'<':4, '<=':4, '>=':4, '>':4, '=':4, '!=':4,
+		'+':3, '-':3,
+		'*':2, '/':2, '%':2, '^':1, primary:0
+	};
+	const allOps = Pc.logicOps.concat(Pc.relationOps).concat(Pc.arithmeticOps).concat(Pc.logicalNot);
+
+	function opResultType(op) {
+		if(Pc.arithmeticOps.includes(op)) {
+			return 'numeric';
+		}
+		else if(Pc.logicOps.includes(op) || op == Pc.logicalNot) {
+			return 'Boolean';
+		}
+		else if(Pc.relationOps.includes(op)) {
+			return 'Boolean';
+		}
+	}
+	function opInputType(op) {
+		if(Pc.arithmeticOps.includes(op)) {
+			return 'numeric';
+		}
+		else if(Pc.logicOps.includes(op) || op == Pc.logicalNot) {
+			return 'Boolean';
+		}
+		else if(Pc.relationOps.includes(op)) {
+			return 'numeric';
+		}
+	}
+	function compatible(type1, type2) {
+		if (type1 == 'any' || type2 == 'any') {
+			return true;
+		}
+		else {
+			return type1 == type2;
+		}
+	}
 
 	function getPositions(...indeces) {
 		let result = {};
@@ -135,57 +162,111 @@ function parseAlgol(text, options = {}) {
 		return word;
 	}
 
-	function parseBinary(ops, top, primary, index = 0) {
+	function simpleExpression() {
 		let start = c;
+		let left = null;
+
+		function getPlacement(tree, precedence) {
+			let parent = null;
+			while(tree && tree.precedence >= precedence) {
+				tree = tree.right;
+			}
+			return [parent, tree];
+		}
+		function rightmost() {
+			let n = left
+			while(n && n.right) {
+				n = n.right;
+			}
+			return n;
+		}
 		function fail() {
 			c = start;
 			return null;
 		}
-		if(index >= ops.length) {
-			return primary();
-		}
-		let op = ops[index];
 
-		let extra_op = grab(op)
-		if(extra_op) {
-			perr(c, `Extra operator found: {${extra_op}}`);
+		let s = grab(Pc.sign) || grab(Pc.logicalNot);
+		if(s) {
+			left = {op: s, precedence: opPrecedence[s], type: opResultType(s), context:c};
 		}
-
-		let lhs;
-		if(grab(Pc.parenOpen)) {
-			lhs = top();
-			if(lhs === null) {
-				return fail();
+		while(good()) {
+			let earlyOp = grabFirst(allOps);
+			while(earlyOp) {
+				if(earlyOp == Pc.logicalNot) {
+					let exp = {op: earlyOp, precedence: opPrecedence[earlyOp], type: opResultType(earlyOp), context: c};
+					let [top, _ignore] = getPlacement(left, exp.precedence);
+					if(top) {
+						top.right = exp;
+					}
+					else {
+						left = exp;
+					}
+				}
+				else if (!left) {
+					perr(c, `Unexpected operator {${earlyOp}} at the start of an expression.`);
+				}
+				else {
+					perr(c, `Unexpected operator {${earlyOp}} following {${rightmost().op}}`)
+				}
+				earlyOp = grabFirst(allOps);
 			}
-			grabOrDie(Pc.parenClose, 'Expected a closing parenthesis for the nested expression');
-		}
-		else{
-			lhs = parseBinary(ops, top, primary, index + 1);
-		}
-		if(lhs === null) {
-			return fail();
-		}
-
-		let foundOp = grab(op);
-		if(foundOp) {
-			let rhs = parseBinary(ops, top, primary, index);
-			if (rhs === null) {
-				perr(c, `Missing the right-hand side of {${foundOp}}. Found {${grab(Pc.anyToken)}}`);
+			let val = primary();
+			if(!val) {
+				if(!left) {
+					return fail();
+				}
+				else {
+					perr(c, `Expected a value or expression after operator {${left.op}}. Found {${grab(Pc.anyToken)}}`);
+				}
 			}
-			return {
-				op: foundOp, 
-				left:lhs, 
-				right: rhs
-			};
+			else {
+				if(!left) {
+					left = val;
+				}
+				else {
+					rightmost().right = val;
+				}
+			}
+			let op = grabFirst(allOps);
+			if(!op) {
+				return left;
+			}
+			let prec = opPrecedence[op];
+			let opNode = {op: op, precedence: prec, type: opResultType(op), context:c};
+
+			let [top, opleft] = getPlacement(left, prec);
+			let inType = opInputType(op);
+			if(!compatible(opleft.type, inType)) {
+				perr(c, `Operator {${op}}, of type ${inType}, is not compatible with expression ${JSON.stringify(opleft)} of type ${opleft.type}`)
+			}
+			opNode.left = opleft;
+			if(top == null){
+				left = opNode;
+			}
+			else {
+				top.right = opNode;
+			}
+			// Validate right-hand assignments once a subtree is completed (by moving to the left-hand side).
+			let r = opleft;
+			while(r && r.right) {
+				let rin = opInputType(r.op);
+				let rout = r.right.type;
+				if(!compatible(rin, rout)) {
+					perr(r.right.context, `Operator {${r.op}} requires a value of type ${rin}, but expression is of type ${rout}`);
+				}
+				r = r.right;
+			}
 		}
-		else {
-			return lhs;
-		}
+		perr(c, 'File ended unexpectedly while parsing an expression.');
 	}
 
 	function ifClause() {
 		if(grab(Pc.cond_if)) {
-			let condition = expect(boolean(), `Expected a boolean expression after {if}`);
+			let condition = expect(expression(), `Expected an expression after {if}`);
+			if(!compatible(condition.type, 'Boolean')) {
+				perr(condition.context, 
+					`Expected a Boolean expression for the {if} clause, found an incompatible ${condition.type} expression`);
+			}
 			return condition;
 		}
 		else {
@@ -193,156 +274,95 @@ function parseAlgol(text, options = {}) {
 		}
 	}
 
-	function digits() {
-		let val = '';
-		while(peek(Pc.digits)) {
-			val += grab(Pc.digits);
+	function number() {
+		function digits() {
+			let val = '';
+			while(peek(Pc.digits)) {
+				val += grab(Pc.digits);
+			}
+			return val.length? val : null;
 		}
-		return val.length? val : null;
+
+		let uint = digits();
+		let decimal = grab(Pc.decimal);
+		let lowDigits = decimal ? 
+			expect(digits(), 'Digits are always expected after a decimal point') 
+			: digits();
+		let exp = grab(Pc.signedExponent);
+		let expDigits = exp ? 
+			expect(digits(), 'A value is required for the exponent') 
+			: digits();
+
+		if(!uint && !lowDigits && !expDigits) {
+			return null;
+		}
+
+		val = [uint, decimal, lowDigits, exp, expDigits].filter(e => e).join('');
+		if(exp && !uint && !lowDigits) {
+			val = val.replace(Pc.exponent, '1'+Pc.exponent);
+		}
+		let result = Number(val.replace(Pc.exponent, 'e'));
+		if(isNaN(result)) {
+			perr(c, `PARSER BUG: Not a valid number: {${val}}`);
+		}
+		return {type:'numeric', value: result, precedence: opPrecedence.primary, context:c};
 	}
 
-	function arithmeticPrimary() {
-		let val = identifier();
-		if (val) {
-			if(grab(Pc.parenOpen)) {
-				return procDesignator(val, expression, 'procedure call');
-			}
-			else {
-				return val;
-			}
+	function primary() {
+		if(grab(Pc.parenOpen)) {
+			let e = expect(expression(), 'Expected an expression after an opening parenthesis');
+			grabOrDie(Pc.parenClose, 'Expected a closing parenthesis after a nested expression');
+			e.precedence = opPrecedence.primary;
+			return e;
 		}
-		else {
-			let uint = digits();
-			let decimal = grab(Pc.decimal);
-			let lowDigits = decimal ? 
-				expect(digits(), 'Digits are always expected after a decimal point') 
-				: digits();
-			let exp = grab(Pc.signedExponent);
-			let expDigits = exp ? 
-				expect(digits(), 'A value is required for the exponent') 
-				: digits();
-
-			val = [uint, decimal, lowDigits, exp, expDigits].filter(e => e).join('');
-			if(exp && !uint && !lowDigits) {
-				val = val.replace(Pc.exponent, '1'+Pc.exponent);
-			}
-			let result = Number(val.replace(Pc.exponent, 'e'));
-			if(isNaN(result)) {
-				perr(c, `Not a valid number: {${val}}`);
-			}
-			return result;
-		}
-	}
-
-	function comparison() {
-		let lhs = arithmetic();
-		if(lhs === null) { return null; }
-		let op = grab(Pc.relationOps);
-		if(!op) {return lhs;}
-		let rhs = arithmetic();
-		if (rhs === null) {
-			perr(c, `Expression expected on the right side of a comparison. Found {${grab(Pc.anyToken)}}`);
-		}
-		return {op: op, lhs:lhs, rhs: rhs}
-	}
-
-	function booleanPrimary() {
-		let not_op = grab(Pc.logicalNot);
 		let val = grab(Pc.logicalVal);
 		if(val) {
-			val = Boolean(val);
+			return {type: 'Boolean', value:Boolean(value), precedence:opPrecedence.primary, context:c};
 		}
-		else {
-			val = comparison();
-			if(typeof(val) == 'number') {
-				return null;
-			} 
-			else if(val === null || typeof(val) == 'object' && 'op' in val && !val.op.match(Pc.relationOps)) {
-				return null;
+		val = identifier();
+		if (val) {
+			if(grab(Pc.parenOpen)) {
+				let pcall = expect(procDesignator(val, expression, 'procedure call'), `Expected a prodecure call after { ${val}( }`);
+				pcall.type = 'any';
+				pcall.precedence = opPrecedence.primary;
+				return pcall;
+			}
+			else {
+				return {type:'any', variable:val, precedence: opPrecedence.primary, context:c};
 			}
 		}
-		if(not_op) {
-			return {op: not_op, arg: val};
-		}
 		else {
-			return val;
+			return number();
 		}
 	}
 
-	function unsignedSimpleArithmetic() {
-		return parseBinary(Pc.arithmeticOps, arithmetic, arithmeticPrimary);
-	}
-
-	function simpleArithmetic() {
-		let start = c;
-		let ops = Pc.arithmeticOps;
-		let sign_op = grab(ops[0]);
-		if(sign_op) {
-			let lhs = {
-				op: sign_op,
-				arg: expect(parseBinary(ops, arithmetic, arithmeticPrimary, 1), "Expected an expression for the sign operator")
-			};
-			let next_op = grab(ops[0]);
-			if(next_op) {
-				return {
-					op: next_op,
-					lhs: lhs,
-					rhs: expect(unsignedSimpleArithmetic(), "Expected the right-hand side of the expression")
-				};
-			}
-			return lhs;
-		}
-		else {
-			let exa = unsignedSimpleArithmetic();
-			if(exa === null) { c = start; }
-			return exa;
-		}
-	}
-
-	function simpleBoolean() {
-		let start = c;
-		let exp = parseBinary(Pc.logicOps, boolean, booleanPrimary);
-		if(!exp) { c = start; }
-		return exp;
-	}
-
-	function ifElse(lhs = null, rhs = null) {
+	function ifElse() {
 		let lif = ifClause();
 		if(lif) {
 			grabOrDie(Pc.cond_then);
-			let then_do = expect(lhs(), `No condition after then-clause for conditional expression`);
+			let then_do = expect(simpleExpression(), `No condition after then-clause for conditional expression`);
 			grabOrDie(Pc.cond_else, "{else} clause is mandatory for conditional expressions.");
-			let else_do = expect(rhs(), `No expression found after {else}`);
-			
+			let else_do = expect(expression(), `No expression found after {else}`);
+
+			if(!compatible(then_do.type, else_do.type)) {
+				perr(then_do.context, `Expressions of if-else statement have incompatible types: ${then_do.type} versus ${else_do.type}`)
+			}
+
+			let strict_type = then_do.type == 'any'? else_do.type : then_do.type;
 			return {
 				cond:lif, 
 				then_do:then_do, 
-				else_do:else_do
+				else_do:else_do,
+				type: strict_type
 			};
 		}
 		else {
-			return lhs();
+			return simpleExpression();
 		}
-	}
-
-	function simpleExpression() {
-		let ex = simpleBoolean();
-		if (!ex) {
-			return simpleArithmetic();
-		}
-		return ex;
 	}
 
 	function expression() {
 		return ifElse(simpleExpression, expression);
-	}
-
-	function arithmetic() {
-		return ifElse(simpleArithmetic, arithmetic);
-	}
-
-	function boolean() {
-		return ifElse(simpleBoolean, boolean);
 	}
 
 	function specifier() {
@@ -491,13 +511,13 @@ function parseAlgol(text, options = {}) {
 			perr(c, `No value assigned to {${firstVar}}`);
 		}
 		for(let i = 0; i < list.length - 1; i++){ 
-			if(typeof(list[i]) != 'string') {
-				perr(c, `Expression {${JSON.stringify(list[i])}} cannot be assigned to`);
+			if(!('variable' in list[i])) {
+				perr(c, `Only variables can be assigned to, not expressions like ${JSON.stringify(list[i])}.`);
 			}
 		}
 		let value = list.pop();
 		return {
-			vars:list,
+			vars:list.map(e => e.variable),
 			assign:value
 		}
 	}
@@ -661,6 +681,16 @@ function parseAlgol(text, options = {}) {
 			c += r.length;
 		}
 		return r;
+	}
+
+	function grabFirst(queries) {
+		for(let q of queries) {
+			let r = grab(q);
+			if(r) {
+				return r;
+			}
+		}
+		return null;
 	}
 
 	function grabOrDie(query, error) {

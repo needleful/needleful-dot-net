@@ -351,7 +351,7 @@ function analyze(root_ast) {
 				let left = analyzeExpression(o.left, context);
 				let right = analyzeExpression(o.right, context);
 
-				if(op.match(/\p{Alpha}/u)) {
+				if(o.op.match(/\p{Alpha}/u)) {
 					fqOp = "#"+o.op+"#";
 					opProc = resolveProc(fqOp, context);
 				}
@@ -371,7 +371,9 @@ function analyze(root_ast) {
 			if('left' in exp) {
 				return findBinOp(exp);
 			}
-			return op2(left, proper_op, right);
+			else {
+				return findSingleOp(exp);
+			}
 		}
 		return null;
 	}
