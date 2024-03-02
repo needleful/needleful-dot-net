@@ -253,7 +253,7 @@ const ir_to_assembler = (ir_mod) => {
 				let proc = m[s[1]];
 				if(proc.params.length != s.length - 2) {
 					console.log(s);
-					throw new Error("procedure "+ [s[1]] + " expected "+proc.params.length+" arguments, recieved ",  s.length - 2);
+					throw new Error(`Procedure {${[s[1]]}} expected ${proc.params.length} arguments, recieved ${s.length - 2}`);
 				}
 				let code = [];
 				for(let i = 2; i < s.length; i++) {
@@ -327,10 +327,9 @@ const ir_to_assembler = (ir_mod) => {
 				let code = [];
 				for (let i = 1; i < s.length; i++) {
 					let c = compile_statement(s[i], m, p, locals)
+					// Drop the result to keep the stack clean
 					if(c.type != T.block){
-						console.log(s[i]);
-						console.log(s);
-						throw new Error("Expected statements in a block to be of void type, it was actually of type "+c.type);
+						c.code.push(I.drop);
 					}
 					code = code.concat(c.code);
 				}

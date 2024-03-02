@@ -35,108 +35,11 @@ function defaultEnv() {
 			code: [IR.ret, op2(call('#not#', ['a']), '#or#', 'b')]},
 		'#is#': {type: T.i32, params: [T.i32, T.i32], inline: I.i32eq},
 
-		// Exponentiation
-		'i^i': {
-			type: T.i64, params: [T.i64, T.i64], param_names:['x', 'e'], locals:[[T.i64, 'RES', 'i'], [T.i64, 'z']],
-			code: block([
-				if_else(
-					op2(op2('e', 'i<=i', integer(0)), 
-						'#or#', 
-						op2(op2('x', 'i=i', integer(0)), 
-							'#and#', 
-							op2('e', 'i=i', integer(0)))
-					),
-					//call('fault', [string_lit("Undefined exponent"), 'e']),
-					[IR.ret, integer(-1)],
-					assign('RES', integer(1)),
-					loop_while(op2('e', 'i>i', integer(0)),
-						block([
-							assign('i', call('ctz', 'e')),
-							assign('e', 
-								op2('e', 'i&i', 
-									op1('!i', op2(integer(1), 'i<<i', 'i')))),
-							assign('z', 'x'),
-							loop_while(op2('i', 'i>i', integer(0)),
-								block([
-									assign('z', op2('z', 'i*i', 'z')),
-									assign('i', op2('i', 'i-i', integer(1)))
-								])),
-							assign('RES', op2('RES', 'i*i', 'z')),
-						])),
-				),
-				[IR.ret, 'RES'],
-			])
-		},
-		'r^i':{type:T.f64, params: [T.f64, T.i64], param_names:['x', 'e'], locals:[[T.i64, 'a', 'i'], [T.f64, 'RES', 'z']],
-			code: block([
-				if_else(
-					op2(op2('x', 'r=r', real(0)), 
-						'#and#', 
-						op2('e', 'i<=i', integer(0))),
-					//call('fault', [string_lit("Undefined exponent"), 'e']),
-					[IR.ret, real(NaN)],
-					block([
-						assign('a', call('iabs', ['e'])),
-						assign('RES', real(1)),
-						loop_while(op2('a', 'i>i', integer(0)),
-							block([
-								assign('i', call('ctz', 'e')),
-								assign('a', 
-									op2('a', 'i&i', 
-										op1('!i', op2(integer(1), 'i<<i', 'i')))),
-								assign('z', 'x'),
-								loop_while(op2('i', 'i>i', integer(0)),
-									block([
-										assign('z', op2('z', 'r*r', 'z')),
-										assign('i', op2('i', 'i-i', integer(1)))
-									])),
-								assign('RES', op2('RES', 'r*r', 'z'))
-							])),
-						if_then(op2('e', 'i<i', integer(0)),
-							assign('RES', op2(real(1), 'r/r', 'RES')))
-					]),
-				),
-				[IR.ret, 'RES']
-			])},
 
-
-		abs: {
-			params: [T.f64], type: T.f64, param_names:['r'],
-			code: [IR.ret, if_else(
-				op2('r', 'r<r', real(0)),
-				call('negate', 'r'),
-				'r'
-			)]
-		},
-
-		iabs: {
-			params:[T.i64], type: T.i64, param_names:['a'], 
-			code:[IR.ret, if_else( op2('a', 'i<i', integer(0)),
-					op2(integer(0), 'i-i', 'a'),
-					'a'
-				)]
-		},
-
-		entier: {params: [T.f64], type: T.i64, inline: I.i64truncf64_s},
-
-		// Extended functions
-		'i<<i': {type: T.i64, params: [T.i64, T.i64], inline: I.i64shl},
-		'i>>i': {type: T.i64, params: [T.i64, T.i64], inline: I.i64shr_u},
-		'i&i':  {type: T.i64, params: [T.i64, T.i64], inline: I.i64and},
-		'i|i':  {type: T.i64, params: [T.i64, T.i64], inline: I.i64or},
-		'i><i': {type: T.i64, params: [T.i64, T.i64], inline: I.i64xor},
-		'!i': {type: T.i64, params: [T.i64], param_names:['a'],
-			code: [IR.ret, 
-				op2(integer(-1), 'i><i', 'a')
-			]
-		},
-		'shiftr': { type: T.i64, params: [T.i64, T.i64], inline: I.i64shr_s },
-		'ctz':    { type: T.i64, params: [T.i64], inline: I.i64ctz },
 		'toreal': { type: T.f64, params: [T.i64], inline: I.f64converti64_s },
 		'round': {type: T.i64, params: [T.f64], inline: [
 			I.f64, f64_const(0.5), I.f64add, I.i64truncf64_s
 		]},
-		'negate': {params: [T.f64], type: T.f64, inline: I.i64neg},
 	};
 }
 
@@ -145,9 +48,9 @@ function analyze(text, root_ast) {
 
 	function expError(exp, message) {
 		if(exp.context) {
-			let pos = getPositions(text, exp.context);
+			let [pos] = getPositions(text, exp.context);
 			console.log('Error at: ', pos);
-			throw new Error(`Error at ${pos.line}:${pos.column}: ${message}`);
+			throw new Error(`Analysis failed at ${pos.line}:${pos.column}: ${message}`);
 		}
 		throw new Error(message);
 	}
@@ -190,7 +93,8 @@ function analyze(text, root_ast) {
 			}
 			locals[loc.type].push[v];
 		}
-		for(let decl of ast.head) {
+		for(let d in ast.head) {
+			let decl = ast.head[d];
 			if('proc' in decl) {
 				if(decl.proc in context.localFuncs) {
 					throw new Error(`Local procedure already defined: {${decl.proc}}`);
@@ -252,7 +156,9 @@ function analyze(text, root_ast) {
 			};
 			let result = analyzeBody(proc, procContext);
 			proc.code = result.code;
-			console.log("locals for "+p, result.locals);
+			if(!proc.code) {
+				expError(ast, `ANALYSIS BUG: Procedure ${p} has an invalid body: {${proc.code}}`);
+			}
 			proc.locals = result.locals;
 			proc.body_ast = null;
 		}
@@ -319,11 +225,13 @@ function analyze(text, root_ast) {
 		}
 		let code;
 		if('head' in ast) {
-			let result = analyzeBlock(ast, context);
-			code = result.code;
+			code = analyzeBlock(ast, context).code;
 		}
 		else {
 			code = analyzeStatement(ast, context);
+		}
+		if(!code) {
+			expError(ast, `Body of procedure ${context.name} is {${code}}!`);
 		}
 		if(proc.type != T.block) {
 			code = [IR.block, code, [IR.ret, context.name]];
@@ -364,6 +272,12 @@ function analyze(text, root_ast) {
 			}
 			return block;
 		}
+		else if('func' in st) {
+			return checkedCall(st, context).code;
+		}
+		else {
+			expErr(st, "Cannot parse statement: "+JSON.stringify(st));
+		}
 	}
 
 	function typeConvert(code, fromType, toType) {
@@ -380,6 +294,33 @@ function analyze(text, root_ast) {
 		else {
 			throw new Error(
 				`Cannot convert from type ${inv_type_map[fromType]} to ${inv_type_map[toType]} in expression ${JSON.stringify(code)}`)
+		}
+	}
+
+	function checkedCall(exp, context) {
+		let sym = resolveProc(exp.func, context);
+		if(sym) {
+			if(!sym.fqname) {
+				// Presumably this is correct
+				sym.fqname = exp.func;
+			}
+			let args = [];
+			for(let a of exp.args) {
+				let a2 = analyzeExpression(a, context);
+				let index = args.length;
+				if(index >= sym.params.length) {
+					expError(a, `Extra parameters to procedure ${exp.func}`);
+				}
+				args.push(typeConvert(a2.code, a2.type, sym.params[index]));
+			}
+			if(args.length < sym.params.length) {
+				expError(exp, `Procedure {${exp.func}} expected ${sym.params.length} arguments, but was called with only ${args.length}`);
+			}
+			return {type: sym.type, code:call(sym.fqname, args)};
+		}
+		else {
+			let pos = getPositions(text, exp.context);
+			expError(exp, `{${exp.func}} is not a defined procedure in this scope`);
 		}
 	}
 
@@ -401,14 +342,7 @@ function analyze(text, root_ast) {
 			}
 		}
 		else if('func' in exp) {
-			let sym = resolveProc(exp.func, context);
-			if(sym) {
-				return {type: sym.type, code:call(sym.fqname, [])};
-			}
-			else {
-				let pos = getPositions(text, exp.context);
-				expError(exp, `{${exp.func}} is not a defined procedure in this scope`);
-			}
+			return checkedCall(exp, context);
 		}
 		else if ('variable' in exp) {
 			let sym = resolveVar(exp.variable, context);
