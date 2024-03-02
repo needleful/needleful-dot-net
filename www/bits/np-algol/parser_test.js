@@ -6,6 +6,12 @@ function testParser() {
 		let parseTree = parseAlgol(text, {multiWordIdents:true});
 		console.log("Parsing results:", parseTree);
 		results.innerText = "Your program, sir: "+JSON.stringify(parseTree);
+		try {
+			console.log('Analysis: ', analyze(parseTree));
+		}
+		catch(error) {
+			console.log("Analysis failed with error: ", error);
+		}
 	}
 	catch(error) {
 		results.innerText = "Failed to parse!";

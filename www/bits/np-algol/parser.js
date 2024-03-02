@@ -38,7 +38,7 @@ function parseAlgol(text, options = {}) {
 			'or', 
 			'and',
 		],
-		logicalNot: '!',
+		logicalNot: 'not',
 		relationOps:/^(<|<=|=|>=|>|!=)/,
 		arithmeticOps:[
 			// Arithmetic
@@ -137,6 +137,10 @@ function parseAlgol(text, options = {}) {
 
 	function parseBinary(ops, top, primary, index = 0) {
 		let start = c;
+		function fail() {
+			c = start;
+			return null;
+		}
 		if(index >= ops.length) {
 			return primary();
 		}
@@ -150,20 +154,22 @@ function parseAlgol(text, options = {}) {
 		let lhs;
 		if(grab(Pc.parenOpen)) {
 			lhs = top();
+			if(lhs === null) {
+				return fail();
+			}
 			grabOrDie(Pc.parenClose, 'Expected a closing parenthesis for the nested expression');
 		}
 		else{
 			lhs = parseBinary(ops, top, primary, index + 1);
 		}
-		if(!lhs) {
-			c = start;
-			return null;
+		if(lhs === null) {
+			return fail();
 		}
 
 		let foundOp = grab(op);
 		if(foundOp) {
 			let rhs = parseBinary(ops, top, primary, index);
-			if (!rhs) {
+			if (rhs === null) {
 				perr(c, `Missing the right-hand side of {${foundOp}}. Found {${grab(Pc.anyToken)}}`);
 			}
 			return {
@@ -230,18 +236,18 @@ function parseAlgol(text, options = {}) {
 
 	function comparison() {
 		let lhs = arithmetic();
-		if(!lhs) { return null; }
+		if(lhs === null) { return null; }
 		let op = grab(Pc.relationOps);
 		if(!op) {return lhs;}
 		let rhs = arithmetic();
-		if (!rhs) {
+		if (rhs === null) {
 			perr(c, `Expression expected on the right side of a comparison. Found {${grab(Pc.anyToken)}}`);
 		}
 		return {op: op, lhs:lhs, rhs: rhs}
 	}
 
 	function booleanPrimary() {
-		let not_op = grab(Pc.logical_not);
+		let not_op = grab(Pc.logicalNot);
 		let val = grab(Pc.logicalVal);
 		if(val) {
 			val = Boolean(val);
@@ -251,7 +257,7 @@ function parseAlgol(text, options = {}) {
 			if(typeof(val) == 'number') {
 				return null;
 			} 
-			else if(!val || typeof(val) == 'object' && 'op' in val && !val.op.match(Pc.relationOps)) {
+			else if(val === null || typeof(val) == 'object' && 'op' in val && !val.op.match(Pc.relationOps)) {
 				return null;
 			}
 		}
@@ -288,7 +294,7 @@ function parseAlgol(text, options = {}) {
 		}
 		else {
 			let exa = unsignedSimpleArithmetic();
-			if(!exa) { c = start; }
+			if(exa === null) { c = start; }
 			return exa;
 		}
 	}
@@ -395,7 +401,7 @@ function parseAlgol(text, options = {}) {
 		}
 	}
 
-	function listOf(item, description, delimiter = Pc.comma, end = Pc.semicol, allowEmpty = false, specialFailure = null) {
+	function listOf(item, description, delimiter = Pc.comma, end = Pc.semicol, allowEmpty = false, specialFailure = null, endOnBackTrack = false) {
 		let result = [];
 		let ended = false;
 		let start = c;
@@ -430,6 +436,10 @@ function parseAlgol(text, options = {}) {
 					break;
 				}
 				else if(peek(end)) {
+					ended = true;
+					break;
+				}
+				else if(endOnBackTrack) {
 					ended = true;
 					break;
 				}
@@ -476,7 +486,7 @@ function parseAlgol(text, options = {}) {
 
 	function assignment(firstVar) {
 		let list = [firstVar].concat(
-			listOf(expression, 'assignment list', Pc.assign, Pc.statementEnd));
+			listOf(expression, 'assignment list', Pc.assign, Pc.statementEnd, false, null, true));
 		if(list.length < 2) {
 			perr(c, `No value assigned to {${firstVar}}`);
 		}
@@ -587,6 +597,18 @@ function parseAlgol(text, options = {}) {
 			let comment = grab(Pc.postComment);
 			return {comment:comment};
 		}
+		else if(grab(Pc.cond_if)) {
+			let cond = expect(boolean(), 'Expected a boolean expression after {if}');
+			grabOrDie(Pc.cond_then, '{then} is required after {if <condition>}');
+			let s = expect(statement(), 'Expected a statement after if-then clause');
+			if(grab(Pc.cond_else)) {
+				let s2 = expect(statement(), 'Expected a statement after {else}');
+				return {cond: cond, then_do: s, else_do: s2};
+			}
+			else {
+				return {cond: cond, then_do: s};
+			}
+		}
 
 		let exp = expression();
 		if(!exp) {
@@ -666,7 +688,7 @@ function parseAlgol(text, options = {}) {
 	grabOrDie(Pc.begin, "Keyword {begin} is required at the start of a program.");
 	let head = blockHead();
 	let tail = blockTail();
-	if(!grab(Pc.semicolon)) {
+	if(!grab(Pc.semicol)) {
 		pwarn(c, "Make sure to end your program with a semicolon");
 	}
 	return {head: head, tail: tail};

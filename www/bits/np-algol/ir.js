@@ -9,8 +9,8 @@ let IR = {
 	block:  	6,
 	call:   	7,
 	loop_while: 8,
-	declare: 	9,
-	if_then: 	10,
+	if_then: 	9,
+	inline: 	10
 }
 IR.min_args = {
 	[IR.iconst]:1,
@@ -107,16 +107,16 @@ const ir_to_assembler = (ir_mod) => {
 		let proc = ir_mod[p];
 		if ("inline" in proc) {
 			if (proc.exported) {
-				console.log("WARNING: inline procedure "+ p +" is marked as exported, but inline procedures are never exported.");
+				console.log("COMPILER BUG: inline procedure "+ p +" is marked as exported, but inline procedures are never exported.");
 			}
 			if("code" in proc) {
-				console.log("ERROR: inline procedure "+ p +" also has a 'code' property. Only one is expected.");
+				console.log("COMPILER BUG: inline procedure "+ p +" also has a 'code' property. Only one is expected.");
 			}
 			continue;
 		}
 		if(!proc.code && !proc.inlined) {
 			console.log(proc);
-			throw new Error("Declared procedure "+p+" has no implementation!");
+			throw new Error("COMPILER BUG: Declared procedure "+p+" has no implementation!");
 		}
 		let ptype = find_or_push(types, [proc.params || [], proc.type]);
 		if(ptype == undefined) {
@@ -275,10 +275,6 @@ const ir_to_assembler = (ir_mod) => {
 				]
 			};
 		} break;
-		case IR.declare: {
-			// TODO: how to handle variable scopes?
-			console.log("Declaration not yet implemented");
-		} break;
 		case IR.if_then: {
 			let condition = compile_expression(s[1], m, p, params);
 			if(condition.type != T.i32) {
@@ -325,16 +321,33 @@ const ir_to_assembler = (ir_mod) => {
 		if("inline" in proc) {
 			continue;
 		}
-		let params = {};
+		let var_map = {};
 		if(proc.param_names) {
-			proc.param_names.forEach((e, i) => {
-				params[e] = [i, proc.params[i]];
-				params[i] = params[e];
+			proc.param_names.forEach((e, u) => {
+				if(var_map.includes(e)) {
+					throw new Error("Duplicate local variable: "+e);
+				}
+				var_map[e] = [i, proc.params[i]];
+				var_map[i] = var_map[e];
 			});
 		}
-		let compiled = compile_statement(proc.code, ir_mod, proc, params);
-		// TODO: local variables
-		code[proc.index] = [[], compiled.code];
+		let locals = [];
+		if(proc.locals) {
+			let locals_start = proc.params.length;
+			for(let type_list of local ) {
+				let type = type_list[0];
+				locals.push[type, type_list.length - 1];
+				for(let i = 1; i < type_list.length; i++) {
+					let name = type_list[i];
+					let local_index = i + locals_start;
+					var_map[name] = [local_index, type];
+					var_map[local_index] = var_map[name];
+				}
+			}
+		}
+
+		let compiled = compile_statement(proc.code, ir_mod, proc, var_map);
+		code[proc.index] = [locals, compiled.code];
 	}
 	return [
 		[M.types].concat(types),
