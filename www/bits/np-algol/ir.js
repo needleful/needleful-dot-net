@@ -38,20 +38,6 @@ IR.max_args = {
 };
 Object.freeze(IR);
 
-const type_map = {
-	integer: T.i64,
-	real: T.f64,
-	Boolean:T.i32,
-	void: T.block,
-};
-
-const inv_type_map = {
-	[[T.i64]]: 'integer',
-	[[T.f64]]: 'real',
-	[[T.block]]: 'void',
-	[[T.i32]]: 'Boolean'
-}
-
 function op1(opcode, value) {
 	return [IR.call, opcode, value];
 }
@@ -96,12 +82,12 @@ function block(statements) {
 	return [IR.block].concat(statements);
 }
 
-function almost_pretty_print(statement, i) {
+function ir_almost_pretty_print(statement, i) {
 	if(typeof(statement) == 'number' && i == 0) {
 		return Object.keys(IR)[statement - 1];
 	}
 	else if(Array.isArray(statement)) {
-		return statement.map(almost_pretty_print);
+		return statement.map(ir_almost_pretty_print);
 	}
 	else {
 		return statement;
@@ -144,7 +130,9 @@ const ir_to_assembler = (ir_mod) => {
 			console.log(proc);
 			throw new Error("COMPILER BUG: Declared procedure "+p+" has no implementation!");
 		}
-		let ptype = find_or_push(types, [proc.params || [], proc.type]);
+		// I used T.block for functions without return types, but in WASM it uses an empty vector
+		let realReturnType = proc.type != T.block? proc.type : [];
+		let ptype = find_or_push(types, [proc.params || [], realReturnType]);
 		if(ptype == undefined) {
 			console.log(t);
 			console.log(types);
@@ -203,7 +191,7 @@ const ir_to_assembler = (ir_mod) => {
 				let c = compile_statement(s[2], m, p, locals);
 				if (v[1] != c.type){
 					throw new Error("Mismatched type between variable "+s[1]
-						+" of type "+inv_type_map[v[1]]+" and expression "+s[2]+" of type "+inv_type_map[c.type]);
+						+" of type "+wasmTypeNames[v[1]]+" and expression "+s[2]+" of type "+wasmTypeNames[c.type]);
 				}
 				return {type: T.block, code:[c.code, I.lset, leb_const(v[0])]};
 			} break;
@@ -262,7 +250,7 @@ const ir_to_assembler = (ir_mod) => {
 						console.log(s[i]);
 						console.log(arg);
 						throw new Error("Mismatched type for arg "+(i-2)+" for procedure "+s[1]+": "
-							+inv_type_map[proc.params[i-2]]+" expected, "+inv_type_map[arg.type]+" received.");
+							+wasmTypeNames[proc.params[i-2]]+" expected, "+wasmTypeNames[arg.type]+" received.");
 					}
 					code = code.concat(arg.code);
 				}
@@ -341,7 +329,7 @@ const ir_to_assembler = (ir_mod) => {
 			}
 		}
 		catch(error) {
-			console.log("Failed in statement: ", almost_pretty_print(s, 0));
+			console.log("Failed in statement: ", ir_almost_pretty_print(s, 0));
 			throw error;
 		}
 	};

@@ -10,12 +10,24 @@ function testParser() {
 		results.innerText = "Your program, sir: "+JSON.stringify(parseTree);
 		try {
 			let ir = analyze(text, parseTree);
-			console.log('Analysis: ', ir);
-
+			let readableIr = {};
+			for(p in ir) {
+				let proc = ir[p];
+				if(!proc.exported) {
+					continue;
+				}
+				if(proc.inline) {
+					readableIr[p] = {inline: InstrNames[proc.inline]};
+				}
+				else if(proc.code) {
+					readableIr[p] = {code: ir_almost_pretty_print(proc.code, 0)};
+				}
+			}
+			console.log('Readable IR:', readableIr);
 			let test_mod = ir_to_assembler(ir);
-			console.log('Assembly:', test_mod);
-			let bytes = assemble(test_mod);
-			console.log('Bytes: ', bytes);
+			let [bytes, printable] = assemble(test_mod);
+			console.log('WASM code: ', printable);
+			console.log('Raw bytes: ', bytes);
 			WebAssembly.instantiate(bytes).then((result) => {
 				test_wasm = result;
 				console.log("WASM module:", test_wasm);

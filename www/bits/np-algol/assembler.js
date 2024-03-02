@@ -82,6 +82,21 @@ const I = {
     f32x4demote_f64x2_zero: [0xfD, 94], f64x2promote_low_f32x4: [0xfD, 95]
 };
 
+function valToKeyMap(map) {
+	let res = {};
+	for(let name in map) {
+		if(!(map[name] in res)) {
+			res[map[name]] = name;
+		}
+	}
+	return res;
+}
+
+const wasmSectionNames = valToKeyMap(M);
+const wasmTypeNames = valToKeyMap(T);
+const wasmExportTypes = valToKeyMap(E);
+const wasmInstrNames = valToKeyMap(I);
+
 // Pretty sure this works for signed and unsigned.
 function leb(array, value) {
 	value |= 0;
@@ -141,13 +156,13 @@ function vector_const(list) {
 	return t;
 }
 
-function name(array, string) {
+function encodeName(array, string) {
 	let bytes = (new TextEncoder()).encode(string);
 	return vector(array, Array.from(bytes));
 }
 
 function assemble(descriptor) {
-	let r = []; // Dynamic array
+	let r = [], printable = []; // Dynamic arrays
 	for(let section of descriptor) {
 		if(!Array.isArray(section)) {
 			console.log("Not an array: ", section);
@@ -155,30 +170,49 @@ function assemble(descriptor) {
 		}
 		let type = section.shift();
 		r.push(type);
+		printable.push('section: '+wasmSectionNames[type]);
 		switch(type) {
 		case M.custom: {
 			// Assume it's an array of bytes from who-knows-where
 			r = vector(r, section);
+			printable = vector(printable, section);
 		} break;
 		case M.types:{
 			let t = [];
+			let pt = []
 			leb(t, section.length);
+			leb(pt, section.length);
 			for(let f of section) {
 				t.push(T.func);
 				t = vector(t, f[0]);
 				t = vector(t, f[1]);
+
+				pt.push('func');
+				pt = vector(pt, f[0].map(e => wasmTypeNames[e]));
+				if(Array.isArray(f[1]) && f[1].length == 0) {
+					pt.push(0);
+				}
+				else {
+					pt.push(1);
+					pt.push(wasmTypeNames[f[1]]);
+				}
 			}
 			r = vector(r, t);
+			printable = vector(printable, pt);
 		} break;
 		case M.imports:
 			break;
 		case M.funcs: {
 			let t = [];
+			let pt = [];
 			leb(t, section.length);
+			leb(pt, section.length);
 			for(let idx of section) {
 				leb(t, idx);
+				leb(pt, idx);
 			}
 			r = vector(r, t);
+			printable = vector(printable, pt);
 		} break;
 		case M.tables:
 			break;
@@ -188,13 +222,23 @@ function assemble(descriptor) {
 			break;
 		case M.exports: {
 			let t = [];
+			let pt = [];
 			leb(t, section.length);
+			leb(pt, section.length);
 			for(let e of section) {
-				t = name(t, e[0]);
+				t = encodeName(t, e[0]);
 				t.push(e[1]);
 				leb(t, e[2]);
+
+				pt.push(e[0].length);
+				for(let c = 0; c < e[0].length; c++) {
+					pt.push(e[0][c]);
+				}
+				pt.push(e[1]);
+				leb(pt, e[2]);
 			}
 			r = vector(r, t);
+			printable = vector(printable, pt);
 		} break;
 		case M.start:
 			break;
@@ -202,7 +246,9 @@ function assemble(descriptor) {
 			break;
 		case M.code: {
 			let t = [];
+			let pt = [];
 			leb(t, section.length);
+			leb(pt, section.length);
 			for(let f of section) {
 				let fn = [];
 				leb(fn, f[0].length);
@@ -213,8 +259,24 @@ function assemble(descriptor) {
 				fn = fn.concat(f[1].flat());
 				fn.push(I.end);
 				t = vector(t, fn);
+				// Half-hearted attempt at disassembling the bytes
+				const rawInstr = [I.lget, I.i32, I.i64, I.f32, I.f32];
+				const blockInstr = [I.loop, I.block];
+				pt = vector(pt, 
+					fn.map((e, i) => {
+						if(!(e in wasmInstrNames) || rawInstr.includes(fn[i-1]) ) {
+							return e;
+						}
+						else if(blockInstr.includes(fn[i-1])) {
+							return wasmTypeNames[e];
+						}
+						else {
+							return wasmInstrNames[e];
+						}
+					}).flat());
 			}
 			r = vector(r, t);
+			printable = vector(printable, pt);
 		} break;
 		case M.data:
 			break;
@@ -225,5 +287,6 @@ function assemble(descriptor) {
 	let bytes = new Uint8Array(r.length + 8);
 	bytes.set([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00]);
 	bytes.set(r, 8);
-	return bytes;
+	printable = [0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00].concat(printable);
+	return [bytes, printable];
 }

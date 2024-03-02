@@ -35,12 +35,123 @@ function defaultEnv() {
 			code: [IR.ret, op2(call('#not#', ['a']), '#or#', 'b')]},
 		'#is#': {type: T.i32, params: [T.i32, T.i32], inline: I.i32eq},
 
+		// Exponentiation
+		'i^i': {
+			type: T.i64, params: [T.i64, T.i64], param_names:['x', 'e'], locals:[[T.i64, 'RES', 'i'], [T.i64, 'z']],
+			code: block([
+				if_else(
+					op2(op2('e', 'i<=i', integer(0)), 
+						'#or#', 
+						op2(op2('x', 'i=i', integer(0)), 
+							'#and#', 
+							op2('e', 'i=i', integer(0)))
+					),
+					//call('fault', [string_lit("Undefined exponent"), 'e']),
+					[IR.ret, integer(-1)],
+					assign('RES', integer(1)),
+					loop_while(op2('e', 'i>i', integer(0)),
+						block([
+							assign('i', call('ctz', 'e')),
+							assign('e', 
+								op2('e', 'i&i', 
+									op1('!i', op2(integer(1), 'i<<i', 'i')))),
+							assign('z', 'x'),
+							loop_while(op2('i', 'i>i', integer(0)),
+								block([
+									assign('z', op2('z', 'i*i', 'z')),
+									assign('i', op2('i', 'i-i', integer(1)))
+								])),
+							assign('RES', op2('RES', 'i*i', 'z')),
+						])),
+				),
+				[IR.ret, 'RES'],
+			])
+		},
+		'r^i':{type:T.f64, params: [T.f64, T.i64], param_names:['x', 'e'], locals:[[T.i64, 'a', 'i'], [T.f64, 'RES', 'z']],
+			code: block([
+				if_else(
+					op2(op2('x', 'r=r', real(0)), 
+						'#and#', 
+						op2('e', 'i<=i', integer(0))),
+					//call('fault', [string_lit("Undefined exponent"), 'e']),
+					[IR.ret, real(NaN)],
+					block([
+						assign('a', call('iabs', ['e'])),
+						assign('RES', real(1)),
+						loop_while(op2('a', 'i>i', integer(0)),
+							block([
+								assign('i', call('ctz', 'e')),
+								assign('a', 
+									op2('a', 'i&i', 
+										op1('!i', op2(integer(1), 'i<<i', 'i')))),
+								assign('z', 'x'),
+								loop_while(op2('i', 'i>i', integer(0)),
+									block([
+										assign('z', op2('z', 'r*r', 'z')),
+										assign('i', op2('i', 'i-i', integer(1)))
+									])),
+								assign('RES', op2('RES', 'r*r', 'z'))
+							])),
+						if_then(op2('e', 'i<i', integer(0)),
+							assign('RES', op2(real(1), 'r/r', 'RES')))
+					]),
+				),
+				[IR.ret, 'RES']
+			])
+		},
 
+		// Expected math functions
+		abs: {
+			params: [T.f64], type: T.f64, param_names:['r'],
+			code: [IR.ret, if_else( op2('r', 'r<r', real(0)),
+				call('negate', 'r'),
+				'r'
+			)]
+		},
+
+		iabs: {
+			params:[T.i64], type: T.i64, param_names:['a'], 
+			code:[IR.ret, if_else( op2('a', 'i<i', integer(0)),
+					op2(integer(0), 'i-i', 'a'),
+					'a'
+				)]
+		},
+
+		entier: {params: [T.f64], type: T.i64, inline: I.i64truncf64_s},
+
+		// Extended functions
+		'i<<i': {type: T.i64, params: [T.i64, T.i64], inline: I.i64shl},
+		'i>>i': {type: T.i64, params: [T.i64, T.i64], inline: I.i64shr_u},
+		'i&i':  {type: T.i64, params: [T.i64, T.i64], inline: I.i64and},
+		'i|i':  {type: T.i64, params: [T.i64, T.i64], inline: I.i64or},
+		'i><i': {type: T.i64, params: [T.i64, T.i64], inline: I.i64xor},
+		'!i': {type: T.i64, params: [T.i64], param_names:['a'],
+			code: [IR.ret, 
+				op2(integer(-1), 'i><i', 'a')
+			]
+		},
+		'negate': {params: [T.f64], type: T.f64, inline: I.i64neg},
+		'shiftr': { type: T.i64, params: [T.i64, T.i64], inline: I.i64shr_s },
+		'ctz':    { type: T.i64, params: [T.i64], inline: I.i64ctz },
 		'toreal': { type: T.f64, params: [T.i64], inline: I.f64converti64_s },
 		'round': {type: T.i64, params: [T.f64], inline: [
 			I.f64, f64_const(0.5), I.f64add, I.i64truncf64_s
 		]},
 	};
+}
+
+const algolTypes = {
+	integer: T.i64,
+	real: T.f64,
+	Boolean:T.i32,
+	void: T.block,
+};
+
+const algolTypeNames = {
+	[[T.i64]]: 'integer',
+	[[T.f64]]: 'real',
+	[[T.i32]]: 'Boolean',
+	[[T.block]]: 'void',
 }
 
 function analyze(text, root_ast) {
@@ -109,7 +220,7 @@ function analyze(text, root_ast) {
 					locals[type] = [];
 				}
 				locals[type] = locals[type].concat(decl.vars);
-				let real_type = type_map[type];
+				let real_type = algolTypes[type];
 				if(!real_type) {
 					expError(decl, 'Bad type: '+type);
 				}
@@ -205,9 +316,9 @@ function analyze(text, root_ast) {
 
 		return {
 			fqname: decl.proc+context.path,
-			type: type_map[decl.type],
+			type: algolTypes[decl.type],
 			param_names: decl.parameters,
-			params: decl.parameters.map(p => type_map[params[p].type]),
+			params: decl.parameters.map(p => algolTypes[params[p].type]),
 			exported: true,
 			body_ast: decl.body
 		};
@@ -238,7 +349,7 @@ function analyze(text, root_ast) {
 		}
 		let locals = {};
 		for(loc in context.localVars) {
-			if(proc.param_names.includes(loc)) {
+			if(proc.param_names && proc.param_names.includes(loc)) {
 				continue;
 			}
 			let local = context.localVars[loc];
@@ -293,7 +404,7 @@ function analyze(text, root_ast) {
 		}
 		else {
 			throw new Error(
-				`Cannot convert from type ${inv_type_map[fromType]} to ${inv_type_map[toType]} in expression ${JSON.stringify(code)}`)
+				`Cannot convert from type ${algolTypeNames[fromType]} to ${algolTypeNames[toType]} in expression ${JSON.stringify(code)}`)
 		}
 	}
 
@@ -368,8 +479,8 @@ function analyze(text, root_ast) {
 					opProc = resolveProc(fqOp, context);
 				}
 				else {
-					let ltypeChar = inv_type_map[leftType][0];
-					let rtypeChar = inv_type_map[rightType][0];
+					let ltypeChar = algolTypeNames[leftType][0];
+					let rtypeChar = algolTypeNames[rightType][0];
 					fqOp = ltypeChar + op + rtypeChar;
 					opProc = resolveProc(fqOp, context);
 				}
@@ -382,7 +493,7 @@ function analyze(text, root_ast) {
 						return findBinOp(op, T.f64, rightType);
 					}
 					throw new Error(
-						`Operator {${op}} is not defined between types ${inv_type_map[leftType]} and ${inv_type_map[rightType]}`)
+						`Operator {${op}} is not defined between types ${algolTypeNames[leftType]} and ${algolTypeNames[rightType]}`)
 				}
 				return [opProc, fqOp];
 			}
