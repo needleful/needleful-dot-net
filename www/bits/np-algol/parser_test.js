@@ -1,3 +1,5 @@
+let test_wasm = {};
+
 function testParser() {
 	let text = document.getElementById("algol-text").value;
 	let results = document.getElementById("parser-results");
@@ -7,7 +9,17 @@ function testParser() {
 		console.log("Parsing results:", parseTree);
 		results.innerText = "Your program, sir: "+JSON.stringify(parseTree);
 		try {
-			console.log('Analysis: ', analyze(text, parseTree));
+			let ir = analyze(text, parseTree);
+			console.log('Analysis: ', ir);
+
+			let test_mod = ir_to_assembler(ir);
+			console.log('Assembly:', test_mod);
+			let bytes = assemble(test_mod);
+			console.log('Bytes: ', bytes);
+			WebAssembly.instantiate(bytes).then((result) => {
+				test_wasm = result;
+				console.log("WASM module:", test_wasm);
+			});
 		}
 		catch(error) {
 			console.log("Analysis failed with error: ", error);

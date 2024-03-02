@@ -13,26 +13,26 @@ function defaultEnv() {
 		'r/r':{type:T.f64, params: [T.f64, T.f64], inline:I.f64div},
 
 		// Comparison ops
-		'i<i':  {type:T.i32, params: [T.i64, T.i64, inline: I.i64lt_s]},
-		'i>i':  {type:T.i32, params: [T.i64, T.i64, inline: I.i64gt_s]},
-		'i<=i': {type:T.i32, params: [T.i64, T.i64, inline: I.i64le_s]},
-		'i>=i': {type:T.i32, params: [T.i64, T.i64, inline: I.i64ge_s]},
-		'i=i':  {type:T.i32, params: [T.i64, T.i64, inline: I.i64eq]},
-		'i!=i': {type:T.i32, params: [T.i64, T.i64, inline: I.i64ne]},
+		'i<i':  {type:T.i32, params: [T.i64, T.i64], inline: I.i64lt_s},
+		'i>i':  {type:T.i32, params: [T.i64, T.i64], inline: I.i64gt_s},
+		'i<=i': {type:T.i32, params: [T.i64, T.i64], inline: I.i64le_s},
+		'i>=i': {type:T.i32, params: [T.i64, T.i64], inline: I.i64ge_s},
+		'i=i':  {type:T.i32, params: [T.i64, T.i64], inline: I.i64eq},
+		'i!=i': {type:T.i32, params: [T.i64, T.i64], inline: I.i64ne},
 
-		'r<r':  {type:T.i32, params: [T.f64, T.f64, inline: I.f64lt]},
-		'r>r':  {type:T.i32, params: [T.f64, T.f64, inline: I.f64gt]},
-		'r<=r': {type:T.i32, params: [T.f64, T.f64, inline: I.f64le]},
-		'r>=r': {type:T.i32, params: [T.f64, T.f64, inline: I.f64ge]},
-		'r=r':  {type:T.i32, params: [T.f64, T.f64, inline: I.f64eq]},
-		'r!=t': {type:T.i32, params: [T.f64, T.f64, inline: I.f64ne]},
+		'r<r':  {type:T.i32, params: [T.f64, T.f64], inline: I.f64lt},
+		'r>r':  {type:T.i32, params: [T.f64, T.f64], inline: I.f64gt},
+		'r<=r': {type:T.i32, params: [T.f64, T.f64], inline: I.f64le},
+		'r>=r': {type:T.i32, params: [T.f64, T.f64], inline: I.f64ge},
+		'r=r':  {type:T.i32, params: [T.f64, T.f64], inline: I.f64eq},
+		'r!=t': {type:T.i32, params: [T.f64, T.f64], inline: I.f64ne},
 
 		// Boolean ops
 		'#and#': {type: T.i32, params: [T.i32, T.i32], inline: I.i32and},
 		'#or#':  {type: T.i32, params: [T.i32, T.i32], inline: I.i32and},
 		'#not#': {type: T.i32, params: [T.i32], inline: I.i32eqz},
 		'#implies#': { type: T.i32, params: [T.i32, T.i32], param_names:['a', 'b'], 
-			code: [IR.return, op2(call('#not#', ['a']), '#or#', 'b')]},
+			code: [IR.ret, op2(call('#not#', ['a']), '#or#', 'b')]},
 		'#is#': {type: T.i32, params: [T.i32, T.i32], inline: I.i32eq},
 
 		// Exponentiation
@@ -47,8 +47,8 @@ function defaultEnv() {
 							op2('e', 'i=i', integer(0)))
 					),
 					//call('fault', [string_lit("Undefined exponent"), 'e']),
-					[IR.return, integer(-1)],
-					assign('RES', [integer(1)]),
+					[IR.ret, integer(-1)],
+					assign('RES', integer(1)),
 					loop_while(op2('e', 'i>i', integer(0)),
 						block([
 							assign('i', call('ctz', 'e')),
@@ -67,14 +67,14 @@ function defaultEnv() {
 				[IR.ret, 'RES'],
 			])
 		},
-		'r^i':{type:T.f64, params: [T.f64, T.f64], param_names:['x', 'e'], locals:[[T.i64, 'a', 'i'], [T.f64, 'RES', 'z']],
+		'r^i':{type:T.f64, params: [T.f64, T.i64], param_names:['x', 'e'], locals:[[T.i64, 'a', 'i'], [T.f64, 'RES', 'z']],
 			code: block([
 				if_else(
-					op2(op2('x', 'i=i', real(0)), 
+					op2(op2('x', 'r=r', real(0)), 
 						'#and#', 
 						op2('e', 'i<=i', integer(0))),
 					//call('fault', [string_lit("Undefined exponent"), 'e']),
-					[IR.return, real(NaN)],
+					[IR.ret, real(NaN)],
 					block([
 						assign('a', call('iabs', ['e'])),
 						assign('RES', real(1)),
@@ -102,7 +102,11 @@ function defaultEnv() {
 
 		abs: {
 			params: [T.f64], type: T.f64, param_names:['r'],
-			inline: []
+			code: [IR.ret, if_else(
+				op2('r', 'r<r', real(0)),
+				call('negate', 'r'),
+				'r'
+			)]
 		},
 
 		iabs: {
@@ -131,22 +135,9 @@ function defaultEnv() {
 		'toreal': { type: T.f64, params: [T.i64], inline: I.f64converti64_s },
 		'round': {type: T.i64, params: [T.f64], inline: [
 			I.f64, f64_const(0.5), I.f64add, I.i64truncf64_s
-		]}
+		]},
+		'negate': {params: [T.f64], type: T.f64, inline: I.i64neg},
 	};
-}
-
-const type_map = {
-	integer: T.i64,
-	real: T.f64,
-	Boolean:T.i32,
-	void: T.block,
-};
-
-const inv_type_map = {
-	[[T.i64]]: 'integer',
-	[[T.f64]]: 'real',
-	[[T.block]]: 'void',
-	[[T.i32]]: 'Boolean'
 }
 
 function analyze(text, root_ast) {
@@ -192,6 +183,13 @@ function analyze(text, root_ast) {
 	function analyzeBlock(ast, context) {
 		// We get all the procedure definitions
 		let locals = {};
+		for(let v in context.localVars) {
+			let loc = context.localVars[v];
+			if(!(loc.type in locals)) {
+				locals[loc.type] = [];
+			}
+			locals[loc.type].push[v];
+		}
 		for(let decl of ast.head) {
 			if('proc' in decl) {
 				if(decl.proc in context.localFuncs) {
@@ -222,21 +220,27 @@ function analyze(text, root_ast) {
 				throw new Error(`PARSER BUG: unknown AST declaration: ${JSON.stringify(decl)}`);
 			}
 		}
+
 		// Analyze the function bodies
 		for(p in context.localFuncs) {
 			let proc = context.localFuncs[p];
-			if(proc.code || proc.inline) {
+			if('code' in proc || 'inline' in proc) {
 				continue;
 			}
 			let params = {};
-			for(let p = 0; p < proc.param_names.length; p++) {
-				let param = proc.param_names[p];
-				params[param] = {
-					type: proc.params[p]
+			if(proc.param_names) {
+				for(let p = 0; p < proc.param_names.length; p++) {
+					let param = proc.param_names[p];
+					params[param] = {
+						type: proc.params[p]
+					}
+					if(!params[param].type) {
+						throw new Error(`ANALYZER BUG: no type defined for parameter {${param}} in procedure {${proc.fqname}}`)
+					}
 				}
-				if(!params[param].type) {
-					throw new Error(`ANALYZER BUG: no type defined for parameter {${param}} in procedure {${proc.fqname}}`)
-				}
+			}
+			if(!proc.fqname) {
+				throw new Error(`No fully qualified name for procedure: ${p}`);
 			}
 			let procContext = {
 				name: p,
@@ -246,9 +250,17 @@ function analyze(text, root_ast) {
 				parent: context,
 				delimiters: proc.delimiters
 			};
-			proc.code = analyzeBody(proc, procContext);
+			let result = analyzeBody(proc, procContext);
+			proc.code = result.code;
+			console.log("locals for "+p, result.locals);
+			proc.locals = result.locals;
 			proc.body_ast = null;
 		}
+		let statements = [];
+		for(let statement of ast.tail) {
+			statements.push(analyzeStatement(statement, context));
+		}
+		return {locals: locals, code:[IR.block].concat(statements)};
 	}
 	function analyzeDefinition(decl, context) {
 		let params = {};
@@ -296,6 +308,9 @@ function analyze(text, root_ast) {
 	}
 	function analyzeBody(proc, context) {
 		let ast = proc.body_ast;
+		if(!ast) {
+			throw new Error(`ANALYSIS BUG: No AST when analyzing ${context.path}`)
+		}
 		if(proc.type != T.block) {
 			context.localVars[context.name] = {
 				type: proc.type,
@@ -304,17 +319,31 @@ function analyze(text, root_ast) {
 		}
 		let code;
 		if('head' in ast) {
-			code = analyzeBlock(ast, context);
+			let result = analyzeBlock(ast, context);
+			code = result.code;
 		}
 		else {
 			code = analyzeStatement(ast, context);
 		}
 		if(proc.type != T.block) {
-			return [IR.block, code, [IR.return, proc.name]];
+			code = [IR.block, code, [IR.ret, context.name]];
 		}
-		else {
-			return code;
+		let locals = {};
+		for(loc in context.localVars) {
+			if(proc.param_names.includes(loc)) {
+				continue;
+			}
+			let local = context.localVars[loc];
+			if(!(local.type in locals)) {
+				locals[local.type] = [];
+			}
+			locals[local.type].push(loc);
 		}
+		let loc2 = [];
+		for(loc in locals) {
+			loc2.push([loc].concat(locals[loc]));
+		}
+		return {locals:loc2, code:code};
 	}
 	function analyzeStatement(st, context) {
 		if('assign' in st){
@@ -406,7 +435,7 @@ function analyze(text, root_ast) {
 				}
 				else {
 					let ltypeChar = inv_type_map[leftType][0];
-					let rtypeChar = inv_type_map[rightType][1];
+					let rtypeChar = inv_type_map[rightType][0];
 					fqOp = ltypeChar + op + rtypeChar;
 					opProc = resolveProc(fqOp, context);
 				}
@@ -474,7 +503,13 @@ function analyze(text, root_ast) {
 		body_ast: root_ast
 	};
 
-	analyzeBody(main_proc, rootContext);
-	ir_module[rootContext.name] = main_proc;
+	let main = analyzeBody(main_proc, rootContext);
+	main_proc.code = main.code;
+	main_proc.locals = main.locals;
+	if(!main_proc.code) {
+		throw new Error("COMPILER BUG: Main procedure has no code! " + main_proc.code);
+	}
+	ir_module[main_proc.fqname] = main_proc;
+	main_proc.body_ast = null;
 	return ir_module;
 }
