@@ -1,3 +1,26 @@
+function getPositions(text, ...indeces) {
+	let result = {};
+	let keys = Array.from(indeces).sort();
+	let column = 0, line = 0, next_result = 0;
+	for(let c = 0; c < text.length && next_result < keys.length; c++){
+		while(c == keys[next_result]) {
+			result[keys[next_result]] = {line:line, column:column};
+			next_result++;
+		}
+		if(text[c] == '\n'){
+			column = 0;
+			line ++;
+		}
+		else {
+			column ++;
+		}
+	}
+	// Beyond the end of the text
+	for(; next_result < keys.length; next_result++) {
+		result[keys[next_result]] = {line:line, column:column};
+	}
+	return indeces.map(i => result[i]);
+}
 
 function parseAlgol(text, options = {}) {
 	const Pc = {
@@ -76,39 +99,15 @@ function parseAlgol(text, options = {}) {
 		}
 	}
 
-	function getPositions(...indeces) {
-		let result = {};
-		let keys = Array.from(indeces).sort();
-		let column = 0, line = 0, next_result = 0;
-		for(let c = 0; c < text.length && next_result < keys.length; c++){
-			while(c == keys[next_result]) {
-				result[keys[next_result]] = {line:line, column:column};
-				next_result++;
-			}
-			if(text[c] == '\n'){
-				column = 0;
-				line ++;
-			}
-			else {
-				column ++;
-			}
-		}
-		// Beyond the end of the text
-		for(; next_result < keys.length; next_result++) {
-			result[keys[next_result]] = {line:line, column:column};
-		}
-		return indeces.map(i => result[i]);
-	}
-
-	function perr(location, text) {
+	function perr(location, message) {
 		console.trace();
-		let [loc] = getPositions(location);
-		throw {text:text, location:loc};
+		let [loc] = getPositions(text, location);
+		throw {text:message, location:loc};
 	}
 
-	function pwarn(location, text) {
-		let [loc] = getPositions(location);
-		console.log("Warning: ", text, "at: ", loc);
+	function pwarn(location, message) {
+		let [loc] = getPositions(text, location);
+		console.log("Warning: ", message, "at: ", loc);
 	}
 
 	let c = 0;
@@ -148,7 +147,7 @@ function parseAlgol(text, options = {}) {
 				pwarn(c, `Identifier contains whitespace. Reading as {${word}}`);
 			}
 
-			let [start, end] = getPositions(identStart, identEnd);
+			let [start, end] = getPositions(text, identStart, identEnd);
 			if(start.line < end.line) {
 				let message = `Identifier {${word}} spans multiple lines. Are you missing a semicolon?`;
 				if(options.multiLineIdentifiers) {
@@ -585,7 +584,7 @@ function parseAlgol(text, options = {}) {
 					break;
 				}
 				else if(!grab(Pc.colon) || !grab(Pc.parenOpen)) {
-					let [before, after] = getPositions(beforeLongComma, c);
+					let [before, after] = getPositions(text, beforeLongComma, c);
 					if (before.line < after.line) {
 						perr(c, `A missing semicolon after ${description}, presumably.`);
 					}

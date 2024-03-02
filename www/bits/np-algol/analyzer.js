@@ -12,6 +12,21 @@ function defaultEnv() {
 		'r*r':{type:T.f64, params: [T.f64, T.f64], inline:I.f64mul},
 		'r/r':{type:T.f64, params: [T.f64, T.f64], inline:I.f64div},
 
+		// Comparison ops
+		'i<i':  {type:T.i32, params: [T.i64, T.i64, inline: I.i64lt_s]},
+		'i>i':  {type:T.i32, params: [T.i64, T.i64, inline: I.i64gt_s]},
+		'i<=i': {type:T.i32, params: [T.i64, T.i64, inline: I.i64le_s]},
+		'i>=i': {type:T.i32, params: [T.i64, T.i64, inline: I.i64ge_s]},
+		'i=i':  {type:T.i32, params: [T.i64, T.i64, inline: I.i64eq]},
+		'i!=i': {type:T.i32, params: [T.i64, T.i64, inline: I.i64ne]},
+
+		'r<r':  {type:T.i32, params: [T.f64, T.f64, inline: I.f64lt]},
+		'r>r':  {type:T.i32, params: [T.f64, T.f64, inline: I.f64gt]},
+		'r<=r': {type:T.i32, params: [T.f64, T.f64, inline: I.f64le]},
+		'r>=r': {type:T.i32, params: [T.f64, T.f64, inline: I.f64ge]},
+		'r=r':  {type:T.i32, params: [T.f64, T.f64, inline: I.f64eq]},
+		'r!=t': {type:T.i32, params: [T.f64, T.f64, inline: I.f64ne]},
+
 		// Boolean ops
 		'#and#': {type: T.i32, params: [T.i32, T.i32], inline: I.i32and},
 		'#or#':  {type: T.i32, params: [T.i32, T.i32], inline: I.i32and},
@@ -134,8 +149,17 @@ const inv_type_map = {
 	[[T.i32]]: 'Boolean'
 }
 
-function analyze(root_ast) {
+function analyze(text, root_ast) {
 	let ir_module = defaultEnv();
+
+	function expError(exp, message) {
+		if(exp.context) {
+			let pos = getPositions(text, exp.context);
+			console.log('Error at: ', pos);
+			throw new Error(`Error at ${pos.line}:${pos.column}: ${message}`);
+		}
+		throw new Error(message);
+	}
 
 	function resolveProc(proc_name, context, required){
 		if(proc_name in context.localFuncs) {
@@ -184,6 +208,9 @@ function analyze(root_ast) {
 				}
 				locals[type] = locals[type].concat(decl.vars);
 				let real_type = type_map[type];
+				if(!real_type) {
+					expError(decl, 'Bad type: '+type);
+				}
 				for(let v of decl.vars) {
 					if(v in context.localVars) {
 						throw new Error(`Local variable already defined: {${v}}`);
@@ -202,9 +229,13 @@ function analyze(root_ast) {
 				continue;
 			}
 			let params = {};
-			for(param of proc.param_names) {
+			for(let p = 0; p < proc.param_names.length; p++) {
+				let param = proc.param_names[p];
 				params[param] = {
-					type: proc.params[param]
+					type: proc.params[p]
+				}
+				if(!params[param].type) {
+					throw new Error(`ANALYZER BUG: no type defined for parameter {${param}} in procedure {${proc.fqname}}`)
 				}
 			}
 			let procContext = {
@@ -324,58 +355,107 @@ function analyze(root_ast) {
 	}
 
 	function analyzeExpression(exp, context) {
-		if(typeof(exp) == 'number'){
-			if(exp | 0 == exp) {
-				return {type: T.i64, code: integer(ex)};
+		if(context === undefined) {
+			throw new Error("Undefined context");
+		}
+		if('value' in exp){
+			if(exp.type == 'numeric') {
+				if(exp.value | 0 == exp.value) {
+					return {type: T.i64, code: integer(exp.value)};
+				}
+				else {
+					return {type: T.f64, code: real(exp.value)};
+				}
 			}
-			else {
-				return {type: T.f64, code: real(ex)};
+			else if(exp.type == 'Boolean') {
+				expErr(exp, "I'll make Booleans tomorrow");
 			}
 		}
-		else if (typeof(exp) == 'string') {
-			let sym = resolveVar(exp, context);
+		else if('func' in exp) {
+			let sym = resolveProc(exp.func, context);
 			if(sym) {
-				return exp;
-			}
-			sym = resolveProc(exp, context);
-			if(sym) {
-				return call(sym.fqname, []);
+				return {type: sym.type, code:call(sym.fqname, [])};
 			}
 			else {
-				throw new Error(`{${sym}} is not a variable or procedure available in this block.`)
+				let pos = getPositions(text, exp.context);
+				expError(exp, `{${exp.func}} is not a defined procedure in this scope`);
+			}
+		}
+		else if ('variable' in exp) {
+			let sym = resolveVar(exp.variable, context);
+			if(sym) {
+				if(!sym.type) {
+					expError(exp, `Variable ${exp.variable} has no defined type`);
+				}
+				return {type: sym.type, code:exp.variable};
+			}
+			sym = resolveProc(exp.variable, context);
+			if(sym) {
+				return {type: sym.type, code:call(sym.fqname, [])};
+			}
+			else {
+				expError(exp, `{${sym}} is not a variable or procedure available in this block.`)
 			}
 		}
 		else if('op' in exp) {
-			function findBinOp(o) {
+			function findBinOp(op, leftType, rightType) {
 				let opProc, fqOp;
-				let left = analyzeExpression(o.left, context);
-				let right = analyzeExpression(o.right, context);
-
-				if(o.op.match(/\p{Alpha}/u)) {
-					fqOp = "#"+o.op+"#";
+				if(op.match(/\p{Alpha}/u)) {
+					fqOp = "#"+op+"#";
 					opProc = resolveProc(fqOp, context);
 				}
 				else {
-					let ltypeChar = inv_type_map[left.type][0];
-					let rtypeChar = inv_type_map[right.type][1];
-					fqOp = ltypeChar + o.op + rtypeChar;
+					let ltypeChar = inv_type_map[leftType][0];
+					let rtypeChar = inv_type_map[rightType][1];
+					fqOp = ltypeChar + op + rtypeChar;
 					opProc = resolveProc(fqOp, context);
+				}
 
-				}
-				if (!opProc || opProc.params[0] != left.type || opProc.params[1] != right.type) {
+				if (!opProc || opProc.params[0] != leftType || opProc.params[1] != rightType) {
+					if(rightType == T.i64) {
+						return findBinOp(op, leftType, T.f64);
+					}
+					else if(leftType == T.i64) {
+						return findBinOp(op, T.f64, rightType);
+					}
 					throw new Error(
-						`Operator {${op}} is not defined between types ${inv_type_map[left.type]} and ${inv_type_map[right.type]}`)
+						`Operator {${op}} is not defined between types ${inv_type_map[leftType]} and ${inv_type_map[rightType]}`)
 				}
-				return op2(left, fqOp, right);
+				return [opProc, fqOp];
 			}
 			if('left' in exp) {
-				return findBinOp(exp);
+				let left = analyzeExpression(exp.left, context);
+				let right = analyzeExpression(exp.right, context);
+
+				let [opProc, fqOp] = findBinOp(exp.op, left.type, right.type);
+				return {
+					type: opProc.type, 
+					code:op2(
+						typeConvert(left.code, left.type, opProc.params[0]), 
+						fqOp, 
+						typeConvert(right.code, right.type, opProc.params[0]))
+				};
 			}
 			else {
 				return findSingleOp(exp);
 			}
 		}
-		return null;
+		else if('cond' in exp) {
+			let cond = analyzeExpression(exp.cond, context);
+			let then_do = analyzeExpression(exp.then_do, context);
+			if('else_do' in exp) {
+				let else_do = analyzeExpression(exp.else_do, context);
+				if(else_do.type != then_do.type) {
+					else_do.code = typeConvert(else_do.code, else_do.type, then_do.type);
+				}
+				return {type: then_do.type, code: if_else(cond.code, then_do.code, else_do.code)};
+			}
+			else {
+				return {type: T.block, code: if_then(cond.code, then_do.code)};
+			}
+
+		}
+		expError(exp, `Could not analyze expression: ${JSON.stringify(exp)}`);
 	}
 
 	let rootContext = {

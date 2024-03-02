@@ -7,7 +7,7 @@ function testParser() {
 		console.log("Parsing results:", parseTree);
 		results.innerText = "Your program, sir: "+JSON.stringify(parseTree);
 		try {
-			console.log('Analysis: ', analyze(parseTree));
+			console.log('Analysis: ', analyze(text, parseTree));
 		}
 		catch(error) {
 			console.log("Analysis failed with error: ", error);
