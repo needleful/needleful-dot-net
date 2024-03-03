@@ -316,7 +316,7 @@ function parseAlgol(text, options = {}) {
 		}
 		let val = grab(Pc.logicalVal);
 		if(val) {
-			return {type: 'Boolean', value:Boolean(value), precedence:opPrecedence.primary, context:c};
+			return {type: 'Boolean', value:Boolean(val), precedence:opPrecedence.primary, context:c};
 		}
 		val = identifier();
 		if (val) {

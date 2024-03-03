@@ -5,7 +5,7 @@ const T = {
 	i32: 0x7f, i64: 0x7e, f32: 0x7d, f64: 0x7c, v128: 0x7b,
 	funcref: 0x70, externref: 0x6f, func: 0x60, block: 0x40
 };
-// Export types
+// Export/Import types
 const E = {func: 0, table: 1, mem: 2, global: 3};
 // Instruction codes
 const I = {
@@ -95,15 +95,15 @@ function valToKeyMap(map) {
 // Half-hearted attempt at disassembling the bytes of function bodies
 function disassembleCode(flatcode) {
 	const argCounts = {
-		[[I.lget]]:'leb', 
-		[[I.lset]]:'leb', 
-		[[I.i32]]:'leb', 
-		[[I.i64]]:'leb', 
-		[[I.f32]]: 4, 
-		[[I.f64]]: 8, 
-		[[I.br]]: 'leb', 
-		[[I.br_if]]:'leb', 
-		[[I.call]]: 'leb'
+		[I.lget]:'leb', 
+		[I.lset]:'leb', 
+		[I.i32]:'leb', 
+		[I.i64]:'leb', 
+		[I.f32]: 4, 
+		[I.f64]: 8, 
+		[I.br]: 'leb', 
+		[I.br_if]:'leb', 
+		[I.call]: 'leb'
 	};
 	const blockInstr = [I.loop, I.block, I.if];
 	let result = [];
@@ -116,9 +116,6 @@ function disassembleCode(flatcode) {
 			return flatcode[i];
 		}
 		let e = flatcode[i];
-		if(e == I.if) {
-			console.log("IF");
-		}
 		if(!(e in wasmInstrNames)) {
 			result.push(`BAD_INSTR:{${e}/${wasmTypeNames[e]}}`);
 			continue;
@@ -260,8 +257,6 @@ function assemble(descriptor) {
 			r = vector(r, t);
 			printable = vector(printable, pt);
 		} break;
-		case M.imports:
-			break;
 		case M.funcs: {
 			let t = [];
 			let pt = [];
@@ -280,6 +275,32 @@ function assemble(descriptor) {
 			break;
 		case M.globals:
 			break;
+		case M.imports: { // ALMOST identical to exports
+			let t = [];
+			let pt = [];
+			leb(t, section.length);
+			leb(pt, section.length);
+			for(let e of section) {
+				t = encodeName(t, e[0]);
+				t = encodeName(t, e[1]);
+				t.push(e[2]);
+				leb(t, e[3]);
+
+				pt.push(e[0].length);
+				for(let c = 0; c < e[0].length; c++) {
+					pt.push(e[0][c]);
+				}
+				pt.push(e[1].length);
+				for(let c = 0; c < e[1].length; c++) {
+					pt.push(e[1][c]);
+				}
+
+				pt.push(wasmExportTypes[e[2]]);
+				leb(pt, e[3]);
+			}
+			r = vector(r, t);
+			printable = vector(printable, pt);
+		} break;
 		case M.exports: {
 			let t = [];
 			let pt = [];
@@ -294,7 +315,7 @@ function assemble(descriptor) {
 				for(let c = 0; c < e[0].length; c++) {
 					pt.push(e[0][c]);
 				}
-				pt.push(e[1]);
+				pt.push(wasmExportTypes[e[1]]);
 				leb(pt, e[2]);
 			}
 			r = vector(r, t);

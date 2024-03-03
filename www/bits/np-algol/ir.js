@@ -10,10 +10,12 @@ let IR = {
 	call:   	7,
 	loop_while: 8,
 	if_then: 	9,
-	inline: 	10
+	inline: 	10,
+	i32const: 	11,
 }
 IR.min_args = {
 	[IR.iconst]:1,
+	[IR.i32const]:1,
 	[IR.rconst]:1,
 	[IR.assign]:2,
 	[IR.if_else]:3,
@@ -26,6 +28,7 @@ IR.min_args = {
 };
 IR.max_args = {
 	[IR.iconst]:1,
+	[IR.i32const]:1,
 	[IR.rconst]:1,
 	[IR.assign]:2,
 	[IR.if_else]:3,
@@ -52,6 +55,10 @@ function call(name, args) {
 
 function integer(value) {
 	return [IR.iconst, value];
+}
+
+function int32(value) {
+	return [IR.i32const, value];
 }
 
 function real(value) {
@@ -112,9 +119,9 @@ const ir_to_assembler = (ir_mod) => {
 	};
 	let types = [];
 	let funcs = [];
+	let imported = [];
 	let exported = [];
 	let code = [];
-
 	for (p in ir_mod) {
 		let proc = ir_mod[p];
 		if ("inline" in proc) {
@@ -124,9 +131,12 @@ const ir_to_assembler = (ir_mod) => {
 			if("code" in proc) {
 				console.log("COMPILER BUG: inline procedure "+ p +" also has a 'code' property. Only one is expected.");
 			}
+			if('import' in proc) {
+				console.log("COMPILER BUG: inline procedure "+ p +" also has an import specified. Only one is expected.");
+			}
 			continue;
 		}
-		if(!proc.code && !proc.inlined) {
+		if(!proc.code && !proc.inlined && !proc.import) {
 			console.log(proc);
 			throw new Error("COMPILER BUG: Declared procedure "+p+" has no implementation!");
 		}
@@ -138,10 +148,19 @@ const ir_to_assembler = (ir_mod) => {
 			console.log(types);
 			throw new Error("Failed to create type: ", t);
 		}
-		funcs.push(ptype);
-		proc.index = funcs.length - 1;
-		if (proc.exported) {
-			exported.push([p, E.func, proc.index]);
+		if('import' in proc) {
+			if("code" in proc) {
+				console.log("COMPILER BUG: imported procedure "+ p +" also has a 'code' property. Only one is expected.");
+			}
+			else if(proc.exported) {
+				console.log("COMPILER BUG: imported procedure "+ p +" is marked as exported. This is invalid.");
+			}
+			imported.push([proc.import, p, E.func, ptype]);
+			proc.index = imported.length;
+		}
+		else {
+			proc.index = funcs.length;
+			funcs.push(ptype);
 		}
 	}
 	code.length = funcs.length;
@@ -192,6 +211,9 @@ const ir_to_assembler = (ir_mod) => {
 			switch(f) {
 			case IR.iconst: {
 				return {type: T.i64, code:[I.i64, leb_const(s[1])]};
+			} break;
+			case IR.i32const: {
+				return {type: T.i32, code:[I.i32, leb_const(s[1])]};
 			} break;
 			case IR.rconst: {
 				return {type: T.f64, code:[I.f64, f64_const(s[1])]};
@@ -343,10 +365,18 @@ const ir_to_assembler = (ir_mod) => {
 			throw error;
 		}
 	};
+	// Again
+	for(p in ir_mod) {
+		let proc = ir_mod[p];
+		if("inline" in proc || 'import' in proc) {
+			continue;
+		}
+		proc.index += imported.length;
+	}
 	// We gathered all the names. Now time to compile the code
 	for(p in ir_mod) {
 		let proc = ir_mod[p];
-		if("inline" in proc) {
+		if("inline" in proc || 'import' in proc) {
 			continue;
 		}
 		let var_map = {};
@@ -376,7 +406,10 @@ const ir_to_assembler = (ir_mod) => {
 		}
 		try {
 			let compiled = compile_statement_s(proc.code, ir_mod, proc, var_map);
-			code[proc.index] = [locals, compiled.code];
+			code[proc.index - imported.length] = [locals, compiled.code];
+			if (proc.exported) {
+				exported.push([p, E.func, proc.index]);
+			}
 		}
 		catch(error) {
 			console.log('ASSEMBLER BUG: IR failed while compiling code for', p);
@@ -385,6 +418,7 @@ const ir_to_assembler = (ir_mod) => {
 	}
 	return [
 		[M.types].concat(types),
+		[M.imports].concat(imported),
 		[M.funcs].concat(funcs),
 		[M.exports].concat(exported),
 		[M.code].concat(code)

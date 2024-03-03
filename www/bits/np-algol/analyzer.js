@@ -27,7 +27,7 @@ function defaultEnv() {
 		'r<=r': {type:T.i32, params: [T.f64, T.f64], inline: I.f64le},
 		'r>=r': {type:T.i32, params: [T.f64, T.f64], inline: I.f64ge},
 		'r=r':  {type:T.i32, params: [T.f64, T.f64], inline: I.f64eq},
-		'r!=t': {type:T.i32, params: [T.f64, T.f64], inline: I.f64ne},
+		'r!=r': {type:T.i32, params: [T.f64, T.f64], inline: I.f64ne},
 
 		// Boolean ops
 		'#and#': {type: T.i32, params: [T.i32, T.i32], inline: I.i32and},
@@ -122,6 +122,10 @@ function defaultEnv() {
 
 		entier: {params: [T.f64], type: T.i64, inline: I.i64truncf64_s},
 
+		'outinteger': {type: T.block, params: [T.i64, T.i64], import: 'io'},
+		'outreal':    {type: T.block, params: [T.i64, T.f64], import: 'io'},
+		'outboolean': {type: T.block, params: [T.i64, T.i32], import: 'io'},
+
 		// Extended functions
 		'i<<i': {type: T.i64, params: [T.i64, T.i64], inline: I.i64shl},
 		'i>>i': {type: T.i64, params: [T.i64, T.i64], inline: I.i64shr_u},
@@ -150,10 +154,10 @@ const algolTypes = {
 };
 
 const algolTypeNames = {
-	[[T.i64]]: 'integer',
-	[[T.f64]]: 'real',
-	[[T.i32]]: 'Boolean',
-	[[T.block]]: 'void',
+	[T.i64]: 'integer',
+	[T.f64]: 'real',
+	[T.i32]: 'Boolean',
+	[T.block]: 'void',
 }
 
 function analyze(text, root_ast) {
@@ -241,7 +245,7 @@ function analyze(text, root_ast) {
 		// Analyze the function bodies
 		for(p in context.localFuncs) {
 			let proc = context.localFuncs[p];
-			if('code' in proc || 'inline' in proc) {
+			if('code' in proc || 'inline' in proc || 'import' in proc) {
 				continue;
 			}
 			let params = {};
@@ -321,7 +325,7 @@ function analyze(text, root_ast) {
 			type: algolTypes[decl.type],
 			param_names: decl.parameters,
 			params: decl.parameters.map(p => algolTypes[params[p].type]),
-			exported: true,
+			exported: context.path == '',
 			body_ast: decl.body
 		};
 	}
@@ -393,7 +397,7 @@ function analyze(text, root_ast) {
 			return checkedCall(st, context).code;
 		}
 		else {
-			expErr(st, "Cannot parse statement: "+JSON.stringify(st));
+			expError(st, "Cannot parse statement: "+JSON.stringify(st));
 		}
 	}
 
@@ -411,12 +415,12 @@ function analyze(text, root_ast) {
 			if(code[0] == IR.rconst) {
 				return [IR.iconst, code[1]];
 			}
-			console.log(`Warning: rounding real expression ${JSON.stringify(code)} to integer`);
+			console.log(`Warning: rounding real expression {${ir_almost_pretty_print(code)}} to integer`);
 			return call('round', [code]);
 		}
 		else {
 			throw new Error(
-				`Cannot convert from type ${algolTypeNames[fromType]} to ${algolTypeNames[toType]} in expression ${JSON.stringify(code)}`)
+				`Cannot convert from type ${algolTypeNames[fromType]} to ${algolTypeNames[toType]} in expression {${ir_almost_pretty_print(code)}}`)
 		}
 	}
 
@@ -461,7 +465,7 @@ function analyze(text, root_ast) {
 				}
 			}
 			else if(exp.type == 'Boolean') {
-				expErr(exp, "I'll make Booleans tomorrow");
+				return{type: T.i32, code: int32(exp.value)};
 			}
 		}
 		else if('func' in exp) {
