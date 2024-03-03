@@ -155,8 +155,8 @@ const ir_to_assembler = (ir_mod) => {
 			else if(proc.exported) {
 				console.log("COMPILER BUG: imported procedure "+ p +" is marked as exported. This is invalid.");
 			}
-			imported.push([proc.import, p, E.func, ptype]);
 			proc.index = imported.length;
+			imported.push([proc.import, p, E.func, ptype]);
 		}
 		else {
 			proc.index = funcs.length;
