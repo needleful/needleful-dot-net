@@ -1,41 +1,44 @@
 function defaultEnv() {
+	const binOp = (type, inline) => ({type: type,  params: [type, type], inline: inline});
+	const cmpOp = (type, inline) => ({type: T.i32, params: [type, type], inline: inline});
+	const unOp  = (type, inline) => ({type: type,  params: [type],       inline: inline});
 	return {
 		// Simple integer ops
-		'i+i':  {type: T.i64, params: [T.i64, T.i64], inline: I.i64add},
-		'i-i':  {type: T.i64, params: [T.i64, T.i64], inline: I.i64sub},
-		'i*i':  {type: T.i64, params: [T.i64, T.i64], inline: I.i64mul},
-		'i%i':  {type: T.i64, params: [T.i64, T.i64], inline: I.i64div_s},
-		'-i':   {type: T.i64, params: [T.i64], inline: [I.i64, -1, I.i64mul]},
+		'i+i':  binOp(T.i64, I.i64add),
+		'i-i':  binOp(T.i64, I.i64sub),
+		'i*i':  binOp(T.i64, I.i64mul),
+		'i%i':  binOp(T.i64, I.i64div_s),
+		'-i':   unOp(T.i64, [I.i64, leb_const(-1), I.i64mul]),
 
 		// Simple real ops
-		'r+r':{type:T.f64, params: [T.f64, T.f64], inline:I.f64add},
-		'r-r':{type:T.f64, params: [T.f64, T.f64], inline:I.f64sub},
-		'r*r':{type:T.f64, params: [T.f64, T.f64], inline:I.f64mul},
-		'r/r':{type:T.f64, params: [T.f64, T.f64], inline:I.f64div},
-		'-r': {type:T.f64, params: [T.f64], inline: I.f64neg},
+		'r+r':binOp(T.f64, I.f64add),
+		'r-r':binOp(T.f64, I.f64sub),
+		'r*r':binOp(T.f64, I.f64mul),
+		'r/r':binOp(T.f64, I.f64div),
+		'-r': unOp(T.f64, I.f64neg),
 
 		// Comparison ops
-		'i<i':  {type:T.i32, params: [T.i64, T.i64], inline: I.i64lt_s},
-		'i>i':  {type:T.i32, params: [T.i64, T.i64], inline: I.i64gt_s},
-		'i<=i': {type:T.i32, params: [T.i64, T.i64], inline: I.i64le_s},
-		'i>=i': {type:T.i32, params: [T.i64, T.i64], inline: I.i64ge_s},
-		'i=i':  {type:T.i32, params: [T.i64, T.i64], inline: I.i64eq},
-		'i!=i': {type:T.i32, params: [T.i64, T.i64], inline: I.i64ne},
+		'i<i':  cmpOp(T.i64, I.i64lt_s),
+		'i>i':  cmpOp(T.i64, I.i64gt_s),
+		'i<=i': cmpOp(T.i64, I.i64le_s),
+		'i>=i': cmpOp(T.i64, I.i64ge_s),
+		'i=i':  cmpOp(T.i64, I.i64eq),
+		'i!=i': cmpOp(T.i64, I.i64ne),
 
-		'r<r':  {type:T.i32, params: [T.f64, T.f64], inline: I.f64lt},
-		'r>r':  {type:T.i32, params: [T.f64, T.f64], inline: I.f64gt},
-		'r<=r': {type:T.i32, params: [T.f64, T.f64], inline: I.f64le},
-		'r>=r': {type:T.i32, params: [T.f64, T.f64], inline: I.f64ge},
-		'r=r':  {type:T.i32, params: [T.f64, T.f64], inline: I.f64eq},
-		'r!=r': {type:T.i32, params: [T.f64, T.f64], inline: I.f64ne},
+		'r<r':  cmpOp(T.f64, I.f64lt),
+		'r>r':  cmpOp(T.f64, I.f64gt),
+		'r<=r': cmpOp(T.f64, I.f64le),
+		'r>=r': cmpOp(T.f64, I.f64ge),
+		'r=r':  cmpOp(T.f64, I.f64eq),
+		'r!=r': cmpOp(T.f64, I.f64ne),
 
 		// Boolean ops
-		'#and#': {type: T.i32, params: [T.i32, T.i32], inline: I.i32and},
-		'#or#':  {type: T.i32, params: [T.i32, T.i32], inline: I.i32and},
-		'#not#': {type: T.i32, params: [T.i32], inline: I.i32eqz},
-		'#implies#': { type: T.i32, params: [T.i32, T.i32], param_names:['a', 'b'], 
+		'#and#': binOp(T.i32, I.i32and),
+		'#or#':  binOp(T.i32, I.i32or),
+		'#is#':  binOp(T.i32, I.i32eq),
+		'#not#': unOp(T.i32, I.i32eqz),
+		'#implies#': {type: T.i32, params:[T.i32, T.i32], param_names:['a', 'b'], 
 			code: [IR.ret, op2(call('#not#', ['a']), '#or#', 'b')]},
-		'#is#': {type: T.i32, params: [T.i32, T.i32], inline: I.i32eq},
 
 		// Exponentiation
 		'i^i': {
@@ -127,18 +130,15 @@ function defaultEnv() {
 		'outboolean': {type: T.block, params: [T.i64, T.i32], import: 'io'},
 
 		// Extended functions
-		'i<<i': {type: T.i64, params: [T.i64, T.i64], inline: I.i64shl},
-		'i>>i': {type: T.i64, params: [T.i64, T.i64], inline: I.i64shr_u},
-		'i&i':  {type: T.i64, params: [T.i64, T.i64], inline: I.i64and},
-		'i|i':  {type: T.i64, params: [T.i64, T.i64], inline: I.i64or},
-		'i><i': {type: T.i64, params: [T.i64, T.i64], inline: I.i64xor},
-		'!i': {type: T.i64, params: [T.i64], param_names:['a'],
-			code: [IR.ret, 
-				op2(integer(-1), 'i><i', 'a')
-			]
-		},
-		'shiftr': { type: T.i64, params: [T.i64, T.i64], inline: I.i64shr_s },
-		'ctz':    { type: T.i64, params: [T.i64], inline: I.i64ctz },
+		'i<<i': binOp(T.i64, I.i64shl),
+		'i>>i': binOp(T.i64, I.i64shr_u),
+		'i&i':  binOp(T.i64, I.i64and),
+		'i|i':  binOp(T.i64, I.i64or),
+		'i><i': binOp(T.i64, I.i64xor),
+		'!i':   unOp(T.i64, [I.i64, leb_const(-1), I.i64xor]),
+
+		'shiftr': binOp(T.i64, I.i64shr_s),
+		'ctz':    unOp(T.i64, I.i64ctz),
 		'toreal': { type: T.f64, params: [T.i64], inline: I.f64converti64_s },
 		'round':  { type: T.i64, params: [T.f64], inline: [
 			I.f64, f64_const(0.5), I.f64add, I.i64truncf64_s
