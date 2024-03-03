@@ -280,13 +280,13 @@ const ir_to_assembler = (ir_mod) => {
 				if(condition.type != T.i32) {
 					console.log(s[1]);
 					console.log(s);
-					throw new Error("Condition expression expected to be an i32, it was actually of type "+ condition.type);
+					throw new Error("Condition expression expected to be an i32, it was actually of type "+ printTypeName(condition.type));
 				}
 				let body = compile_statement_s(s[2], m, p, locals);
 				if(body.type != T.block) {
 					console.log(s[2]);
 					console.log(s);
-					throw new Error("Loop body expected to be a block type, it was actually of type "+ block.type);
+					throw new Error("Loop body expected to be a block type, it was actually of type "+ printTypeName(body.type));
 				}
 				return {
 					type: T.block, 
@@ -304,18 +304,18 @@ const ir_to_assembler = (ir_mod) => {
 				if(condition.type != T.i32) {
 					console.log(s[1]);
 					console.log(s);
-					throw new Error("Conditional expression expected to be an i32, it was actually of type "+ condition.type);
+					throw new Error("Conditional expression expected to be an i32, it was actually of type "+ printTypeName(condition.type));
 				}
 				let body = compile_statement_s(s[2], m, p, locals);
 				if(body.type != T.block) {
 					console.log(s[2]);
 					console.log(s);
-					throw new Error("If-then body expected to be a block type, it was actually of type "+ block.type);
+					throw new Error("If-then body expected to be a block type, it was actually of type "+ printTypeName(block.type));
 				}
 				return {
 					type: T.block,
 					code: [
-						I.block, T.block, condition.code, I.i32eqz, T.br_if, 0,
+						I.block, T.block, condition.code, I.i32eqz, I.br_if, 0,
 							body.code,
 						I.end
 					]

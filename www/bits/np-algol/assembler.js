@@ -92,6 +92,59 @@ function valToKeyMap(map) {
 	return res;
 }
 
+// Half-hearted attempt at disassembling the bytes of function bodies
+function disassembleCode(flatcode) {
+	const argCounts = {
+		[[I.lget]]:'leb', 
+		[[I.lset]]:'leb', 
+		[[I.i32]]:'leb', 
+		[[I.i64]]:'leb', 
+		[[I.f32]]: 4, 
+		[[I.f64]]: 8, 
+		[[I.br]]: 'leb', 
+		[[I.br_if]]:'leb', 
+		[[I.call]]: 'leb'
+	};
+	const blockInstr = [I.loop, I.block, I.if];
+	let result = [];
+	for(let i = 0; i < flatcode.length; i++){
+		function advance() {
+			if(i >= flatcode.length) {
+				return `EARLY_EOF:{${i}}`;
+			}
+			i++;
+			return flatcode[i];
+		}
+		let e = flatcode[i];
+		if(e == I.if) {
+			console.log("IF");
+		}
+		if(!(e in wasmInstrNames)) {
+			result.push(`BAD_INSTR:{${e}/${wasmTypeNames[e]}}`);
+			continue;
+		}
+		result.push(wasmInstrNames[e]);
+		if(e in argCounts) {
+			let ac = argCounts[e];
+			if(ac == 'leb') {
+				let b;
+				do {
+					b = advance();
+					result.push(b);
+				} while(b > 128);
+				continue;
+			}
+			for(let a = 0; a < ac; a++) {
+				result.push(advance());
+			}
+		}
+		else if(blockInstr.includes(e)) {
+			result.push(printTypeName(advance()));
+		}
+	}
+	return result;
+}
+
 const wasmSectionNames = valToKeyMap(M);
 const wasmTypeNames = valToKeyMap(T);
 const wasmExportTypes = valToKeyMap(E);
@@ -163,7 +216,7 @@ function encodeName(array, string) {
 
 function printTypeName(e) {
 	if(!(e in wasmTypeNames)) {
-		throw new Error(`Invalid type name: {${e}}. As instruction: {${wasmInstrNames[e]}}`)
+		return `BAD_TYPE:{${e}/${wasmInstrNames[e]}}`;
 	}
 	return `<${wasmTypeNames[e]}>T`;
 }
@@ -273,21 +326,8 @@ function assemble(descriptor) {
 				fn = fn.concat(flatcode);
 				fn.push(I.end);
 
-				// Half-hearted attempt at disassembling the bytes
-				const rawInstr = [I.lget, I.lset, I.i32, I.i64, I.f32, I.f64, I.br, I.br_if];
-				const blockInstr = [I.loop, I.block, I.if];
-				pf = pf.concat(flatcode.map((e, i) => {
-					if(!(e in wasmInstrNames) || rawInstr.includes(flatcode[i-1])) {
-						return e;
-					}
-					else if(blockInstr.includes(flatcode[i-1])) {
-						return printTypeName(e);
-					}
-					else {
-						return wasmInstrNames[e];
-					}
-				}));
-				pf.push('end');
+				pf = pf.concat(disassembleCode(flatcode));
+				pf.push('--end--');
 
 				t = vector(t, fn);
 				pt = vector(pt, pf);
@@ -301,7 +341,7 @@ function assemble(descriptor) {
 				pf.forEach((e, i) => {
 					if(e === undefined) {
 						console.log('Problem function: ', pf, fn);
-						throw new Error(`ASSEMBLER BUG: invalid data in function ${idx}, instruction ${i} was undefined`);
+						throw new Error(`ASSEMBLER BUG: invalid data in function ${idx}, byte ${i} was malformed`);
 					}
 				});
 			}
