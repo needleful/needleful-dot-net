@@ -371,6 +371,7 @@ const ir_to_assembler = (ir_mod) => {
 					var_map[name] = [local_index, type];
 					var_map[local_index] = var_map[name];
 				});
+				locals_start += list.length;
 			}
 		}
 		try {
