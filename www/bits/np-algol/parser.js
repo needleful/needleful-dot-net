@@ -23,6 +23,9 @@ function getPositions(text, ...indeces) {
 }
 
 function parseAlgol(text, options = {}) {
+	if(!text || !text.length) {
+		perr(0, "Your program is empty!");
+	}
 	const Pc = {
 		begin: 'begin',
 		end: 'end',

@@ -1,12 +1,12 @@
-let test_results = {};
+let npa_results = {};
 
-function testParser() {
+function compileAndRun() {
 	let text = document.getElementById("algol-text").value;
 	let results = document.getElementById("parser-results");
 	results.innerText = "parsing...";
 	try {
-		test_results = {};
-		test_results.parseTree = parseAlgol(text, {multiWordIdents:true});
+		npa_results = {};
+		npa_results.parseTree = parseAlgol(text, {multiWordIdents:true});
 	}
 	catch(error) {
 		results.innerText = "Failed to parse!";
@@ -16,18 +16,18 @@ function testParser() {
 		throw error;
 	}
 	try {
-		test_results.ir = analyze(text, test_results.parseTree);
-		test_results.readableIr = {};
-		for(p in test_results.ir) {
-			let proc = test_results.ir[p];
+		npa_results.ir = analyze(text, npa_results.parseTree);
+		npa_results.readableIr = {};
+		for(p in npa_results.ir) {
+			let proc = npa_results.ir[p];
 			if(proc.inline) {
-				test_results.readableIr[p] = {inline: wasmInstrNames[proc.inline]};
+				npa_results.readableIr[p] = {inline: wasmInstrNames[proc.inline]};
 			}
 			else if(proc.code) {
-				test_results.readableIr[p] = {code: ir_almost_pretty_print(proc.code, 0)};
+				npa_results.readableIr[p] = {code: ir_almost_pretty_print(proc.code, 0)};
 			}
 			else if('import' in proc) {
-				test_results.readableIr[p] = {import: proc.import};
+				npa_results.readableIr[p] = {import: proc.import};
 			}
 		}
 	}
@@ -36,8 +36,8 @@ function testParser() {
 		throw error;
 	}
 	try {
-		test_results.test_mod = ir_to_assembler(test_results.ir);
-		[test_results.bytes, test_results.wasmCode] = assemble(test_results.test_mod);
+		npa_results.test_mod = ir_to_assembler(npa_results.ir);
+		[npa_results.bytes, npa_results.wasmCode] = assemble(npa_results.test_mod);
 		let wasm_platform = {
 			io:{
 				outinteger: (c,e) => console.log('integer', e, c),
@@ -45,8 +45,8 @@ function testParser() {
 				outboolean: (c, b) => console.log('boolean ', Boolean(b), c)
 			}
 		}
-		WebAssembly.instantiate(test_results.bytes, wasm_platform).then((result) => {
-			test_results.wasm = result;
+		WebAssembly.instantiate(npa_results.bytes, wasm_platform).then((result) => {
+			npa_results.wasm = result;
 			results.innerText = 'Success! Check the developer console';
 		});
 	}

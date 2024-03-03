@@ -1,6 +1,6 @@
 <page>
 	<basic-page>
-		<title>NP Sheets</title>
+		<title>nP-Sheets</title>
 		<custom-content-class>wide</custom-content-class>
 		<custom-nav-list>
 			<el>
@@ -9,7 +9,7 @@
 			</el>
 		</custom-nav-list>
 		<content>
-			<h1>NP Sheets</h1>
+			<h1>nP-Sheets</h1>
 			<p>This is my attempt at a spreadsheet software because I wanted to do my taxes but don't have Excel any more.</p>
 			<p>It's incredibly basic. Here's the rules: </p>
 			<ul>

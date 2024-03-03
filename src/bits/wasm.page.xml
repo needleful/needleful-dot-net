@@ -9,10 +9,6 @@
 		</custom-nav-list>
 		<content>
 			<script type='text/javascript' src='wasm.js'/>
-			<script type='text/javascript' src='np-algol/assembler.js'/>
-			<script type='text/javascript' src='np-algol/ir.js'/>
-			<script type='text/javascript' src='np-algol/parser.js'/>
-			<script type='text/javascript' src='np-algol/parser_test.js'/>
 			<p>I'm trying some Wasm! I needed to test a few things:</p>
 			<ul>
 				<li>Can I compile WASM in the browser?</li>
@@ -61,22 +57,6 @@
 			<button onclick='compile()'>Compile</button>
 			<br />
 			<div id='result'>Result here</div>
-			<h2>Parsing</h2>
-			<textarea id='algol-text' rows='15' cols='110'>
-begin
-	integer i, k;
-	real x, min x, max x;
-	Boolean bounds exceeded;
-	x := 10;
-	min x := 8;
-	max x := 30;
-	bounds exceeded := min x &lt; x and x &lt; max x;
-end I don't have anything else;
-			</textarea>
-			<br/>
-			<button onclick='testParser()'>Parse</button>
-			<br />
-			<div id='parser-results'>Parser results here</div>
 		</content>
 	</basic-page>
 </page>

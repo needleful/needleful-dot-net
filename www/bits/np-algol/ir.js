@@ -1,4 +1,3 @@
-
 // Expression types
 let IR = {
 	iconst: 	1,
