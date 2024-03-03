@@ -573,7 +573,7 @@ function parseAlgol(text, options = {}) {
 			}
 			let argument = arg();
 			if(!argument) {
-				perr(c, `Expected an argument to procedure {${name}}`);
+				perr(c, `Expected another argument or closing parenthesis for procedure call {${name}}`);
 			}
 			result.args.push(argument);
 			if(grab(Pc.comma)) {

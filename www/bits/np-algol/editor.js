@@ -7,10 +7,10 @@
 	- Integrated into TypeScript class
 	- Converted to busted Javascript (this was I, needleful)
 */
-const editor = {
-	text: document.getElementById("editor-text"),
-	enabled: true,
-	keydown: (evt) => {
+class Editor {
+	text;
+	enabled = true;
+	keydown = (evt) => {
 		this.text = evt.target;
 		switch(evt.key) {
 		case "Escape":
@@ -18,6 +18,7 @@ const editor = {
 			this.enabled = !this.enabled;
 			return false;
 		case "Enter":
+			//break;
 			if (this.text.selectionStart == this.text.selectionEnd) {
 				// find start of the current line
 				var sel = this.text.selectionStart;
@@ -99,8 +100,12 @@ const editor = {
 		}
 		return true;
 	}
+	constructor(textarea) {
+		this.text = textarea;
+		this.text.addEventListener("keydown", this.keydown.bind(this));
+	}
 }
-editor.text.addEventListener("keydown", editor.keydown.bind(editor));
+let editor = new Editor(document.getElementById("editor-text"));
 
 // Now my code for compiling and running
 let npa_results = {};
@@ -108,21 +113,25 @@ let npa_results = {};
 function compileAndRun() {
 	let text = editor.text.value;
 	let results = document.getElementById('status');
-	results.innerHTML = '';
 
-	function print(message) {
-		let p1 = makeChild(results, "p");
+	function clearMessages() {
+		results.innerHTML = '';
+	}
+	function print(message, properties) {
+		let p1 = makeChild(results, "p", properties);
 		p1.innerText = message;
 	}
+	const centered = {style: 'text-align:center;'}
 
-	print("Parsing...");
+	clearMessages();
+	print("Compiling...");
 	try {
 		npa_results = {};
 		npa_results.parseTree = parseAlgol(text, {multiWordIdents:true});
 	}
 	catch(error) {
 		console.error(error);
-		print(`Parsing error at line ${error.location.line}, column ${error.location.column}: ${error.text}`);
+		print(`${error.text} at line ${error.location.line}, column ${error.location.column}.`);
 		throw error;
 	}
 	try {
@@ -157,17 +166,18 @@ function compileAndRun() {
 	}
 	let wasm_platform = {
 		io:{
-			outinteger: (c,e) => print('integer: ' + e),
-			outreal: (c, r) => print('real: '+ r ),
-			outboolean: (c, b) => print('boolean: ' + Boolean(b))
+			outinteger: (c,e) => print(e),
+			outreal: (c, r) => print(r),
+			outboolean: (c, b) => print(Boolean(b))
 		}
 	}
 	WebAssembly.instantiate(npa_results.bytes, wasm_platform)
 	.then(result => {
 		npa_results.wasm = result;
 		let main = npa_results.wasm.instance.exports["#main#"];
+		print('-----', centered);
 		main();
-		print('Program run successfully');
+		print('---Program end---', centered);
 	})
 	.catch(error => {
 		console.error(error);

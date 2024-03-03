@@ -31,6 +31,7 @@
 				<div id='editor' class='half-page-flex'>
 					<textarea id='editor-text' rows='25'>
 					</textarea>
+					<br/>
 					<button onclick='compileAndRun()'>Compile and Run</button>
 				</div>
 				<div id='about' class='half-page-flex'>
