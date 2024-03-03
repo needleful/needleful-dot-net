@@ -39,7 +39,6 @@ function defaultEnv() {
 
 		// Exponentiation
 		'i^i': {
-			exported:true,
 			type: T.i64, params: [T.i64, T.i64], param_names:['x', 'e'], locals:[[T.i64, 'RES', 'i'], [T.i64, 'z']],
 			code: block([
 				if_else(
@@ -72,7 +71,6 @@ function defaultEnv() {
 		},
 
 		'r^i':{type:T.f64, params: [T.f64, T.i64], param_names:['x', 'e'], locals:[[T.i64, 'a', 'i'], [T.f64, 'RES', 'z']],
-			exported:true,
 			code: block([
 				if_else(
 					op2(op2('x', 'r=r', real(0)), 
@@ -107,7 +105,6 @@ function defaultEnv() {
 
 		// Expected math functions
 		abs: {
-			exported:true,
 			params: [T.f64], type: T.f64, param_names:['r'],
 			code: [IR.ret, if_else( op2('r', 'r<r', real(0)),
 				call('-r', 'r'),
@@ -116,7 +113,6 @@ function defaultEnv() {
 		},
 
 		iabs: {
-			exported:true,
 			params:[T.i64], type: T.i64, param_names:['a'], 
 			code:[IR.ret, if_else( op2('a', 'i<i', integer(0)),
 					op2(integer(0), 'i-i', 'a'),
@@ -133,7 +129,6 @@ function defaultEnv() {
 		'i|i':  {type: T.i64, params: [T.i64, T.i64], inline: I.i64or},
 		'i><i': {type: T.i64, params: [T.i64, T.i64], inline: I.i64xor},
 		'!i': {type: T.i64, params: [T.i64], param_names:['a'],
-			exported:true,
 			code: [IR.ret, 
 				op2(integer(-1), 'i><i', 'a')
 			]
@@ -413,6 +408,9 @@ function analyze(text, root_ast) {
 			return call('toreal', [code]);
 		}
 		else if(fromType == T.f64 && toType == T.i64) {
+			if(code[0] == IR.rconst) {
+				return [IR.iconst, code[1]];
+			}
 			console.log(`Warning: rounding real expression ${JSON.stringify(code)} to integer`);
 			return call('round', [code]);
 		}
@@ -549,7 +547,7 @@ function analyze(text, root_ast) {
 					code:op2(
 						typeConvert(left.code, left.type, opProc.params[0]), 
 						fqOp, 
-						typeConvert(right.code, right.type, opProc.params[0]))
+						typeConvert(right.code, right.type, opProc.params[1]))
 				};
 			}
 			else {
