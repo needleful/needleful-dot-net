@@ -1,3 +1,4 @@
+"use strict";
 function getPositions(text, ...indeces) {
 	let result = {};
 	let keys = Array.from(indeces).sort();
@@ -299,7 +300,7 @@ function parseAlgol(text, options = {}) {
 			return null;
 		}
 
-		val = [uint, decimal, lowDigits, exp, expDigits].filter(e => e).join('');
+		let val = [uint, decimal, lowDigits, exp, expDigits].filter(e => e).join('');
 		if(exp && !uint && !lowDigits) {
 			val = val.replace(Pc.exponent, '1'+Pc.exponent);
 		}

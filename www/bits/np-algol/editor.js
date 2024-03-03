@@ -1,3 +1,4 @@
+"use strict";
 /*
 	This is an adaptation of Brad Robinson's
 	Source: https://stackoverflow.com/a/45396754/2107659
@@ -131,13 +132,19 @@ function compileAndRun() {
 	}
 	catch(error) {
 		console.error(error);
-		print(`${error.text} at line ${error.location.line}, column ${error.location.column}.`);
+		if(error.location) {
+			print(`${error.text} at line ${error.location.line}, column ${error.location.column}.`);
+		}
+		else {
+			print(`Unexpected error (probably a compiler bug): ${error}`);
+			print('Check the console for more details.');
+		}
 		throw error;
 	}
 	try {
 		npa_results.ir = analyze(text, npa_results.parseTree);
 		npa_results.readableIr = {};
-		for(p in npa_results.ir) {
+		for(let p in npa_results.ir) {
 			let proc = npa_results.ir[p];
 			if(proc.inline) {
 				npa_results.readableIr[p] = {inline: wasmInstrNames[proc.inline]};
@@ -161,7 +168,7 @@ function compileAndRun() {
 	}
 	catch(error) {
 		console.error(error);
-		console.log('Assembly failed with error', error);
+		print('Assembly failed with error:'+ error);
 		throw error;
 	}
 	let wasm_platform = {

@@ -1,3 +1,4 @@
+"use strict";
 // Expression types
 let IR = {
 	iconst: 	1,
@@ -121,7 +122,7 @@ const ir_to_assembler = (ir_mod) => {
 	let imported = [];
 	let exported = [];
 	let code = [];
-	for (p in ir_mod) {
+	for (let p in ir_mod) {
 		let proc = ir_mod[p];
 		if ("inline" in proc) {
 			if (proc.exported) {
@@ -365,7 +366,7 @@ const ir_to_assembler = (ir_mod) => {
 		}
 	};
 	// Again
-	for(p in ir_mod) {
+	for(let p in ir_mod) {
 		let proc = ir_mod[p];
 		if("inline" in proc || 'import' in proc) {
 			continue;
@@ -373,7 +374,7 @@ const ir_to_assembler = (ir_mod) => {
 		proc.index += imported.length;
 	}
 	// We gathered all the names. Now time to compile the code
-	for(p in ir_mod) {
+	for(let p in ir_mod) {
 		let proc = ir_mod[p];
 		if("inline" in proc || 'import' in proc) {
 			continue;

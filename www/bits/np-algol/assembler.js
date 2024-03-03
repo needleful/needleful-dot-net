@@ -1,3 +1,4 @@
+"use strict";
 // Section indeces
 const M = {custom: 0, types: 1, imports: 2, funcs: 3, tables: 4, memories: 5, globals: 6, exports: 7, start: 8, elements: 9, code: 10, data: 11, data_count:12};
 // Value types

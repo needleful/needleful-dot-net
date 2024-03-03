@@ -1,3 +1,4 @@
+"use strict";
 function defaultEnv() {
 	const binOp = (type, inline) => ({type: type,  params: [type, type], inline: inline});
 	const cmpOp = (type, inline) => ({type: T.i32, params: [type, type], inline: inline});
@@ -243,17 +244,17 @@ function analyze(text, root_ast) {
 		}
 
 		// Analyze the function bodies
-		for(p in context.localFuncs) {
+		for(let p in context.localFuncs) {
 			let proc = context.localFuncs[p];
 			if('code' in proc || 'inline' in proc || 'import' in proc) {
 				continue;
 			}
 			let params = {};
 			if(proc.param_names) {
-				for(let p = 0; p < proc.param_names.length; p++) {
-					let param = proc.param_names[p];
+				for(let p2 = 0; p2 < proc.param_names.length; p2++) {
+					let param = proc.param_names[p2];
 					params[param] = {
-						type: proc.params[p]
+						type: proc.params[p2]
 					}
 					if(!params[param].type) {
 						throw new Error(`ANALYZER BUG: no type defined for parameter {${param}} in procedure {${proc.fqname}}`)

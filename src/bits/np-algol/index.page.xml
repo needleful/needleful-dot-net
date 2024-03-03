@@ -29,7 +29,7 @@
 			<h5>needleful's Presentational Algol</h5>
 			<div id='main-content'>
 				<div id='editor' class='half-page-flex'>
-					<textarea id='editor-text' rows='25'>
+					<textarea id='editor-text' rows='25' spellcheck='false'>
 					</textarea>
 					<br/>
 					<button onclick='compileAndRun()'>Compile and Run</button>
