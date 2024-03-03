@@ -5,12 +5,14 @@ function defaultEnv() {
 		'i-i':  {type: T.i64, params: [T.i64, T.i64], inline: I.i64sub},
 		'i*i':  {type: T.i64, params: [T.i64, T.i64], inline: I.i64mul},
 		'i%i':  {type: T.i64, params: [T.i64, T.i64], inline: I.i64div_s},
+		'-i':   {type: T.i64, params: [T.i64], inline: [I.i64, -1, I.i64mul]},
 
 		// Simple real ops
 		'r+r':{type:T.f64, params: [T.f64, T.f64], inline:I.f64add},
 		'r-r':{type:T.f64, params: [T.f64, T.f64], inline:I.f64sub},
 		'r*r':{type:T.f64, params: [T.f64, T.f64], inline:I.f64mul},
 		'r/r':{type:T.f64, params: [T.f64, T.f64], inline:I.f64div},
+		'-r': {type:T.f64, params: [T.f64], inline: I.f64neg},
 
 		// Comparison ops
 		'i<i':  {type:T.i32, params: [T.i64, T.i64], inline: I.i64lt_s},
@@ -67,6 +69,7 @@ function defaultEnv() {
 				[IR.ret, 'RES'],
 			])
 		},
+
 		'r^i':{type:T.f64, params: [T.f64, T.i64], param_names:['x', 'e'], locals:[[T.i64, 'a', 'i'], [T.f64, 'RES', 'z']],
 			code: block([
 				if_else(
@@ -104,7 +107,7 @@ function defaultEnv() {
 		abs: {
 			params: [T.f64], type: T.f64, param_names:['r'],
 			code: [IR.ret, if_else( op2('r', 'r<r', real(0)),
-				call('negate', 'r'),
+				call('-r', 'r'),
 				'r'
 			)]
 		},
@@ -130,7 +133,6 @@ function defaultEnv() {
 				op2(integer(-1), 'i><i', 'a')
 			]
 		},
-		'negate': {params: [T.f64], type: T.f64, inline: I.i64neg},
 		'shiftr': { type: T.i64, params: [T.i64, T.i64], inline: I.i64shr_s },
 		'ctz':    { type: T.i64, params: [T.i64], inline: I.i64ctz },
 		'toreal': { type: T.f64, params: [T.i64], inline: I.f64converti64_s },
@@ -347,22 +349,26 @@ function analyze(text, root_ast) {
 		if(proc.type != T.block) {
 			code = [IR.block, code, [IR.ret, context.name]];
 		}
-		let locals = {};
-		for(loc in context.localVars) {
+		let localsByType = {};
+		for(let loc in context.localVars) {
 			if(proc.param_names && proc.param_names.includes(loc)) {
 				continue;
 			}
 			let local = context.localVars[loc];
-			if(!(local.type in locals)) {
-				locals[local.type] = [];
+			if(!(local.type in localsByType)) {
+				localsByType[local.type] = [loc];
 			}
-			locals[local.type].push(loc);
+			else {
+				localsByType[local.type].push(loc);
+			}
 		}
-		let loc2 = [];
-		for(loc in locals) {
-			loc2.push([loc].concat(locals[loc]));
+		let localsArray = [];
+		for(let type in localsByType) {
+			let actualFuckingType = Number(type);
+			let result = [actualFuckingType].concat(localsByType[actualFuckingType]);
+			localsArray.push(result);
 		}
-		return {locals:loc2, code:code};
+		return {locals:localsArray, code:code};
 	}
 	function analyzeStatement(st, context) {
 		if('assign' in st){
@@ -396,6 +402,9 @@ function analyze(text, root_ast) {
 			return code;
 		}
 		if(fromType == T.i64 && toType == T.f64) {
+			if(code[0] == IR.iconst) {
+				return [IR.rconst, code[1]];
+			}
 			return call('toreal', [code]);
 		}
 		else if(fromType == T.f64 && toType == T.i64) {
@@ -472,16 +481,25 @@ function analyze(text, root_ast) {
 			}
 		}
 		else if('op' in exp) {
+			function isStringOp(op) {
+				return op.match(/\p{Alpha}/u);
+			}
+			function findStringOp(op) {
+				let fqOp = "#"+op+"#";
+				let opProc = resolveProc(fqOp, context);
+				return [opProc, fqOp];
+			}
+			function typeChar(type) {
+				return algolTypeNames[type][0];
+			}
+
 			function findBinOp(op, leftType, rightType) {
 				let opProc, fqOp;
-				if(op.match(/\p{Alpha}/u)) {
-					fqOp = "#"+op+"#";
-					opProc = resolveProc(fqOp, context);
+				if(isStringOp(op)) {
+					[opProc, fqOp] = findStringOp(op);
 				}
 				else {
-					let ltypeChar = algolTypeNames[leftType][0];
-					let rtypeChar = algolTypeNames[rightType][0];
-					fqOp = ltypeChar + op + rtypeChar;
+					fqOp = typeChar(leftType) + op +  typeChar(rightType);
 					opProc = resolveProc(fqOp, context);
 				}
 
@@ -497,9 +515,28 @@ function analyze(text, root_ast) {
 				}
 				return [opProc, fqOp];
 			}
+			function findSingleOp(op, argType) {
+				let opProc, fqOp;
+				if(isStringOp(op)) {
+					[opProc, fqOp] = findStringOp(op);
+				}
+				else {
+					fqOp = op + typeChar(argType);
+					opProc = resolveProc(fqOp, context);
+				}
+				if(!opProc || opProc.params[0] != argType) {
+					if(argType == T.i64) {
+						return findSingleOp(op, T.f64);
+					}
+					throw new Error(
+						`Unary operator {${op}} is not defined for ${algolTypeNames[argType]} values`);
+				}
+				return [opProc, fqOp];
+			}
+
+			let right = analyzeExpression(exp.right, context);
 			if('left' in exp) {
 				let left = analyzeExpression(exp.left, context);
-				let right = analyzeExpression(exp.right, context);
 
 				let [opProc, fqOp] = findBinOp(exp.op, left.type, right.type);
 				return {
@@ -511,7 +548,11 @@ function analyze(text, root_ast) {
 				};
 			}
 			else {
-				return findSingleOp(exp);
+				let [opProc, fqOp] = findSingleOp(exp.op, right.type);
+				return {
+					type: opProc.type,
+					code: call(fqOp, typeConvert(right.code, right.type, opProc.params[0]))
+				};
 			}
 		}
 		else if('cond' in exp) {

@@ -145,6 +145,16 @@ const ir_to_assembler = (ir_mod) => {
 		}
 	}
 	code.length = funcs.length;
+	const compile_statement_s = (s, m, p, locals) => {
+		let r = compile_statement(s, m, p, locals);
+		r.code.forEach((e, i) => {
+			if(e === undefined) {
+				console.log('PROBLEM EXPRESSION:', ir_almost_pretty_print(s, 0), r.code);
+				throw new Error(`IR BUG: Statement contains undefined instruction at index ${i}`);
+			}
+		});
+		return r;
+	};
 	const compile_statement = (s, m, p, locals) => {
 		try {
 			const get_local = (id) => {
@@ -188,7 +198,7 @@ const ir_to_assembler = (ir_mod) => {
 			} break;
 			case IR.assign: {
 				let v = get_local(s[1]);
-				let c = compile_statement(s[2], m, p, locals);
+				let c = compile_statement_s(s[2], m, p, locals);
 				if (v[1] != c.type){
 					throw new Error("Mismatched type between variable "+s[1]
 						+" of type "+wasmTypeNames[v[1]]+" and expression "+s[2]+" of type "+wasmTypeNames[c.type]);
@@ -196,14 +206,14 @@ const ir_to_assembler = (ir_mod) => {
 				return {type: T.block, code:[c.code, I.lset, leb_const(v[0])]};
 			} break;
 			case IR.if_else: {
-				let condition = compile_statement(s[1], m, p, locals);
+				let condition = compile_statement_s(s[1], m, p, locals);
 				if(condition.type != T.i32) {
 					console.log(s);
 					console.log(condition);
 					throw new Error('Conditions should be of type i32, not provided type: '+ condition.type);
 				}
-				let iftrue = compile_statement(s[2], m, p, locals);
-				let iffalse = compile_statement(s[3], m, p, locals);
+				let iftrue = compile_statement_s(s[2], m, p, locals);
+				let iffalse = compile_statement_s(s[3], m, p, locals);
 				if (iftrue.type != iffalse.type) {
 					console.log(iftrue);
 					console.log(iffalse);
@@ -222,7 +232,7 @@ const ir_to_assembler = (ir_mod) => {
 				}
 			} break;
 			case IR.ret: {
-				let exp = compile_statement(s[1], m, p, locals);
+				let exp = compile_statement_s(s[1], m, p, locals);
 				if (exp.type != p.type) {
 					console.log(s[1]);
 					console.log(p);
@@ -245,7 +255,7 @@ const ir_to_assembler = (ir_mod) => {
 				}
 				let code = [];
 				for(let i = 2; i < s.length; i++) {
-					let arg = compile_statement(s[i], m, p, locals);
+					let arg = compile_statement_s(s[i], m, p, locals);
 					if(arg.type != proc.params[i-2]){
 						console.log(s[i]);
 						console.log(arg);
@@ -266,13 +276,13 @@ const ir_to_assembler = (ir_mod) => {
 				};
 			} break;
 			case IR.loop_while: {
-				let condition = compile_statement(s[1], m, p, locals);
+				let condition = compile_statement_s(s[1], m, p, locals);
 				if(condition.type != T.i32) {
 					console.log(s[1]);
 					console.log(s);
 					throw new Error("Condition expression expected to be an i32, it was actually of type "+ condition.type);
 				}
-				let body = compile_statement(s[2], m, p, locals);
+				let body = compile_statement_s(s[2], m, p, locals);
 				if(body.type != T.block) {
 					console.log(s[2]);
 					console.log(s);
@@ -290,13 +300,13 @@ const ir_to_assembler = (ir_mod) => {
 				};
 			} break;
 			case IR.if_then: {
-				let condition = compile_statement(s[1], m, p, locals);
+				let condition = compile_statement_s(s[1], m, p, locals);
 				if(condition.type != T.i32) {
 					console.log(s[1]);
 					console.log(s);
 					throw new Error("Conditional expression expected to be an i32, it was actually of type "+ condition.type);
 				}
-				let body = compile_statement(s[2], m, p, locals);
+				let body = compile_statement_s(s[2], m, p, locals);
 				if(body.type != T.block) {
 					console.log(s[2]);
 					console.log(s);
@@ -314,7 +324,7 @@ const ir_to_assembler = (ir_mod) => {
 			case IR.block: {
 				let code = [];
 				for (let i = 1; i < s.length; i++) {
-					let c = compile_statement(s[i], m, p, locals)
+					let c = compile_statement_s(s[i], m, p, locals)
 					// Drop the result to keep the stack clean
 					if(c.type != T.block){
 						c.code.push(I.drop);
@@ -355,20 +365,20 @@ const ir_to_assembler = (ir_mod) => {
 			for(let p in proc.locals) {
 				let list = proc.locals[p];
 				let type = list.shift();
-				locals.push([type, list.length]);
+				locals.push([list.length, type]);
 				list.forEach((name, i) => {
-					let local_index = 1+locals_start;
+					let local_index = i+locals_start;
 					var_map[name] = [local_index, type];
 					var_map[local_index] = var_map[name];
 				});
 			}
 		}
 		try {
-			let compiled = compile_statement(proc.code, ir_mod, proc, var_map);
+			let compiled = compile_statement_s(proc.code, ir_mod, proc, var_map);
 			code[proc.index] = [locals, compiled.code];
 		}
 		catch(error) {
-			console.log('IR failed while compiling code for', p);
+			console.log('ASSEMBLER BUG: IR failed while compiling code for', p);
 			throw error;
 		}
 	}

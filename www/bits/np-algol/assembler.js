@@ -161,6 +161,13 @@ function encodeName(array, string) {
 	return vector(array, Array.from(bytes));
 }
 
+function printTypeName(e) {
+	if(!(e in wasmTypeNames)) {
+		throw new Error(`Invalid type name: {${e}}. As instruction: {${wasmInstrNames[e]}}`)
+	}
+	return `<${wasmTypeNames[e]}>T`;
+}
+
 function assemble(descriptor) {
 	let r = [], printable = []; // Dynamic arrays
 	for(let section of descriptor) {
@@ -170,7 +177,7 @@ function assemble(descriptor) {
 		}
 		let type = section.shift();
 		r.push(type);
-		printable.push('section: '+wasmSectionNames[type]);
+		printable.push(`section: ${wasmSectionNames[type]} (${type})`);
 		switch(type) {
 		case M.custom: {
 			// Assume it's an array of bytes from who-knows-where
@@ -188,13 +195,13 @@ function assemble(descriptor) {
 				t = vector(t, f[1]);
 
 				pt.push('func');
-				pt = vector(pt, f[0].map(e => wasmTypeNames[e]));
+				pt = vector(pt, f[0].map(printTypeName));
 				if(Array.isArray(f[1]) && f[1].length == 0) {
 					pt.push(0);
 				}
 				else {
 					pt.push(1);
-					pt.push(wasmTypeNames[f[1]]);
+					pt.push(printTypeName(f[1]));
 				}
 			}
 			r = vector(r, t);
@@ -249,31 +256,54 @@ function assemble(descriptor) {
 			let pt = [];
 			leb(t, section.length);
 			leb(pt, section.length);
-			for(let f of section) {
+			for(let idx = 0; idx < section.length; idx++) {
+				let f = section[idx];
 				let fn = [];
+				let pf = [];
 				leb(fn, f[0].length);
-				for(let loc of f[0]) {
-					leb(fn, loc[0]);
-					fn.push(loc[1]);
+				leb(pf, f[0].length);
+				for(let locals of f[0]) {
+					leb(fn, locals[0]);
+					fn.push(locals[1]);
+
+					leb(pf, locals[0]);
+					pf.push(printTypeName(locals[1]));
 				}
-				fn = fn.concat(f[1].flat());
+				let flatcode = f[1].flat(Infinity);
+				fn = fn.concat(flatcode);
 				fn.push(I.end);
-				t = vector(t, fn);
+
 				// Half-hearted attempt at disassembling the bytes
-				const rawInstr = [I.lget, I.i32, I.i64, I.f32, I.f32];
-				const blockInstr = [I.loop, I.block];
-				pt = vector(pt, 
-					fn.map((e, i) => {
-						if(!(e in wasmInstrNames) || rawInstr.includes(fn[i-1]) ) {
-							return e;
-						}
-						else if(blockInstr.includes(fn[i-1])) {
-							return wasmTypeNames[e];
-						}
-						else {
-							return wasmInstrNames[e];
-						}
-					}).flat());
+				const rawInstr = [I.lget, I.lset, I.i32, I.i64, I.f32, I.f64, I.br, I.br_if];
+				const blockInstr = [I.loop, I.block, I.if];
+				pf = pf.concat(flatcode.map((e, i) => {
+					if(!(e in wasmInstrNames) || rawInstr.includes(flatcode[i-1])) {
+						return e;
+					}
+					else if(blockInstr.includes(flatcode[i-1])) {
+						return printTypeName(e);
+					}
+					else {
+						return wasmInstrNames[e];
+					}
+				}));
+				pf.push('end');
+
+				t = vector(t, fn);
+				pt = vector(pt, pf);
+
+				fn.forEach((e, i) => {
+					if(e === undefined) {
+						console.log('Problem function: ', pf, f);
+						throw new Error(`ASSEMBLER BUG: invalid instruction in function ${idx}, instruction ${i} was undefined`);
+					}
+				});
+				pf.forEach((e, i) => {
+					if(e === undefined) {
+						console.log('Problem function: ', pf, fn);
+						throw new Error(`ASSEMBLER BUG: invalid data in function ${idx}, instruction ${i} was undefined`);
+					}
+				});
 			}
 			r = vector(r, t);
 			printable = vector(printable, pt);
