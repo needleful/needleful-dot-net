@@ -41,72 +41,6 @@ function defaultEnv() {
 		'#implies#': {type: T.i32, params:[T.i32, T.i32], param_names:['a', 'b'], 
 			code: [IR.ret, op2(call('#not#', ['a']), '#or#', 'b')]},
 
-		// Exponentiation
-		'i^i': {
-			type: T.i64, params: [T.i64, T.i64], param_names:['x', 'e'], locals:[[T.i64, 'RES', 'i'], [T.i64, 'z']],
-			code: block([
-				if_else(
-					op2(op2('e', 'i<=i', integer(0)), 
-						'#or#', 
-						op2(op2('x', 'i=i', integer(0)), 
-							'#and#', 
-							op2('e', 'i=i', integer(0)))
-					),
-					//call('fault', [string_lit("Undefined exponent"), 'e']),
-					[IR.ret, integer(-1)],
-					assign('RES', integer(1)),
-					loop_while(op2('e', 'i>i', integer(0)),
-						block([
-							assign('i', call('ctz', 'e')),
-							assign('e', 
-								op2('e', 'i&i', 
-									op1('!i', op2(integer(1), 'i<<i', 'i')))),
-							assign('z', 'x'),
-							loop_while(op2('i', 'i>i', integer(0)),
-								block([
-									assign('z', op2('z', 'i*i', 'z')),
-									assign('i', op2('i', 'i-i', integer(1)))
-								])),
-							assign('RES', op2('RES', 'i*i', 'z')),
-						])),
-				),
-				[IR.ret, 'RES'],
-			])
-		},
-
-		'r^i':{type:T.f64, params: [T.f64, T.i64], param_names:['x', 'e'], locals:[[T.i64, 'a', 'i'], [T.f64, 'RES', 'z']],
-			code: block([
-				if_else(
-					op2(op2('x', 'r=r', real(0)), 
-						'#and#', 
-						op2('e', 'i<=i', integer(0))),
-					//call('fault', [string_lit("Undefined exponent"), 'e']),
-					[IR.ret, real(NaN)],
-					block([
-						assign('a', call('iabs', ['e'])),
-						assign('RES', real(1)),
-						loop_while(op2('a', 'i>i', integer(0)),
-							block([
-								assign('i', call('ctz', 'e')),
-								assign('a', 
-									op2('a', 'i&i', 
-										op1('!i', op2(integer(1), 'i<<i', 'i')))),
-								assign('z', 'x'),
-								loop_while(op2('i', 'i>i', integer(0)),
-									block([
-										assign('z', op2('z', 'r*r', 'z')),
-										assign('i', op2('i', 'i-i', integer(1)))
-									])),
-								assign('RES', op2('RES', 'r*r', 'z'))
-							])),
-						if_then(op2('e', 'i<i', integer(0)),
-							assign('RES', op2(real(1), 'r/r', 'RES')))
-					]),
-				),
-				[IR.ret, 'RES']
-			])
-		},
-
 		// Expected math functions
 		abs: {
 			params: [T.f64], type: T.f64, param_names:['r'],
@@ -126,18 +60,12 @@ function defaultEnv() {
 
 		entier: {params: [T.f64], type: T.i64, inline: I.i64truncf64_s},
 
+		// Standard IO
 		'outinteger': {type: T.block, params: [T.i64, T.i64], import: 'io'},
 		'outreal':    {type: T.block, params: [T.i64, T.f64], import: 'io'},
 		'outboolean': {type: T.block, params: [T.i64, T.i32], import: 'io'},
 
 		// Extended functions
-		'i<<i': binOp(T.i64, I.i64shl),
-		'i>>i': binOp(T.i64, I.i64shr_u),
-		'i&i':  binOp(T.i64, I.i64and),
-		'i|i':  binOp(T.i64, I.i64or),
-		'i><i': binOp(T.i64, I.i64xor),
-		'!i':   unOp(T.i64, [I.i64, leb_const(-1), I.i64xor]),
-
 		'shiftr': binOp(T.i64, I.i64shr_s),
 		'ctz':    unOp(T.i64, I.i64ctz),
 		'toreal': { type: T.f64, params: [T.i64], inline: I.f64converti64_s },
@@ -162,7 +90,7 @@ const algolTypeNames = {
 }
 
 function analyze(text, root_ast) {
-	let ir_module = defaultEnv();
+	let procedures = defaultEnv();
 
 	function expError(exp, message) {
 		if(exp.context) {
@@ -190,16 +118,18 @@ function analyze(text, root_ast) {
 	}
 
 	function resolveVar(var_name, context, required){
-		if(var_name in context.vars) {
-			return context.vars[var_name];
+		if(var_name in context.locals) {
+			return context.locals[var_name];
 		}
 		else if(context.parent) {
 			let r = resolveVar(var_name, context.parent, required);
-
 			if(context.procedure) {
 				console.warn(`Retrieving {${var_name}} from outside the scope of procedure ${context.name}. This is not currently supported.`);
 			}
 			return r;
+		}
+		else if(var_name in context.root.globals) {
+			return context.root.globals[var_name];
 		}
 		else if(!required) {
 			return null;
@@ -209,15 +139,38 @@ function analyze(text, root_ast) {
 		}
 	}
 
+	function analyzeVars(vars, param_names) {
+		let varsByType = {};
+		for(let varName in vars) {
+			if(param_names && param_names.includes(varName)) {
+				continue;
+			}
+			let sym = vars[varName];
+			if(!(sym.type in varsByType)) {
+				varsByType[sym.type] = [sym.fqname];
+			}
+			else {
+				varsByType[sym.type].push(sym.fqname);
+			}
+		}
+		let varsArray = [];
+		for(let stringType in varsByType) {
+			let type = Number(stringType);
+			let result = [type].concat(varsByType[type]);
+			varsArray.push(result);
+		}
+		return varsArray;
+	}
+
 	function analyzeBlock(ast, context) {
 		// We get all the procedure definitions
-		let locals = {};
-		for(let v in context.vars) {
-			let loc = context.vars[v];
+		let vars = {};
+		for(let v in context.locals) {
+			let loc = context.locals[v];
 			if(!(loc.type in locals)) {
-				locals[loc.type] = [];
+				vars[loc.type] = [];
 			}
-			locals[loc.type].push[v];
+			vars[loc.type].push[v];
 		}
 		for(let d in ast.head) {
 			let decl = ast.head[d];
@@ -227,27 +180,30 @@ function analyze(text, root_ast) {
 				}
 				let proc = analyzeDefinition(decl, context);
 				context.procs[decl.proc] = proc;
-				ir_module[proc.fqname] = proc;
+				procedures[proc.fqname] = proc;
 			}
 			else if('decl' in decl) {
 				let type = decl.decl;
-				if(!(type in locals)) {
-					locals[type] = [];
+				let make_global = decl.own;
+				if(!(type in vars)) {
+					vars[type] = [];
 				}
-				locals[type] = locals[type].concat(decl.vars);
+				vars[type] = vars[type].concat(decl.vars);
 				let real_type = algolTypes[type];
 				if(!real_type) {
 					expError(decl, 'Bad type: '+type);
 				}
+				let var_dict = (!make_global && context.parent)? context.locals : context.globals;
+
 				for(let v of decl.vars) {
-					if(v in context.vars) {
-						throw new Error(`Local variable already defined: {${v}}`);
+					if(v in var_dict) {
+						throw new Error(`Variable already defined: {${v}}`);
 					}
 					let fqVar = v;
 					if(!context.procedure) {
 						fqVar += context.path;
 					}
-					context.vars[v] = {type: real_type, fqname:fqVar};
+					var_dict[v] = {type: real_type, fqname:fqVar};
 				}
 			}
 			else {
@@ -280,8 +236,9 @@ function analyze(text, root_ast) {
 				name: p,
 				path: '@' + proc.fqname,
 				procs: {},
-				vars: params,
+				locals: params,
 				parent: context,
+				root: context.root,
 				delimiters: proc.delimiters,
 				procedure: true,
 				childCount: 0,
@@ -298,7 +255,7 @@ function analyze(text, root_ast) {
 		for(let statement of ast.tail) {
 			statements.push(analyzeStatement(statement, context));
 		}
-		return {locals: locals, code:[IR.block].concat(statements)};
+		return {locals: vars, code:[IR.block].concat(statements)};
 	}
 	function analyzeDefinition(decl, context) {
 		let params = {};
@@ -354,7 +311,7 @@ function analyze(text, root_ast) {
 			throw new Error(`ANALYSIS BUG: No AST when analyzing ${context.path}`)
 		}
 		if(proc.type != T.block) {
-			context.vars[context.name] = {
+			context.locals[context.name] = {
 				type: proc.type,
 				return: true
 			};
@@ -372,26 +329,7 @@ function analyze(text, root_ast) {
 		if(proc.type != T.block) {
 			code = [IR.block, code, [IR.ret, context.name]];
 		}
-		let localsByType = {};
-		for(let loc in context.vars) {
-			if(proc.param_names && proc.param_names.includes(loc)) {
-				continue;
-			}
-			let local = context.vars[loc];
-			if(!(local.type in localsByType)) {
-				localsByType[local.type] = [loc];
-			}
-			else {
-				localsByType[local.type].push(loc);
-			}
-		}
-		let localsArray = [];
-		for(let notTheTypeThisIsAStringEvenWhenTheKeyIsAnInt in localsByType) {
-			let type = Number(notTheTypeThisIsAStringEvenWhenTheKeyIsAnInt);
-			let result = [type].concat(localsByType[type]);
-			localsArray.push(result);
-		}
-		return {locals:localsArray, code:code};
+		return {locals:analyzeVars(context.locals, proc.param_names), code:code};
 	}
 	function analyzeStatement(st, context) {
 		if('assign' in st){
@@ -418,18 +356,20 @@ function analyze(text, root_ast) {
 		else if ('head' in st) {
 			let subContext = {
 				parent:context,
+				root:context.root,
 				type: T.block,
-				vars: {},
+				locals: {},
 				procs: {},
 				procedure: false,
 				childCount: 0,
+				name: 'block'+(++context.childCount),
 			};
-			subContext.name = 'block'+(++context.childCount);
 			subContext.path = '@'+subContext.name + context.path;
+
 			let subBlock = analyzeBlock(st, subContext);
-			for(let l in subContext.vars) {
-				let local = subContext.vars[l];
-				context.vars[local.fqname] = local;
+			for(let l in subContext.locals) {
+				let local = subContext.locals[l];
+				context.locals[local.fqname] = local;
 			}
 			return subBlock.code;
 		}
@@ -621,11 +561,13 @@ function analyze(text, root_ast) {
 		name:"#main#",
 		path:"",
 		parent: null,
-		procs: ir_module,
-		vars: {},
+		procs: procedures,
+		locals: {},
+		globals: {},
 		procedure: true,
 		childCount: 0,
 	};
+	rootContext.root = rootContext;
 
 	let main_proc = {
 		fqname: rootContext.name,
@@ -641,7 +583,7 @@ function analyze(text, root_ast) {
 	if(!main_proc.code) {
 		throw new Error("COMPILER BUG: Main procedure has no code! " + main_proc.code);
 	}
-	ir_module[main_proc.fqname] = main_proc;
+	procedures[main_proc.fqname] = main_proc;
 	main_proc.body_ast = null;
-	return ir_module;
+	return {procedures:procedures, globals:analyzeVars(rootContext.globals, [])};
 }

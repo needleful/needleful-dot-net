@@ -608,17 +608,20 @@ function parseAlgol(text, options = {}) {
 	}
 
 	function statement() {
+		if(grab(Pc.comment)) {
+			grab(Pc.postComment);
+			grab(Pc.semicol);
+		}
 		if(grab(Pc.own) || grab(Pc.ofType)) {
-			perr(c, "Cannot declare new variables in a statement");
+			perr(c, "Variable declarations can only occur at the start of the block.");
+		}
+		else if(grab(Pc.procedure)) {
+			perr(c, "Procedure definitions can only occur at the start of the block.");
 		}
 		else if(grab(Pc.begin)) {
 			let head = blockHead();
 			let tail = blockTail();
 			return {head:head, tail:tail};
-		}
-		else if (grab(Pc.comment)) {
-			let comment = grab(Pc.postComment);
-			return {comment:comment};
 		}
 		else if(grab(Pc.cond_if)) {
 			let cond = expect(boolean(), 'Expected a boolean expression after {if}');

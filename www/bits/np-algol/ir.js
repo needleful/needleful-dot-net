@@ -117,13 +117,27 @@ const ir_to_assembler = (ir_mod) => {
 		}
 		return index;
 	};
+	let procedures = ir_mod.procedures;
 	let types = [];
 	let funcs = [];
 	let imported = [];
 	let exported = [];
 	let code = [];
-	for (let p in ir_mod) {
-		let proc = ir_mod[p];
+	let globals = [];
+	let globals_map = {};
+	const zeroCode = {
+		[T.f64]: [I.f64, f64_const(0)],
+		[T.i64]: [I.i64, leb_const(0)],
+		[T.i32]: [I.i32, leb_const(0)]
+	};
+	ir_mod.globals.forEach((g, i) => {
+		let [type, name] = g;
+		globals_map[name] = {index:i, type:type};
+		globals_map[i] = globals_map[name];
+		globals.push([type, G.variable, zeroCode[type], I.end]);
+	});
+	for (let p in procedures) {
+		let proc = procedures[p];
 		if ("inline" in proc) {
 			if (proc.exported) {
 				console.log("COMPILER BUG: inline procedure "+ p +" is marked as exported, but inline procedures are never exported.");
@@ -176,17 +190,24 @@ const ir_to_assembler = (ir_mod) => {
 	};
 	const compile_statement = (s, m, p, locals) => {
 		try {
-			const get_local = (id) => {
+			const get_var = (id) => {
 				if(id in locals) {
-					return locals[id];
+					return {global:false, info:locals[id]};
+				}
+				else if(id in globals_map) {
+					return {global:true, info:globals_map[id]};
 				}
 				else {
-					throw new Error("Unknown local var using id `"+id+"` of type "+typeof(id));
+					throw new Error(`Unknown variable: {${id}}`);
 				}
 			}
 			if(s in locals) {
-				let v = locals[s];
-				return {type:v[1], code:[I.lget, leb_const(v[0])]};
+				let vinfo = locals[s];
+				return {type:vinfo.type, code:[I.lget, leb_const(vinfo.index)]};
+			}
+			else if(s in globals_map) {
+				let vinfo = globals_map[s];
+				return {type:vinfo.type, code:[I.gget, leb_const(vinfo.index)]};
 			}
 			else if(!Array.isArray(s) || s.length == 0) {
 				console.log("malformed code: ", s);
@@ -219,13 +240,13 @@ const ir_to_assembler = (ir_mod) => {
 				return {type: T.f64, code:[I.f64, f64_const(s[1])]};
 			} break;
 			case IR.assign: {
-				let v = get_local(s[1]);
+				let v = get_var(s[1]);
 				let c = compile_statement_s(s[2], m, p, locals);
-				if (v[1] != c.type){
+				if (v.info.type != c.type){
 					throw new Error("Mismatched type between variable "+s[1]
-						+" of type "+wasmTypeNames[v[1]]+" and expression "+s[2]+" of type "+wasmTypeNames[c.type]);
+						+" of type "+wasmTypeNames[v.info.type]+" and expression "+s[2]+" of type "+wasmTypeNames[c.type]);
 				}
-				return {type: T.block, code:[c.code, I.lset, leb_const(v[0])]};
+				return {type: T.block, code:[c.code, v.global? I.gset : I.lset, leb_const(v.info.index)]};
 			} break;
 			case IR.if_else: {
 				let condition = compile_statement_s(s[1], m, p, locals);
@@ -366,16 +387,16 @@ const ir_to_assembler = (ir_mod) => {
 		}
 	};
 	// Again
-	for(let p in ir_mod) {
-		let proc = ir_mod[p];
+	for(let p in procedures) {
+		let proc = procedures[p];
 		if("inline" in proc || 'import' in proc) {
 			continue;
 		}
 		proc.index += imported.length;
 	}
 	// We gathered all the names. Now time to compile the code
-	for(let p in ir_mod) {
-		let proc = ir_mod[p];
+	for(let p in procedures) {
+		let proc = procedures[p];
 		if("inline" in proc || 'import' in proc) {
 			continue;
 		}
@@ -385,7 +406,7 @@ const ir_to_assembler = (ir_mod) => {
 				if(e in var_map) {
 					throw new Error("Duplicate local variable: "+e);
 				}
-				var_map[e] = [i, proc.params[i]];
+				var_map[e] = {index:i, type:proc.params[i]};
 				var_map[i] = var_map[e];
 			});
 		}
@@ -398,14 +419,14 @@ const ir_to_assembler = (ir_mod) => {
 				locals.push([list.length, type]);
 				list.forEach((name, i) => {
 					let local_index = i+locals_start;
-					var_map[name] = [local_index, type];
+					var_map[name] = {index:local_index, type:type};
 					var_map[local_index] = var_map[name];
 				});
 				locals_start += list.length;
 			}
 		}
 		try {
-			let compiled = compile_statement_s(proc.code, ir_mod, proc, var_map);
+			let compiled = compile_statement_s(proc.code, procedures, proc, var_map);
 			code[proc.index - imported.length] = [locals, compiled.code];
 			if (proc.exported) {
 				exported.push([p, E.func, proc.index]);
@@ -420,6 +441,7 @@ const ir_to_assembler = (ir_mod) => {
 		[M.types].concat(types),
 		[M.imports].concat(imported),
 		[M.funcs].concat(funcs),
+		[M.globals].concat(globals),
 		[M.exports].concat(exported),
 		[M.code].concat(code)
 	];

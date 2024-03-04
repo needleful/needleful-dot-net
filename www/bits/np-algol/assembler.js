@@ -8,6 +8,8 @@ const T = {
 };
 // Export/Import types
 const E = {func: 0, table: 1, mem: 2, global: 3};
+// Global types
+const G = {constant:0, variable:1};
 // Instruction codes
 const I = {
 	unreachable: 0x0, nop: 0x1, block: 0x2, loop: 0x3, if: 0x4, else: 0x5, 
@@ -93,6 +95,12 @@ function valToKeyMap(map) {
 	return res;
 }
 
+const wasmSectionNames = valToKeyMap(M);
+const wasmTypeNames = valToKeyMap(T);
+const wasmExportTypes = valToKeyMap(E);
+const wasmInstrNames = valToKeyMap(I);
+const wasmGlobalNames = valToKeyMap(G);
+
 // Half-hearted attempt at disassembling the bytes of function bodies
 function disassembleCode(flatcode) {
 	const argCounts = {
@@ -142,11 +150,6 @@ function disassembleCode(flatcode) {
 	}
 	return result;
 }
-
-const wasmSectionNames = valToKeyMap(M);
-const wasmTypeNames = valToKeyMap(T);
-const wasmExportTypes = valToKeyMap(E);
-const wasmInstrNames = valToKeyMap(I);
 
 // Pretty sure this works for signed and unsigned.
 function leb(array, value) {
@@ -274,8 +277,21 @@ function assemble(descriptor) {
 			break;
 		case M.memories:
 			break;
-		case M.globals:
-			break;
+		case M.globals: {
+			let t = [];
+			let pt = [];
+			leb(t, section.length);
+			leb(pt, section.length);
+			t = t.concat(section.flat(Infinity));
+			for(let g of section) {
+				let gflat = g.flat(Infinity);
+				pt.push(wasmGlobalNames[gflat.shift()]);
+				pt.push(printTypeName(gflat.shift()));
+				pt = pt.concat(disassembleCode(gflat));
+			}
+			r = vector(r, t);
+			printable = vector(printable, pt);
+		} break;
 		case M.imports: { // ALMOST identical to exports
 			let t = [];
 			let pt = [];

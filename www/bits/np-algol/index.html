@@ -3,12 +3,14 @@
 				#main-content {
 					display:flex;
 				}
-				.half-page-flex {
-					width:50%;
-					min-width:400;
+				#about {
+					flex:1;
+				}
+				#editor {
+					flex:1.6;
 				}
 				#editor textarea {
-					width:85%;
+					width:90%;
 				}
 			</style><script type="text/javascript" src="assembler.js"></script><script type="text/javascript" src="ir.js"></script><script type="text/javascript" src="analyzer.js"></script><script type="text/javascript" src="parser.js"></script><h1>nP-Algol</h1><h5>needleful's Presentational Algol</h5><div id="main-content"><div id="editor" class="half-page-flex"><textarea id="editor-text" rows="25" spellcheck="false"></textarea><br></br><button onclick="compileAndRun()">Compile and Run</button></div><div id="about" class="half-page-flex"><p>At long last, we have (an incomplete subset of) Algol 60 in the browser.</p><br></br><br></br><div id="status"><p>Run your code and the status will be here.</p></div></div></div><script type="text/javascript" src="editor.js"></script>
 				</div></body></html>
