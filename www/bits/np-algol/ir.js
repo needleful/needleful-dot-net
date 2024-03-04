@@ -209,6 +209,9 @@ const ir_to_assembler = (ir_mod) => {
 				let vinfo = globals_map[s];
 				return {type:vinfo.type, code:[I.gget, leb_const(vinfo.index)]};
 			}
+			else if(typeof(s) == 'string') {
+				throw new Error(`Unknown variable: {${s}}`)
+			}
 			else if(!Array.isArray(s) || s.length == 0) {
 				console.log("malformed code: ", s);
 				throw new Error("Malformed expression of type "+typeof(s));

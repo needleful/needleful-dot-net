@@ -167,7 +167,7 @@ function analyze(text, root_ast) {
 		let vars = {};
 		for(let v in context.locals) {
 			let loc = context.locals[v];
-			if(!(loc.type in locals)) {
+			if(!(loc.type in vars)) {
 				vars[loc.type] = [];
 			}
 			vars[loc.type].push[v];
@@ -222,7 +222,8 @@ function analyze(text, root_ast) {
 				for(let p2 = 0; p2 < proc.param_names.length; p2++) {
 					let param = proc.param_names[p2];
 					params[param] = {
-						type: proc.params[p2]
+						type: proc.params[p2],
+						fqname: p2,
 					}
 					if(!params[param].type) {
 						throw new Error(`ANALYZER BUG: no type defined for parameter {${param}} in procedure {${proc.fqname}}`)
@@ -313,6 +314,7 @@ function analyze(text, root_ast) {
 		if(proc.type != T.block) {
 			context.locals[context.name] = {
 				type: proc.type,
+				fqname: context.name+context.path,
 				return: true
 			};
 		}
@@ -327,7 +329,8 @@ function analyze(text, root_ast) {
 			expError(ast, `Body of procedure ${context.name} is {${code}}!`);
 		}
 		if(proc.type != T.block) {
-			code = [IR.block, code, [IR.ret, context.name]];
+			let returnName = context.locals[context.name].fqname;
+			code = [IR.block, code, [IR.ret, returnName]];
 		}
 		return {locals:analyzeVars(context.locals, proc.param_names), code:code};
 	}
@@ -338,6 +341,12 @@ function analyze(text, root_ast) {
 				return [IR.assign, lv.fqname, typeConvert(value.code, val.type, lv.type)];
 			}
 			let val = analyzeExpression(st.assign, context);
+			val.code.forEach((c, i) => {
+				if(c === undefined) {
+					console.error(val);
+					expError(st, `Analyzing expression created invalid results: {${ir_almost_pretty_print(val.code)}}`);
+				}
+			});
 			if(st.vars.length == 1) {
 				return checkedAssign(st.vars[0], val);
 			}
