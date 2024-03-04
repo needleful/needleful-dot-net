@@ -143,18 +143,33 @@ function compileAndRun() {
 	}
 	try {
 		npa_results.ir = analyze(text, npa_results.parseTree);
-		npa_results.readableIr = {};
-		for(let p in npa_results.ir) {
-			let proc = npa_results.ir[p];
-			if(proc.inline) {
-				npa_results.readableIr[p] = {inline: wasmInstrNames[proc.inline]};
+		npa_results.readableIr = () => {
+			let rir = {procs:{}, globals:{}};
+			for(let p in npa_results.ir.procedures) {
+				let proc = npa_results.ir.procedures[p];
+				if(proc.inline) {
+					let code;
+					if(Array.isArray(proc.inline)) {
+						code = proc.inline.map(e => disassembleCode(e));
+					}
+					else {
+						code = wasmInstrNames[proc.inline];
+					}
+					rir.procs[p] = {inline: code};
+				}
+				else if(proc.code) {
+					rir.procs[p] = {code: ir_almost_pretty_print(proc.code, 0)};
+				}
+				else if('import' in proc) {
+					rir.procs[p] = {import: proc.import};
+				}
+				rir.procs[p].signature = `(${proc.params.map(e => algolTypeNames[e]).join(', ')}) => ${algolTypeNames[proc.type]}`
 			}
-			else if(proc.code) {
-				npa_results.readableIr[p] = {code: ir_almost_pretty_print(proc.code, 0)};
+			for(let g of npa_results.ir.globals) {
+				let [type, name] = g;
+				rir.globals[name] = algolTypeNames[type];
 			}
-			else if('import' in proc) {
-				npa_results.readableIr[p] = {import: proc.import};
-			}
+			return rir;
 		}
 	}
 	catch(error) {

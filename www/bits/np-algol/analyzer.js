@@ -470,7 +470,7 @@ function analyze(text, root_ast) {
 				return {type: sym.type, code:call(sym.fqname, [])};
 			}
 			else {
-				expError(exp, `{${sym}} is not a variable or procedure available in this block.`)
+				expError(exp, `{${exp.variable}} is not a variable or procedure available in this block.`)
 			}
 		}
 		else if('op' in exp) {
