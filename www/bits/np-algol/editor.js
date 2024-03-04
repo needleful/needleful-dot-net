@@ -159,7 +159,7 @@ function compileAndRun() {
 	}
 	catch(error) {
 		console.error(error);
-		print("Analysis failed with error: "+ error);
+		print(error);
 		throw error;
 	}
 	try {
@@ -168,7 +168,7 @@ function compileAndRun() {
 	}
 	catch(error) {
 		console.error(error);
-		print('Assembly failed with error:'+ error);
+		print(error);
 		throw error;
 	}
 	let wasm_platform = {

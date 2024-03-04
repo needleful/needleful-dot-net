@@ -407,7 +407,7 @@ function parseAlgol(text, options = {}) {
 			grabOrDie(Pc.semicol, 'Semicolon required after value parameters');
 		}
 		specifiers = listOf(specifier, 'specifier list', Pc.semicol);
-		if(specifiers.length) {
+		if(specifiers && specifiers.length) {
 			grabOrDie(Pc.semicol, 'Semicolon required after last specifier.');
 		}
 		body = statement();
@@ -640,8 +640,8 @@ function parseAlgol(text, options = {}) {
 		else if(grab(Pc.assign)) {
 			return assignment(exp);
 		}
-		else if(typeof(exp) == 'string') {
-			return {func: exp, args: []};
+		else if('variable' in exp) {
+			return {func: exp.variable, args: []};
 		}
 		else if(typeof(exp) != 'object' || !('func' in exp)) {
 			perr(c, `Standalone expressions are not allowed: ${JSON.stringify(exp)}`);

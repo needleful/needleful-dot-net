@@ -174,8 +174,8 @@ function analyze(text, root_ast) {
 	}
 
 	function resolveProc(proc_name, context, required){
-		if(proc_name in context.localFuncs) {
-			return context.localFuncs[proc_name];
+		if(proc_name in context.procs) {
+			return context.procs[proc_name];
 		}
 		else if(context.parent) {
 			return resolveProc(proc_name, context.parent);
@@ -190,8 +190,16 @@ function analyze(text, root_ast) {
 	}
 
 	function resolveVar(var_name, context, required){
-		if(var_name in context.localVars) {
-			return context.localVars[var_name];
+		if(var_name in context.vars) {
+			return context.vars[var_name];
+		}
+		else if(context.parent) {
+			let r = resolveVar(var_name, context.parent, required);
+
+			if(context.procedure) {
+				console.warn(`Retrieving {${var_name}} from outside the scope of procedure ${context.name}. This is not currently supported.`);
+			}
+			return r;
 		}
 		else if(!required) {
 			return null;
@@ -204,8 +212,8 @@ function analyze(text, root_ast) {
 	function analyzeBlock(ast, context) {
 		// We get all the procedure definitions
 		let locals = {};
-		for(let v in context.localVars) {
-			let loc = context.localVars[v];
+		for(let v in context.vars) {
+			let loc = context.vars[v];
 			if(!(loc.type in locals)) {
 				locals[loc.type] = [];
 			}
@@ -214,11 +222,11 @@ function analyze(text, root_ast) {
 		for(let d in ast.head) {
 			let decl = ast.head[d];
 			if('proc' in decl) {
-				if(decl.proc in context.localFuncs) {
+				if(decl.proc in context.procs) {
 					throw new Error(`Local procedure already defined: {${decl.proc}}`);
 				}
 				let proc = analyzeDefinition(decl, context);
-				context.localFuncs[decl.proc] = proc;
+				context.procs[decl.proc] = proc;
 				ir_module[proc.fqname] = proc;
 			}
 			else if('decl' in decl) {
@@ -232,10 +240,14 @@ function analyze(text, root_ast) {
 					expError(decl, 'Bad type: '+type);
 				}
 				for(let v of decl.vars) {
-					if(v in context.localVars) {
+					if(v in context.vars) {
 						throw new Error(`Local variable already defined: {${v}}`);
 					}
-					context.localVars[v] = {type: real_type};
+					let fqVar = v;
+					if(!context.procedure) {
+						fqVar += context.path;
+					}
+					context.vars[v] = {type: real_type, fqname:fqVar};
 				}
 			}
 			else {
@@ -244,8 +256,8 @@ function analyze(text, root_ast) {
 		}
 
 		// Analyze the function bodies
-		for(let p in context.localFuncs) {
-			let proc = context.localFuncs[p];
+		for(let p in context.procs) {
+			let proc = context.procs[p];
 			if('code' in proc || 'inline' in proc || 'import' in proc) {
 				continue;
 			}
@@ -267,10 +279,12 @@ function analyze(text, root_ast) {
 			let procContext = {
 				name: p,
 				path: '@' + proc.fqname,
-				localFuncs: {},
-				localVars: params,
+				procs: {},
+				vars: params,
 				parent: context,
-				delimiters: proc.delimiters
+				delimiters: proc.delimiters,
+				procedure: true,
+				childCount: 0,
 			};
 			let result = analyzeBody(proc, procContext);
 			proc.code = result.code;
@@ -291,25 +305,29 @@ function analyze(text, root_ast) {
 		for (let p of decl.parameters) {
 			params[p] = {};
 		}
-		for (let spec of decl.specifiers) {
-			if('type' in spec) {
-				for (let v of spec.values) {
-					if(!(v in params)) {
-						throw new Error(
-							`While defining ${decl.proc}: Specifying non-existent parameter {${v}} is of type {${spec.type}}`);
+		if(decl.specifiers) {
+			for (let spec of decl.specifiers) {
+				if('type' in spec) {
+					for (let v of spec.values) {
+						if(!(v in params)) {
+							throw new Error(
+								`While defining ${decl.proc}: Specifying non-existent parameter {${v}} is of type {${spec.type}}`);
+						}
+						if('type' in params[v]) {
+							throw new Error(`While defining ${decl.proc}: Parameter {${v}} already declared of type ${params[v].type}, now re-declared of type ${spec.type}`);
+						}
+						params[v].type = spec.type;
 					}
-					if('type' in params[v]) {
-						throw new Error(`While defining ${decl.proc}: Parameter {${v}} already declared of type ${params[v].type}, now re-declared of type ${spec.type}`);
-					}
-					params[v].type = spec.type;
 				}
 			}
 		}
-		for(let val of decl.values) {
-			if(!(val in params)) {
-				throw new Error(`While defining ${decl.proc}: Specified unknown parameter {${val}} as a value.`);
+		if(decl.values) {
+			for(let val of decl.values) {
+				if(!(val in params)) {
+					throw new Error(`While defining ${decl.proc}: Specified unknown parameter {${val}} as a value.`);
+				}
+				params[val].value = true;
 			}
-			params[val].value = true;
 		}
 		for(let p in params) {
 			if(!params[p].type) {
@@ -336,7 +354,7 @@ function analyze(text, root_ast) {
 			throw new Error(`ANALYSIS BUG: No AST when analyzing ${context.path}`)
 		}
 		if(proc.type != T.block) {
-			context.localVars[context.name] = {
+			context.vars[context.name] = {
 				type: proc.type,
 				return: true
 			};
@@ -355,11 +373,11 @@ function analyze(text, root_ast) {
 			code = [IR.block, code, [IR.ret, context.name]];
 		}
 		let localsByType = {};
-		for(let loc in context.localVars) {
+		for(let loc in context.vars) {
 			if(proc.param_names && proc.param_names.includes(loc)) {
 				continue;
 			}
-			let local = context.localVars[loc];
+			let local = context.vars[loc];
 			if(!(local.type in localsByType)) {
 				localsByType[local.type] = [loc];
 			}
@@ -368,9 +386,9 @@ function analyze(text, root_ast) {
 			}
 		}
 		let localsArray = [];
-		for(let type in localsByType) {
-			let actualFuckingType = Number(type);
-			let result = [actualFuckingType].concat(localsByType[actualFuckingType]);
+		for(let notTheTypeThisIsAStringEvenWhenTheKeyIsAnInt in localsByType) {
+			let type = Number(notTheTypeThisIsAStringEvenWhenTheKeyIsAnInt);
+			let result = [type].concat(localsByType[type]);
 			localsArray.push(result);
 		}
 		return {locals:localsArray, code:code};
@@ -379,7 +397,7 @@ function analyze(text, root_ast) {
 		if('assign' in st){
 			function checkedAssign(v, value) {
 				let lv = resolveVar(v, context, true);
-				return [IR.assign, v, typeConvert(value.code, val.type, lv.type)];
+				return [IR.assign, lv.fqname, typeConvert(value.code, val.type, lv.type)];
 			}
 			let val = analyzeExpression(st.assign, context);
 			if(st.vars.length == 1) {
@@ -397,8 +415,26 @@ function analyze(text, root_ast) {
 		else if('func' in st) {
 			return checkedCall(st, context).code;
 		}
+		else if ('head' in st) {
+			let subContext = {
+				parent:context,
+				type: T.block,
+				vars: {},
+				procs: {},
+				procedure: false,
+				childCount: 0,
+			};
+			subContext.name = 'block'+(++context.childCount);
+			subContext.path = '@'+subContext.name + context.path;
+			let subBlock = analyzeBlock(st, subContext);
+			for(let l in subContext.vars) {
+				let local = subContext.vars[l];
+				context.vars[local.fqname] = local;
+			}
+			return subBlock.code;
+		}
 		else {
-			expError(st, "Cannot parse statement: "+JSON.stringify(st));
+			expError(st, "Could not analyze statement: "+JSON.stringify(st));
 		}
 	}
 
@@ -478,7 +514,7 @@ function analyze(text, root_ast) {
 				if(!sym.type) {
 					expError(exp, `Variable ${exp.variable} has no defined type`);
 				}
-				return {type: sym.type, code:exp.variable};
+				return {type: sym.type, code:sym.fqname};
 			}
 			sym = resolveProc(exp.variable, context);
 			if(sym) {
@@ -585,8 +621,10 @@ function analyze(text, root_ast) {
 		name:"#main#",
 		path:"",
 		parent: null,
-		localFuncs: ir_module,
-		localVars: {}
+		procs: ir_module,
+		vars: {},
+		procedure: true,
+		childCount: 0,
 	};
 
 	let main_proc = {
