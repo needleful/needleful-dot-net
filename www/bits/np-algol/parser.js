@@ -45,6 +45,7 @@ function parseAlgol(text, options = {}) {
 		parenOpen: '(',
 		parenClose: ')',
 		colon: ':',
+		longCommaDelimiter:':', // Used in name mangling
 		postComment: /^([^;]*)/,
 		identPart: /^\p{Alpha}[\p{Alpha}\d]*/u,
 		letterString: /^\p{Alpha}+/u,
@@ -416,7 +417,7 @@ function parseAlgol(text, options = {}) {
 
 		return {
 			type: type,
-			proc: name,
+			proc: designator.func ?? name,
 			parameters: designator.args,
 			delimiters: designator.delimiters,
 			specifiers: specifiers,
@@ -602,6 +603,7 @@ function parseAlgol(text, options = {}) {
 					longComma: longComma, 
 					position: result.args.length
 				});
+				result.func += Pc.longCommaDelimiter+longComma;
 				continue;
 			}
 		}

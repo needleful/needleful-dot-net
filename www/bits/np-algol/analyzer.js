@@ -121,6 +121,9 @@ function analyze(text, root_ast) {
 		if(var_name in context.locals) {
 			return context.locals[var_name];
 		}
+		else if(context.name === var_name) {
+			throw new Error(`Tried assigning to the result of {${context.name}}, which does not return a value.`);
+		}
 		else if(context.parent) {
 			let r = resolveVar(var_name, context.parent, required);
 			if(context.procedure) {
