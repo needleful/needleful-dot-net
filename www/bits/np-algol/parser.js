@@ -172,6 +172,7 @@ function parseAlgol(text, options = {}) {
 		function getPlacement(tree, precedence) {
 			let parent = null;
 			while(tree && tree.precedence >= precedence) {
+				parent = tree;
 				tree = tree.right;
 			}
 			return [parent, tree];
