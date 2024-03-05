@@ -382,6 +382,21 @@ function analyze(text, root_ast) {
 			}
 			return subBlock.code;
 		}
+		else if('cond' in st) {
+			let condition = analyzeExpression(st.cond, context);
+			if(condition.type != T.i32) {
+				expError(condition, 
+					`Expected a Boolean expression inside an if-clause, found ${algolTypeNames[condition.type]} expression: {${ir_almost_pretty_print(condition.code)}}`);
+			}
+			let then_do = analyzeExpression(st.then_do, context);
+			if('else_do' in st) {
+				let else_do = analyzeExpression(st.else_do, context);
+				return if_else(condition.code, then_do.code, else_do.code);
+			}
+			else {
+				return if_then(condition.code, then_do.code);
+			}
+		}
 		else {
 			expError(st, "Could not analyze statement: "+JSON.stringify(st));
 		}

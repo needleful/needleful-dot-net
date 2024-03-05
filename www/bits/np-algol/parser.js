@@ -270,6 +270,7 @@ function parseAlgol(text, options = {}) {
 				perr(condition.context, 
 					`Expected a Boolean expression for the {if} clause, found an incompatible ${condition.type} expression`);
 			}
+			grabOrDie(Pc.cond_then, `Expected keyword {${Pc.cond_then}} for {if} clause`);
 			return condition;
 		}
 		else {
@@ -320,7 +321,7 @@ function parseAlgol(text, options = {}) {
 		}
 		let val = grab(Pc.logicalVal);
 		if(val) {
-			return {type: 'Boolean', value:Boolean(val), precedence:opPrecedence.primary, context:c};
+			return {type: 'Boolean', value:(val === 'true'), precedence:opPrecedence.primary, context:c};
 		}
 		val = identifier();
 		if (val) {
@@ -342,7 +343,6 @@ function parseAlgol(text, options = {}) {
 	function ifElse() {
 		let lif = ifClause();
 		if(lif) {
-			grabOrDie(Pc.cond_then);
 			let then_do = expect(simpleExpression(), `No condition after then-clause for conditional expression`);
 			grabOrDie(Pc.cond_else, "{else} clause is mandatory for conditional expressions.");
 			let else_do = expect(expression(), `No expression found after {else}`);
@@ -623,9 +623,8 @@ function parseAlgol(text, options = {}) {
 			let tail = blockTail();
 			return {head:head, tail:tail};
 		}
-		else if(grab(Pc.cond_if)) {
-			let cond = expect(boolean(), 'Expected a boolean expression after {if}');
-			grabOrDie(Pc.cond_then, '{then} is required after {if <condition>}');
+		else if(peek(Pc.cond_if)) {
+			let cond = ifClause();
 			let s = expect(statement(), 'Expected a statement after if-then clause');
 			if(grab(Pc.cond_else)) {
 				let s2 = expect(statement(), 'Expected a statement after {else}');
