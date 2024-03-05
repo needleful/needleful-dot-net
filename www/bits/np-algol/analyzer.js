@@ -559,7 +559,7 @@ function analyze(text, root_ast) {
 				let [opProc, fqOp] = findSingleOp(exp.op, right.type);
 				return {
 					type: opProc.type,
-					code: call(fqOp, typeConvert(right.code, right.type, opProc.params[0]))
+					code: call(fqOp, [typeConvert(right.code, right.type, opProc.params[0])])
 				};
 			}
 		}
