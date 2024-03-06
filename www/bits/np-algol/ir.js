@@ -139,7 +139,6 @@ const ir_to_assembler = (ir_mod) => {
 		globals_map[i] = globals_map[name];
 		globals.push([type, G.variable, zeroCode[type], I.end]);
 	});
-	console.log("square@x: ", ir_mod.procedures['square@x'].type);
 	for (let p in procedures) {
 		let proc = procedures[p];
 		if ("inline" in proc) {
@@ -211,7 +210,6 @@ const ir_to_assembler = (ir_mod) => {
 		return r;
 	};
 	const compile_statement = (s, m, p, locals) => {
-		console.log("square@x: ", ir_mod.procedures['square@x'].type, 'while compiling ', p.fqname, ir_almost_pretty_print(s));
 		try {
 			const get_var = (id) => {
 				if(id in locals) {
@@ -277,14 +275,14 @@ const ir_to_assembler = (ir_mod) => {
 			case IR.multi_assign: {
 				let vars = s[1].map(get_var);
 				let c = compile_statement_s(s[2], m, p, locals);
-				let call_type = [...c.type];
-				if(vars.length > call_type.length) {
+				if(vars.length > c.type.length) {
 					throw new Error("Trying to assign more variables than an expression produces: "+ir_almost_pretty_print(s));
 				}
 
 				let rcode = c.code;
+				let result_type = [...c.type];
 				for(let i = vars.length; i --> 0;) {
-					let type = call_type.pop();
+					let type = result_type.pop();
 					let v = vars[i];
 					if(!typeEq(type, v.info.type)) {
 						throw new Error(
@@ -293,7 +291,7 @@ const ir_to_assembler = (ir_mod) => {
 					rcode.push(v.global? I.gset : I.lset);
 					rcode.push(leb_const(v.info.index));
 				}
-				return {type: call_type, code:rcode};
+				return {type: result_type, code:rcode};
 			} break;
 			case IR.if_else: {
 				let condition = compile_statement_s(s[1], m, p, locals);
@@ -447,7 +445,6 @@ const ir_to_assembler = (ir_mod) => {
 		}
 		proc.index += imported.length;
 	}
-	console.log("square@x: ", ir_mod.procedures['square@x'].type);
 	// We gathered all the names. Now time to compile the code
 	for(let p in procedures) {
 		let proc = procedures[p];
