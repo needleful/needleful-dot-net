@@ -12,12 +12,14 @@ let IR = {
 	if_then: 	9,
 	inline: 	10,
 	i32const: 	11,
+	multi_assign: 12,
 }
 IR.min_args = {
 	[IR.iconst]:1,
 	[IR.i32const]:1,
 	[IR.rconst]:1,
 	[IR.assign]:2,
+	[IR.multi_assign]:2,
 	[IR.if_else]:3,
 	[IR.ret]:1,
 	[IR.call]:1,
@@ -31,8 +33,9 @@ IR.max_args = {
 	[IR.i32const]:1,
 	[IR.rconst]:1,
 	[IR.assign]:2,
+	[IR.multi_assign]:2,
 	[IR.if_else]:3,
-	[IR.ret]:1,
+	[IR.ret]:Infinity,
 	[IR.call]:Infinity,
 	[IR.loop_while]:2,
 	[IR.declare]:2,
@@ -136,6 +139,7 @@ const ir_to_assembler = (ir_mod) => {
 		globals_map[i] = globals_map[name];
 		globals.push([type, G.variable, zeroCode[type], I.end]);
 	});
+	console.log("square@x: ", ir_mod.procedures['square@x'].type);
 	for (let p in procedures) {
 		let proc = procedures[p];
 		if ("inline" in proc) {
@@ -154,8 +158,17 @@ const ir_to_assembler = (ir_mod) => {
 			console.log(proc);
 			throw new Error("COMPILER BUG: Declared procedure "+p+" has no implementation!");
 		}
-		// I used T.block for functions without return types, but in WASM it uses an empty vector
-		let realReturnType = proc.type != T.block? proc.type : [];
+
+		let realReturnType;
+		if(Array.isArray(proc.type)) {
+			realReturnType = proc.type;
+		}
+		else if(proc.type == T.block) {
+			realReturnType = [];
+		}
+		else {
+			realReturnType = [proc.type];
+		}
 		let ptype = find_or_push(types, [proc.params || [], realReturnType]);
 		if(ptype == undefined) {
 			console.log(t);
@@ -178,6 +191,15 @@ const ir_to_assembler = (ir_mod) => {
 		}
 	}
 	code.length = funcs.length;
+	function typeEq(type1, type2) {
+		if(!Array.isArray(type1)) {
+			type1 = [type1];
+		}
+		if(!Array.isArray(type2)) {
+			type2 = [type2];
+		}
+		return type1.length == type2.length && type1.every((e, i) => e == type2[i]);
+	}
 	const compile_statement_s = (s, m, p, locals) => {
 		let r = compile_statement(s, m, p, locals);
 		r.code.forEach((e, i) => {
@@ -189,6 +211,7 @@ const ir_to_assembler = (ir_mod) => {
 		return r;
 	};
 	const compile_statement = (s, m, p, locals) => {
+		console.log("square@x: ", ir_mod.procedures['square@x'].type, 'while compiling ', p.fqname, ir_almost_pretty_print(s));
 		try {
 			const get_var = (id) => {
 				if(id in locals) {
@@ -245,11 +268,32 @@ const ir_to_assembler = (ir_mod) => {
 			case IR.assign: {
 				let v = get_var(s[1]);
 				let c = compile_statement_s(s[2], m, p, locals);
-				if (v.info.type != c.type){
+				if (!typeEq(v.info.type, c.type)){
 					throw new Error("Mismatched type between variable "+s[1]
 						+" of type "+wasmTypeNames[v.info.type]+" and expression "+s[2]+" of type "+wasmTypeNames[c.type]);
 				}
 				return {type: T.block, code:[c.code, v.global? I.gset : I.lset, leb_const(v.info.index)]};
+			} break;
+			case IR.multi_assign: {
+				let vars = s[1].map(get_var);
+				let c = compile_statement_s(s[2], m, p, locals);
+				let call_type = [...c.type];
+				if(vars.length > call_type.length) {
+					throw new Error("Trying to assign more variables than an expression produces: "+ir_almost_pretty_print(s));
+				}
+
+				let rcode = c.code;
+				for(let i = vars.length; i --> 0;) {
+					let type = call_type.pop();
+					let v = vars[i];
+					if(!typeEq(type, v.info.type)) {
+						throw new Error(
+							`Mismatched types between expression ${s[1][i]} (${wasmTypeNames[v.info.type]}) and expression {${ir_almost_pretty_print(c)}} (${type})`);
+					}
+					rcode.push(v.global? I.gset : I.lset);
+					rcode.push(leb_const(v.info.index));
+				}
+				return {type: call_type, code:rcode};
 			} break;
 			case IR.if_else: {
 				let condition = compile_statement_s(s[1], m, p, locals);
@@ -260,7 +304,7 @@ const ir_to_assembler = (ir_mod) => {
 				}
 				let iftrue = compile_statement_s(s[2], m, p, locals);
 				let iffalse = compile_statement_s(s[3], m, p, locals);
-				if (iftrue.type != iffalse.type) {
+				if (!typeEq(iftrue.type, iffalse.type)) {
 					console.log(iftrue);
 					console.log(iffalse);
 					throw new Error("Mismatched types between if and else clauses");
@@ -278,15 +322,21 @@ const ir_to_assembler = (ir_mod) => {
 				}
 			} break;
 			case IR.ret: {
-				let exp = compile_statement_s(s[1], m, p, locals);
-				if (exp.type != p.type) {
+				let statements = {type:[], code:[]};
+				for(let i = 1; i < s.length; i++) {
+					let exp = compile_statement_s(s[i], m, p, locals);
+					statements.type.push(exp.type);
+					statements.code.push(exp.code);
+				}
+
+				if (!typeEq(statements.type, p.type)) {
 					console.log(s[1]);
 					console.log(p);
-					throw new error("Return type does not match procedure type: "+exp.type+" versus "+p.type);
+					throw new Error("Return type does not match procedure type: "+printTypeName(statements.type)+" versus "+printTypeName(p.type));
 				}
 				return {
 					type: T.block, 
-					code: exp.code.concat(I.return)
+					code: statements.code.concat(I.return)
 				};
 			} break;
 			case IR.call: {
@@ -302,7 +352,7 @@ const ir_to_assembler = (ir_mod) => {
 				let code = [];
 				for(let i = 2; i < s.length; i++) {
 					let arg = compile_statement_s(s[i], m, p, locals);
-					if(arg.type != proc.params[i-2]){
+					if(!typeEq(arg.type, proc.params[i-2])){
 						console.log(s[i]);
 						console.log(arg);
 						throw new Error("Mismatched type for arg "+(i-2)+" for procedure "+s[1]+": "
@@ -397,6 +447,7 @@ const ir_to_assembler = (ir_mod) => {
 		}
 		proc.index += imported.length;
 	}
+	console.log("square@x: ", ir_mod.procedures['square@x'].type);
 	// We gathered all the names. Now time to compile the code
 	for(let p in procedures) {
 		let proc = procedures[p];

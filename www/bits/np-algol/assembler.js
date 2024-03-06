@@ -10,7 +10,7 @@ const T = {
 const E = {func: 0, table: 1, mem: 2, global: 3};
 // Global types
 const G = {constant:0, variable:1};
-// Instruction codes
+// Instruction codes. Putting all of them was a bit overkill.
 const I = {
 	unreachable: 0x0, nop: 0x1, block: 0x2, loop: 0x3, if: 0x4, else: 0x5, 
 	end: 0xb, br: 0xc, br_if: 0xd, br_table: 0xe, return: 0xf, call: 0x10, call_indirect: 0x11,
@@ -216,6 +216,9 @@ function encodeName(array, string) {
 }
 
 function printTypeName(e) {
+	if(Array.isArray(e)) {
+		return `<${e.map(t => wasmTypeNames[t]).join(', ')}>T`
+	}
 	if(!(e in wasmTypeNames)) {
 		return `BAD_TYPE:{${e}/${wasmInstrNames[e]}}`;
 	}
@@ -250,13 +253,7 @@ function assemble(descriptor) {
 
 				pt.push('func');
 				pt = vector(pt, f[0].map(printTypeName));
-				if(Array.isArray(f[1]) && f[1].length == 0) {
-					pt.push(0);
-				}
-				else {
-					pt.push(1);
-					pt.push(printTypeName(f[1]));
-				}
+				pt = vector(pt, f[1].map(printTypeName));
 			}
 			r = vector(r, t);
 			printable = vector(printable, pt);

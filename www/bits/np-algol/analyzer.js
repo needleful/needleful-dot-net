@@ -116,39 +116,62 @@ function analyze(text, root_ast) {
 				`Referenced procedure {${proc_name}}, which is not defined in this or any parent scope.`);
 		}
 	}
-
-	function resolveVar(var_name, context, required){
+	// Captures are bubbled up from where they're referenced to every outer function
+	function addCapture(context, sym, fromContext) {
+		if(!context || context == fromContext) {
+			return;
+		}
+		if(!('captures' in context)) {
+			context.captures = {};
+		}
+		context.captures[sym.fqname] = {sym:sym, from:fromContext};
+		addCapture(context.parent, sym, fromContext);
+	}
+	function resolveVarWithContext(var_name, context, required){
 		if(var_name in context.locals) {
-			return context.locals[var_name];
+			return [context, context.locals[var_name]];
+		}
+		else if('captures' in context && var_name in context.captures) {
+			let x = context.captures[var_name];
+			return [x.from, x.sym];
 		}
 		else if(context.name === var_name) {
 			throw new Error(`Tried assigning to the result of {${context.name}}, which does not return a value.`);
 		}
 		else if(context.parent) {
-			let r = resolveVar(var_name, context.parent, required);
-			if(context.procedure) {
-				console.warn(`Retrieving {${var_name}} from outside the scope of procedure ${context.name}. This is not currently supported.`);
+			let [foundContext, sym] = resolveVarWithContext(var_name, context.parent, required);
+			if(foundContext == context.root) {
+				// Just a global variable, no need for special scaffolding
+				return [foundContext, sym];
 			}
-			return r;
-		}
-		else if(var_name in context.root.globals) {
-			return context.root.globals[var_name];
+			if(sym === null) {
+				return [foundContext, sym];
+			}
+			if(context.procedure) {
+				addCapture(context, sym, foundContext);
+			}
+			return [foundContext, sym];
 		}
 		else if(!required) {
-			return null;
+			return [null, null];
 		}
 		else {
 			throw new Error(`Variable {${var_name}} was not found.`);
 		}
 	}
 
-	function analyzeVars(vars, param_names) {
+	function resolveVar(var_name, context, required) {
+		let [_, sym] = resolveVarWithContext(var_name, context, required);
+		return sym;
+	}
+
+	function analyzeVars(context, param_names) {
 		let varsByType = {};
-		for(let varName in vars) {
+		for(let varName in context.locals) {
 			if(param_names && param_names.includes(varName)) {
 				continue;
 			}
-			let sym = vars[varName];
+			let sym = context.locals[varName];
 			if(!(sym.type in varsByType)) {
 				varsByType[sym.type] = [sym.fqname];
 			}
@@ -196,17 +219,16 @@ function analyze(text, root_ast) {
 				if(!real_type) {
 					expError(decl, 'Bad type: '+type);
 				}
-				let var_dict = (!make_global && context.parent)? context.locals : context.globals;
 
 				for(let v of decl.vars) {
-					if(v in var_dict) {
+					if(v in context.locals) {
 						throw new Error(`Variable already defined: {${v}}`);
 					}
 					let fqVar = v;
 					if(!context.procedure) {
 						fqVar += context.path;
 					}
-					var_dict[v] = {type: real_type, fqname:fqVar};
+					context.locals[v] = {type: real_type, fqname:fqVar};
 				}
 			}
 			else {
@@ -247,19 +269,20 @@ function analyze(text, root_ast) {
 				procedure: true,
 				childCount: 0,
 			};
+			trackChild(context, procContext);
 			let result = analyzeBody(proc, procContext);
 			proc.code = result.code;
 			if(!proc.code) {
 				expError(ast, `ANALYSIS BUG: Procedure ${p} has an invalid body: {${proc.code}}`);
 			}
 			proc.locals = result.locals;
-			proc.body_ast = null;
+			delete proc.body_ast;
 		}
 		let statements = [];
 		for(let statement of ast.tail) {
 			statements.push(analyzeStatement(statement, context));
 		}
-		return {locals: vars, code:[IR.block].concat(statements)};
+		return {locals: vars, code:block(statements)};
 	}
 	function analyzeDefinition(decl, context) {
 		let params = {};
@@ -333,9 +356,15 @@ function analyze(text, root_ast) {
 		}
 		if(proc.type != T.block) {
 			let returnName = context.locals[context.name].fqname;
-			code = [IR.block, code, [IR.ret, returnName]];
+			code = block([code, [IR.ret, returnName]]);
 		}
-		return {locals:analyzeVars(context.locals, proc.param_names), code:code};
+		return {locals:analyzeVars(context, proc.param_names), code:code};
+	}
+	function trackChild(parent, child) {
+		if(!('children' in parent)) {
+			parent.children = [];
+		}
+		parent.children.push(child);
 	}
 	function analyzeStatement(st, context) {
 		if('assign' in st){
@@ -353,14 +382,14 @@ function analyze(text, root_ast) {
 			if(st.vars.length == 1) {
 				return checkedAssign(st.vars[0], val);
 			}
-			let block = [IR.block];
+			let assigns = block([]);
 			// Assign to each, one at a time
 			for(v in st.vars) {
-				block.push(checkedAssign(v, val));
+				assigns.push(checkedAssign(v, val));
 				val = resolveVar(v, context, true);
 				val.code = v;
 			}
-			return block;
+			return assigns;
 		}
 		else if('func' in st) {
 			return checkedCall(st, context).code;
@@ -377,6 +406,7 @@ function analyze(text, root_ast) {
 				name: 'block'+(++context.childCount),
 			};
 			subContext.path = '@'+subContext.name + context.path;
+			trackChild(context, subContext);
 
 			let subBlock = analyzeBlock(st, subContext);
 			for(let l in subContext.locals) {
@@ -590,7 +620,6 @@ function analyze(text, root_ast) {
 		parent: null,
 		procs: procedures,
 		locals: {},
-		globals: {},
 		procedure: true,
 		childCount: 0,
 	};
@@ -606,11 +635,79 @@ function analyze(text, root_ast) {
 
 	let main = analyzeBody(main_proc, rootContext);
 	main_proc.code = main.code;
-	main_proc.locals = main.locals;
+	// All variables in the main code are global
+	main_proc.locals = [];
 	if(!main_proc.code) {
 		throw new Error("COMPILER BUG: Main procedure has no code! " + main_proc.code);
 	}
 	procedures[main_proc.fqname] = main_proc;
+	function trackCaptures(context, procedures, capture_map) {
+		if('captures' in context) {
+			let fqname = context.path.substr(1);
+			if(fqname in procedures) {
+				let captures = {names:[], types:[]};
+				for(let capname in context.captures) {
+					let capture = context.captures[capname];
+					captures.names.push(capture.sym.fqname);
+					captures.types.push(capture.sym.type);
+				}
+				capture_map[fqname] = captures;
+			}
+		}
+		if('children' in context) {
+			for(let child of context.children) {
+				trackCaptures(child, procedures, capture_map);
+			}
+		}
+		return capture_map;
+	}
+	/*
+	 * Pass all captures by value as extra arguments, and then return them,
+	 * automatically assigning these new values to the original variable.
+	 * This only works because we can't pass that procedure elsewhere.
+	*/
+	function rewriteCaptureCalls(procedures, capture_map) {
+		function rewriteCode(proc, code) {
+			if(!Array.isArray(code)) {
+				return code;
+			}
+			for(let i = code.length; i --> 1;) {
+				code[i] = rewriteCode(proc, code[i]);
+			}
+			if(code[0] == IR.call && code[1] in capture_map) {
+				let captures = capture_map[code[1]];
+				return [IR.multi_assign, captures.names, code.concat(captures.names)];
+			}
+			else if(code[0] == IR.ret && proc.fqname in capture_map) {
+				return code.concat(capture_map[proc.fqname].names);
+			}
+			return code;
+		}
+		for(let p in procedures) {
+			let proc = procedures[p];
+			// Add arguments and return types
+			if(p in capture_map) {
+				let captures = capture_map[p];
+				proc.params = (proc.params ?? []).concat(captures.types);
+				let realType;
+				if(Array.isArray(proc.type)) {
+					realType = proc.type;
+				}
+				else if(proc.type == T.block) {
+					realType = [];
+				}
+				else {
+					realType = [proc.type];
+				}
+				proc.type = realType.concat(captures.types);
+				proc.param_names = proc.param_names.concat(captures.names);
+			}
+			rewriteCode(proc, proc.code);
+		}
+	}
+
+	let capture_map = trackCaptures(rootContext, procedures, {});
+	rewriteCaptureCalls(procedures, capture_map);
 	main_proc.body_ast = null;
-	return {procedures:procedures, globals:analyzeVars(rootContext.globals, [])};
+	return {procedures:procedures, globals:analyzeVars(rootContext, [])};
 }

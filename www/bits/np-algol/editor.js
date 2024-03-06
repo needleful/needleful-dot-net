@@ -1,14 +1,15 @@
 "use strict";
-/*
-	This is an adaptation of Brad Robinson's
-	Source: https://stackoverflow.com/a/45396754/2107659
-	I have stolen the code from gcoulby: https://jsfiddle.net/2wkrhxLt/8/
-	Change Log:
-	- Removed the dependancy to jQuery
-	- Integrated into TypeScript class
-	- Converted to busted Javascript (this was I, needleful)
-*/
+
 class Editor {
+	/*
+		This is an adaptation of Brad Robinson's
+		Source: https://stackoverflow.com/a/45396754/2107659
+		I have stolen the code from gcoulby: https://jsfiddle.net/2wkrhxLt/8/
+		Change Log:
+		- Removed the dependancy to jQuery
+		- Integrated into TypeScript class
+		- Converted to busted Javascript (this was I, needleful)
+	*/
 	text;
 	enabled = true;
 	keydown = (evt) => {
@@ -163,7 +164,17 @@ function compileAndRun() {
 				else if('import' in proc) {
 					rir.procs[p] = {import: proc.import};
 				}
-				rir.procs[p].signature = `(${proc.params.map(e => algolTypeNames[e]).join(', ')}) => ${algolTypeNames[proc.type]}`
+				let retType;
+				if(Array.isArray(proc.type)) {
+					retType = proc.type;
+				}
+				else {
+					retType = [proc.type];
+				}
+				function typeName(type) {
+					return `(${type.map(e => algolTypeNames[e]).join(', ')})`
+				}
+				rir.procs[p].signature = `${typeName(proc.params)} => ${typeName(retType)}`
 			}
 			for(let g of npa_results.ir.globals) {
 				let [type, name] = g;
