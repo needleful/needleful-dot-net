@@ -13,6 +13,8 @@ let IR = {
 	inline: 	10,
 	i32const: 	11,
 	multi_assign: 12,
+	indirect_call: 13,
+	funcref: 14,
 }
 IR.min_args = {
 	[IR.iconst]:1,
@@ -27,6 +29,9 @@ IR.min_args = {
 	[IR.declare]:2,
 	[IR.if_then]:2,
 	[IR.block]:0,
+	[IR.indirect_call]:1,
+	[IR.inline]:1,
+	[IR.funcref]:1,
 };
 IR.max_args = {
 	[IR.iconst]:1,
@@ -41,6 +46,9 @@ IR.max_args = {
 	[IR.declare]:2,
 	[IR.if_then]:2,
 	[IR.block]:Infinity,
+	[IR.indirect_call]:Infinity,
+	[IR.inline]:Infinity,
+	[IR.funcref]:1
 };
 Object.freeze(IR);
 
@@ -54,6 +62,10 @@ function op2(left, opcode, right) {
 
 function call(name, args) {
 	return [IR.call, name].concat(args);
+}
+
+function indirect_call(id, args) {
+	return [IR.indirect_call, id].concat(args);
 }
 
 function integer(value) {
@@ -101,6 +113,15 @@ function ir_almost_pretty_print(statement, i) {
 	}
 	else {
 		return statement;
+	}
+}
+
+function printTypeName(type) {
+	if(typeof(type) === 'object' && 'proc' in type) {
+		return `${wasmTypeNames[type.proc]} procedure`;
+	}
+	else {
+		return wasmTypeNames[type];
 	}
 }
 
@@ -191,13 +212,34 @@ const ir_to_assembler = (ir_mod) => {
 	}
 	code.length = funcs.length;
 	function typeEq(type1, type2) {
+		function equ(a, b) {
+			if(typeof(a) === 'object' && typeof(b) === 'object') {
+				if(!('proc' in a) || !('proc' in b)){
+					console.error(a);
+					console.error(b);
+					throw new Error("IR BUG: unexpected types");
+				}
+				return a.proc == b.proc;
+			}
+			else {
+				return a === b;
+			}
+		}
 		if(!Array.isArray(type1)) {
 			type1 = [type1];
 		}
 		if(!Array.isArray(type2)) {
 			type2 = [type2];
 		}
-		return type1.length == type2.length && type1.every((e, i) => e == type2[i]);
+		return type1.length == type2.length && type1.every((e, i) => equ(e, type2[i]));
+	}
+	function isVoid(type) {
+		if(Array.isArray(type)) {
+			return type.length == 0;
+		}
+		else {
+			return type == T.block;
+		}
 	}
 	const compile_statement_s = (s, m, p, locals) => {
 		let r = compile_statement(s, m, p, locals);
@@ -268,7 +310,7 @@ const ir_to_assembler = (ir_mod) => {
 				let c = compile_statement_s(s[2], m, p, locals);
 				if (!typeEq(v.info.type, c.type)){
 					throw new Error("Mismatched type between variable "+s[1]
-						+" of type "+wasmTypeNames[v.info.type]+" and expression "+s[2]+" of type "+wasmTypeNames[c.type]);
+						+" of type "+printTypeName(v.info.type)+" and expression "+s[2]+" of type "+printTypeName(c.type));
 				}
 				return {type: T.block, code:[c.code, v.global? I.gset : I.lset, leb_const(v.info.index)]};
 			} break;
@@ -286,7 +328,7 @@ const ir_to_assembler = (ir_mod) => {
 					let v = vars[i];
 					if(!typeEq(type, v.info.type)) {
 						throw new Error(
-							`Mismatched types between expression ${s[1][i]} (${wasmTypeNames[v.info.type]}) and expression {${ir_almost_pretty_print(c)}} (${type})`);
+							`Mismatched types between expression ${s[1][i]} (${printTypeName(v.info.type)}) and expression {${ir_almost_pretty_print(c)}} (${type})`);
 					}
 					rcode.push(v.global? I.gset : I.lset);
 					rcode.push(leb_const(v.info.index));
@@ -351,10 +393,10 @@ const ir_to_assembler = (ir_mod) => {
 				for(let i = 2; i < s.length; i++) {
 					let arg = compile_statement_s(s[i], m, p, locals);
 					if(!typeEq(arg.type, proc.params[i-2])){
-						console.log(s[i]);
-						console.log(arg);
+						console.error(s[i]);
+						console.error(arg);
 						throw new Error("Mismatched type for arg "+(i-2)+" for procedure "+s[1]+": "
-							+wasmTypeNames[proc.params[i-2]]+" expected, "+wasmTypeNames[arg.type]+" received.");
+							+printTypeName(proc.params[i-2])+" expected, "+printTypeName(arg.type)+" received.");
 					}
 					code = code.concat(arg.code);
 				}
@@ -369,6 +411,42 @@ const ir_to_assembler = (ir_mod) => {
 					code: code 
 				};
 			} break;
+			case IR.funcref: {
+				if(!(s[1] in m)) {
+					console.log(s);
+					throw new Error(`Undefined procedure: {${s[1]}}`);
+				}
+				let proc = m[s[1]];
+				return {
+					type: {proc: proc.type},
+					code: [
+						I.funcref, leb_const(proc.index),
+						I.i32, 1,
+						I.tgrow, 0
+					]
+				}
+			} 
+			case IR.indirect_call: {
+				let code = [];
+				let paramType = [];
+				for(let i = 2; i < s.length; i++) {
+					let arg = compile_statement_s(s[i], m, p, locals);
+					paramType.push(arg.type);
+					code = code.concat(arg.code);
+				}
+				let iproc = get_var(s[1]).info;
+				let retType = iproc.type.proc;
+				code = code.concat([I.lget, iproc.index]);
+				code = code.concat([
+					I.call_indirect, 
+					find_or_push(types, [paramType, [retType]])],
+					leb_const(0),
+				);
+				return {
+					type: retType,
+					code: code
+				};
+			} break;
 			case IR.loop_while: {
 				let condition = compile_statement_s(s[1], m, p, locals);
 				if(condition.type != T.i32) {
@@ -377,7 +455,7 @@ const ir_to_assembler = (ir_mod) => {
 					throw new Error("Condition expression expected to be an i32, it was actually of type "+ printTypeName(condition.type));
 				}
 				let body = compile_statement_s(s[2], m, p, locals);
-				if(body.type != T.block) {
+				if(!isVoid(body.type)) {
 					console.log(s[2]);
 					console.log(s);
 					throw new Error("Loop body expected to be a block type, it was actually of type "+ printTypeName(body.type));
@@ -401,7 +479,7 @@ const ir_to_assembler = (ir_mod) => {
 					throw new Error("Conditional expression expected to be an i32, it was actually of type "+ printTypeName(condition.type));
 				}
 				let body = compile_statement_s(s[2], m, p, locals);
-				if(body.type != T.block) {
+				if(!isVoid(body.type)) {
 					console.log(s[2]);
 					console.log(s);
 					throw new Error("If-then body expected to be a block type, it was actually of type "+ printTypeName(block.type));
@@ -420,15 +498,22 @@ const ir_to_assembler = (ir_mod) => {
 				for (let i = 1; i < s.length; i++) {
 					let c = compile_statement_s(s[i], m, p, locals)
 					// Drop the result to keep the stack clean
-					if(c.type != T.block){
+					if(!isVoid(c.type)){
 						c.code.push(I.drop);
 					}
 					code = code.concat(c.code);
 				}
 				return {type: T.block, code:code};
 			} break;
+			case IR.inline: {
+				let type = s.shift();
+				return {
+					type: type,
+					code:s
+				};
+			} break;
 			default:
-				throw new Error("Unhandled IR instruction: "+f);
+				throw new Error("Unhandled IR instruction: "+ir_almost_pretty_print(f, 0));
 				break;
 			}
 		}
@@ -492,6 +577,7 @@ const ir_to_assembler = (ir_mod) => {
 		[M.types].concat(types),
 		[M.imports].concat(imported),
 		[M.funcs].concat(funcs),
+		[M.tables, [T.funcref, 0x0, 0]],
 		[M.globals].concat(globals),
 		[M.exports].concat(exported),
 		[M.code].concat(code)

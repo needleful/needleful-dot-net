@@ -3,7 +3,8 @@ function defaultEnv() {
 	const binOp = (type, inline) => ({type: type,  params: [type, type], inline: inline});
 	const cmpOp = (type, inline) => ({type: T.i32, params: [type, type], inline: inline});
 	const unOp  = (type, inline) => ({type: type,  params: [type],       inline: inline});
-	return {
+	let env = {};
+	env.procedures = {
 		// Simple integer ops
 		'i+i':  binOp(T.i64, I.i64add),
 		'i-i':  binOp(T.i64, I.i64sub),
@@ -73,6 +74,8 @@ function defaultEnv() {
 			I.f64, f64_const(0.5), I.f64add, I.i64truncf64_s
 		]},
 	};
+	env.globals = [];
+	return env;
 }
 
 const algolTypes = {
@@ -90,7 +93,7 @@ const algolTypeNames = {
 }
 
 function analyze(text, root_ast) {
-	let procedures = defaultEnv();
+	let env = defaultEnv();
 
 	function expError(exp, message) {
 		if(exp.context) {
@@ -98,10 +101,10 @@ function analyze(text, root_ast) {
 			console.log('Error at: ', pos);
 			throw new Error(`Analysis failed at ${pos.line}:${pos.column}: ${message}`);
 		}
+		console.error("Problem expression:", exp);
 		throw new Error(message);
 	}
-
-	function resolveProc(proc_name, context, required){
+	function resolveProc(proc_name, context, required = true){
 		if(proc_name in context.procs) {
 			return context.procs[proc_name];
 		}
@@ -159,12 +162,10 @@ function analyze(text, root_ast) {
 			throw new Error(`Variable {${var_name}} was not found.`);
 		}
 	}
-
 	function resolveVar(var_name, context, required) {
 		let [_, sym] = resolveVarWithContext(var_name, context, required);
 		return sym;
 	}
-
 	function analyzeVars(context, param_names) {
 		let varsByType = {};
 		for(let varName in context.locals) {
@@ -187,6 +188,77 @@ function analyze(text, root_ast) {
 		}
 		return varsArray;
 	}
+	function analyzeDefinition(decl, context) {
+		let params = {};
+		function applyType(name, type) {
+			if(!(name in params)) {
+				expError(decl, 
+					`While defining ${decl.proc}: Specifying non-existent parameter {${name}} is of type {${spec.type}}`);
+			}
+			if('type' in params[name]) {
+				expError(decl, `While defining ${decl.proc}: Parameter {${name}} already declared of type ${params[name].type}, now re-declared of type ${spec.type}`);
+			}
+			params[name].type = type;
+		}
+		for (let p of decl.parameters) {
+			params[p] = {};
+		}
+		if(decl.specifiers) {
+			for (let spec of decl.specifiers) {
+				if('type' in spec) {
+					for (let v of spec.values) {
+						applyType(v, spec.type);
+					}
+				}
+				else if('proc_type' in spec) {
+					for(let v of spec.values) {
+						applyType(v, {proc: spec.proc_type});
+					}
+				}
+				else {
+					expError(spec, `While defining ${decl.proc}: Unknown specifier: {${spec}}`);
+				}
+			}
+		}
+		if(decl.values) {
+			for(let val of decl.values) {
+				if(!(val in params)) {
+					throw new Error(`While defining ${decl.proc}: Specified unknown parameter {${val}} as a value.`);
+				}
+				params[val].value = true;
+			}
+		}
+		for(let p in params) {
+			if(!params[p].type) {
+				console.log(`While defining ${decl.proc}: type of parameter {${p}} was not defined. Defaulting to real`);
+				params[p].type = 'real';
+			}
+			if(!params[p].value) {
+				console.log(`TODO: While defining ${decl.proc}: parameter {${p}} was not declared as a value. Call-by-name is not currently implemented`);
+			}
+		}
+
+		function renameType(type) {
+			if(typeof(type) === 'string') {
+				return algolTypes[type];
+			}
+			else if('proc' in type) {
+				return {proc: renameType(type.proc)};
+			}
+			else {
+				expError(type, `ANALYZER BUG: Invalid type {${type}}`);
+			}
+		}
+
+		return {
+			fqname: decl.proc+context.path,
+			type: algolTypes[decl.type],
+			param_names: decl.parameters,
+			params: decl.parameters.map(p => renameType(params[p].type)),
+			exported: context.path == '',
+			body_ast: decl.body
+		};
+	}
 
 	function analyzeBlock(ast, context) {
 		// We get all the procedure definitions
@@ -206,7 +278,7 @@ function analyze(text, root_ast) {
 				}
 				let proc = analyzeDefinition(decl, context);
 				context.procs[decl.proc] = proc;
-				procedures[proc.fqname] = proc;
+				env.procedures[proc.fqname] = proc;
 			}
 			else if('decl' in decl) {
 				let type = decl.decl;
@@ -284,54 +356,6 @@ function analyze(text, root_ast) {
 		}
 		return {locals: vars, code:block(statements)};
 	}
-	function analyzeDefinition(decl, context) {
-		let params = {};
-		for (let p of decl.parameters) {
-			params[p] = {};
-		}
-		if(decl.specifiers) {
-			for (let spec of decl.specifiers) {
-				if('type' in spec) {
-					for (let v of spec.values) {
-						if(!(v in params)) {
-							throw new Error(
-								`While defining ${decl.proc}: Specifying non-existent parameter {${v}} is of type {${spec.type}}`);
-						}
-						if('type' in params[v]) {
-							throw new Error(`While defining ${decl.proc}: Parameter {${v}} already declared of type ${params[v].type}, now re-declared of type ${spec.type}`);
-						}
-						params[v].type = spec.type;
-					}
-				}
-			}
-		}
-		if(decl.values) {
-			for(let val of decl.values) {
-				if(!(val in params)) {
-					throw new Error(`While defining ${decl.proc}: Specified unknown parameter {${val}} as a value.`);
-				}
-				params[val].value = true;
-			}
-		}
-		for(let p in params) {
-			if(!params[p].type) {
-				console.log(`While defining ${decl.proc}: type of parameter {${p}} was not defined. Defaulting to real`);
-				params[p].type = 'real';
-			}
-			if(!params[p].value) {
-				console.log(`TODO: While defining ${decl.proc}: parameter {${p}} was not declared as a value. Call-by-name is not currently implemented`);
-			}
-		}
-
-		return {
-			fqname: decl.proc+context.path,
-			type: algolTypes[decl.type],
-			param_names: decl.parameters,
-			params: decl.parameters.map(p => algolTypes[params[p].type]),
-			exported: context.path == '',
-			body_ast: decl.body
-		};
-	}
 	function analyzeBody(proc, context) {
 		let ast = proc.body_ast;
 		if(!ast) {
@@ -373,12 +397,14 @@ function analyze(text, root_ast) {
 				return [IR.assign, lv.fqname, typeConvert(value.code, val.type, lv.type)];
 			}
 			let val = analyzeExpression(st.assign, context);
-			val.code.forEach((c, i) => {
-				if(c === undefined) {
-					console.error(val);
-					expError(st, `Analyzing expression created invalid results: {${ir_almost_pretty_print(val.code)}}`);
-				}
-			});
+			if(Array.isArray(val)) {
+				val.code.forEach((c, i) => {
+					if(c === undefined) {
+						console.error(val);
+						expError(st, `Analyzing expression created invalid results: {${ir_almost_pretty_print(val.code)}}`);
+					}
+				});
+			}
 			if(st.vars.length == 1) {
 				return checkedAssign(st.vars[0], val);
 			}
@@ -434,8 +460,31 @@ function analyze(text, root_ast) {
 			expError(st, "Could not analyze statement: "+JSON.stringify(st));
 		}
 	}
+	function isProcType(type) {
+		return typeof(type) === 'object' && 'proc' in type;
+	}
+	function isProc(sym) {
+		return isProcType(sym.type);
+	}
 
 	function typeConvert(code, fromType, toType) {
+		if(isProcType(toType)) {
+			if(code[0] === IR.call) {
+				if(code.length > 2) {
+					expError(code, `Can't call a procedure when passing it as an argument.`);
+				}
+				else {
+					if(fromType != toType.proc) {
+						expError(code,
+							`Cannot automatically convert ${algolTypeNames[fromType]} procedure to ${algolTypeNames[toType.proc]} procedure`);
+					}
+					return [IR.funcref, code[1]];
+				}
+			}
+			else {
+				throw new Error('Cannot convert expressions to a procedure type');
+			}
+		}
 		if(fromType == toType) {
 			return code;
 		}
@@ -508,6 +557,9 @@ function analyze(text, root_ast) {
 		else if ('variable' in exp) {
 			let sym = resolveVar(exp.variable, context);
 			if(sym) {
+				if(isProc(sym)) {
+					return {type: sym.type.proc, code:indirect_call(sym.fqname, [])}
+				}
 				if(!sym.type) {
 					expError(exp, `Variable ${exp.variable} has no defined type`);
 				}
@@ -618,7 +670,7 @@ function analyze(text, root_ast) {
 		name:"#main#",
 		path:"",
 		parent: null,
-		procs: procedures,
+		procs: env.procedures,
 		locals: {},
 		procedure: true,
 		childCount: 0,
@@ -640,7 +692,7 @@ function analyze(text, root_ast) {
 	if(!main_proc.code) {
 		throw new Error("COMPILER BUG: Main procedure has no code! " + main_proc.code);
 	}
-	procedures[main_proc.fqname] = main_proc;
+	env.procedures[main_proc.fqname] = main_proc;
 	function trackCaptures(context, procedures, capture_map) {
 		if('captures' in context) {
 			let fqname = context.path.substr(1);
@@ -666,7 +718,7 @@ function analyze(text, root_ast) {
 	 * automatically assigning these new values to the original variable.
 	 * This only works because we can't pass that procedure elsewhere.
 	*/
-	function rewriteCaptureCalls(procedures, capture_map) {
+	function rewriteSpecialCalls(procedures, capture_map) {
 		function rewriteCode(proc, code) {
 			if(!Array.isArray(code)) {
 				return code;
@@ -686,6 +738,9 @@ function analyze(text, root_ast) {
 		for(let p in procedures) {
 			let proc = procedures[p];
 			// Add arguments and return types
+			if(proc.inline) {
+				continue;
+			}
 			if(p in capture_map) {
 				let captures = capture_map[p];
 				proc.params = (proc.params ?? []).concat(captures.types);
@@ -694,6 +749,8 @@ function analyze(text, root_ast) {
 					realType = proc.type;
 				}
 				else if(proc.type == T.block) {
+					// We now need to return the captured variables
+					proc.code = [IR.block, proc.code, [IR.ret]];
 					realType = [];
 				}
 				else {
@@ -706,8 +763,9 @@ function analyze(text, root_ast) {
 		}
 	}
 
-	let capture_map = trackCaptures(rootContext, procedures, {});
-	rewriteCaptureCalls(procedures, capture_map);
+	let capture_map = trackCaptures(rootContext, env.procedures, {});
+	rewriteSpecialCalls(env.procedures, capture_map);
 	main_proc.body_ast = null;
-	return {procedures:procedures, globals:analyzeVars(rootContext, [])};
+	analyzeVars(rootContext, []);
+	return env;
 }

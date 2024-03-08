@@ -112,7 +112,12 @@ function disassembleCode(flatcode) {
 		[I.f64]: 8, 
 		[I.br]: 'leb', 
 		[I.br_if]:'leb', 
-		[I.call]: 'leb'
+		[I.call]: 'leb',
+		[I.tsize]:'leb',
+		[I.tset]:'leb',
+		[I.tget]:'leb',
+		[I.tgrow]:'leb',
+		[I.call_indirect]: '2'
 	};
 	const blockInstr = [I.loop, I.block, I.if];
 	let result = [];
@@ -216,13 +221,21 @@ function encodeName(array, string) {
 }
 
 function printTypeName(e) {
+	function typeElement(t) {
+		if(typeof(t === 'object')) {
+			return `${wasmTypeNames[e]} proc`;
+		}
+		else {
+			return wasmTypeNames[e];
+		}
+	}
 	if(Array.isArray(e)) {
-		return `<${e.map(t => wasmTypeNames[t]).join(', ')}>T`
+		return `<${e.map(typeElement).join(', ')}>T`
 	}
 	if(!(e in wasmTypeNames)) {
 		return `BAD_TYPE:{${e}/${wasmInstrNames[e]}}`;
 	}
-	return `<${wasmTypeNames[e]}>T`;
+	return `<${typeElement(e)}>T`;
 }
 
 function assemble(descriptor) {
@@ -242,14 +255,20 @@ function assemble(descriptor) {
 			printable = vector(printable, section);
 		} break;
 		case M.types:{
+			function fixTypes(t) {
+				if(typeof(t) === 'object') {
+					return t.proc;
+				}
+				return t;
+			}
 			let t = [];
 			let pt = []
 			leb(t, section.length);
 			leb(pt, section.length);
 			for(let f of section) {
 				t.push(T.func);
-				t = vector(t, f[0]);
-				t = vector(t, f[1]);
+				t = vector(t, f[0].map(fixTypes));
+				t = vector(t, f[1].map(fixTypes));
 
 				pt.push('func');
 				pt = vector(pt, f[0].map(printTypeName));
@@ -270,8 +289,29 @@ function assemble(descriptor) {
 			r = vector(r, t);
 			printable = vector(printable, pt);
 		} break;
-		case M.tables:
-			break;
+		case M.tables: {
+			let t = [];
+			let pt = [];
+			leb(t, section.length);
+			leb(pt, section.length);
+			t = t.concat(section.flat(Infinity));
+
+			for(let table of section) {
+				pt.push(wasmTypeNames[table[0]]);
+				let has_max = table[1];
+				if(has_max) {
+					pt.push('has max');
+					pt.push(table[2]);
+					pt.push(table[3]);
+				}
+				else {
+					pt.push('no max');
+					pt.push(table[2]);
+				}
+			}
+			r = vector(r, t);
+			printable = vector(printable, pt);
+		} break;
 		case M.memories:
 			break;
 		case M.globals: {
@@ -375,7 +415,7 @@ function assemble(descriptor) {
 				});
 				pf.forEach((e, i) => {
 					if(e === undefined) {
-						console.log('Problem function: ', pf, fn);
+						console.warn('Problem function: ', pf, fn);
 						throw new Error(`ASSEMBLER BUG: invalid data in function ${idx}, byte ${i} was malformed`);
 					}
 				});
