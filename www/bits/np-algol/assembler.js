@@ -385,16 +385,32 @@ function assemble(descriptor) {
 			leb(t, section.length);
 			leb(pt, section.length);
 			for(let idx = 0; idx < section.length; idx++) {
-				let [kind, func, list] = section[idx];
-				if(kind != 3) {
+				let kind = section[idx][0];
+				if (kind == 0) {
+					let [_, expr, list] = section[idx];
+					expr.push(I.end);
+
+					t.push(kind);
+					t = t.concat(expr);
+					t = vector(t, list);
+
+					pt.push("Active declaration");
+					pt = pt.concat(disassembleCode(expr));
+					pt = vector(pt, list.map(e => `func ${e}`));
+				}
+				else if(kind == 3) {
+					let [_, func, list] = section[idx];
+					t.push(kind);
+					t.push(func);
+					t = vector(t, list);
+
+					pt.push("Declaration");
+					pt.push(func);
+					pt = vector(pt, list);
+				}
+				else {
 					throw new Error("I don't want to implement it");
 				}
-				t.push(kind);
-				t.push(func);
-				t = vector(t, list);
-				pt.push("Declaration");
-				pt.push(func);
-				pt = vector(pt, list);
 			}
 			r = vector(r, t);
 			printable = vector(printable, pt);

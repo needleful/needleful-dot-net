@@ -424,16 +424,14 @@ const ir_to_assembler = (ir_mod) => {
 					throw new Error(`Undefined procedure: {${s[1]}}`);
 				}
 				let proc = m[s[1]];
-				if(!declares.includes(proc.index)) {
+				let d = declares.indexOf(proc.index);
+				if(d < 0) {
+					d = declares.length;
 					declares.push(proc.index);
 				}
 				return {
 					type: {proc: proc.type},
-					code: [
-						I.funcref, leb_const(proc.index),
-						I.i32, 1,
-						I.tgrow, 0
-					]
+					code: [I.i32, leb_const(d)]
 				}
 			} 
 			case IR.indirect_call: {
@@ -587,10 +585,10 @@ const ir_to_assembler = (ir_mod) => {
 		[M.types].concat(types),
 		[M.imports].concat(imported),
 		[M.funcs].concat(funcs),
-		[M.tables, [T.funcref, 0x0, 0]],
+		[M.tables, [T.funcref, 0x0, declares.length]],
 		[M.globals].concat(globals),
 		[M.exports].concat(exported),
-		[M.elements, [EK.nonActive | EK.declare, 0, declares]],
+		[M.elements, [EK.active, [I.i32, 0], declares]],
 		[M.code].concat(code)
 	];
 }
