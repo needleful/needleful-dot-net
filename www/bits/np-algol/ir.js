@@ -148,6 +148,7 @@ const ir_to_assembler = (ir_mod) => {
 	let exported = [];
 	let code = [];
 	let globals = [];
+	let declares = [];
 	let globals_map = {};
 	const zeroCode = {
 		[T.f64]: [I.f64, f64_const(0)],
@@ -189,7 +190,13 @@ const ir_to_assembler = (ir_mod) => {
 		else {
 			realReturnType = [proc.type];
 		}
-		let ptype = find_or_push(types, [proc.params || [], realReturnType]);
+		function fixType(t) {
+			if(typeof(t) == 'object') {
+				return T.i32;
+			}
+			return t;
+		}
+		let ptype = find_or_push(types, [proc.params.map(fixType) || [], realReturnType]);
 		if(ptype == undefined) {
 			console.log(t);
 			console.log(types);
@@ -417,6 +424,9 @@ const ir_to_assembler = (ir_mod) => {
 					throw new Error(`Undefined procedure: {${s[1]}}`);
 				}
 				let proc = m[s[1]];
+				if(!declares.includes(proc.index)) {
+					declares.push(proc.index);
+				}
 				return {
 					type: {proc: proc.type},
 					code: [
@@ -580,6 +590,7 @@ const ir_to_assembler = (ir_mod) => {
 		[M.tables, [T.funcref, 0x0, 0]],
 		[M.globals].concat(globals),
 		[M.exports].concat(exported),
+		[M.elements, [EK.nonActive | EK.tableOrDecl, 0, declares]],
 		[M.code].concat(code)
 	];
 }

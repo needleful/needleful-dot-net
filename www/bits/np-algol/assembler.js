@@ -8,6 +8,8 @@ const T = {
 };
 // Export/Import types
 const E = {func: 0, table: 1, mem: 2, global: 3};
+// Element kinds
+const EK = {active: 0, nonActive:1, useIndex:2, declare:2, expressions:4};
 // Global types
 const G = {constant:0, variable:1};
 // Instruction codes. Putting all of them was a bit overkill.
@@ -377,8 +379,38 @@ function assemble(descriptor) {
 		} break;
 		case M.start:
 			break;
-		case M.elements:
-			break;
+		case M.elements:{
+			let t = [];
+			let pt = [];
+			leb(t, section.length);
+			leb(pt, section.length);
+			for(let idx = 0; idx < section.length; idx++) {
+				let kind = section[idx][0];
+				t.push(kind);
+				if (kind == 0) {
+					let [_, expr, list] = section[idx];
+					expr.push(I.end);
+					t = t.concat(expr);
+					t = vector(t, list);
+					pt.push("Active declaration");
+					pt = pt.concat(disassembleCode(expr));
+					pt = vector(t, list.map(e => `func ${e}`));
+				}
+				else if(kind == 3) {
+					let [_, func, list] = section[idx];
+					t.push(func);
+					t = vector(t, list);
+					pt.push("Declaration");
+					pt.push(func);
+					pt = vector(t, list.map(e => `func ${e}`));
+				}
+				else {
+					throw new Error("I don't want to implement it");
+				}
+			}
+			r = vector(r, t);
+			printable = vector(printable, pt);
+		} break;
 		case M.code: {
 			let t = [];
 			let pt = [];
