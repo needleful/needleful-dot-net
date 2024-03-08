@@ -108,6 +108,10 @@ function analyze(text, root_ast) {
 		if(proc_name in context.procs) {
 			return context.procs[proc_name];
 		}
+		let sym = resolveVar(proc_name, context, required = false);
+		if(sym) {
+			return {indirect:true, info:sym};
+		}
 		else if(context.parent) {
 			return resolveProc(proc_name, context.parent);
 		}
@@ -509,7 +513,11 @@ function analyze(text, root_ast) {
 
 	function checkedCall(exp, context) {
 		let sym = resolveProc(exp.func, context);
-		if(sym) {
+		if(!sym) {
+			let pos = getPositions(text, exp.context);
+			expError(exp, `{${exp.func}} is not a defined procedure in this scope`);
+		}
+		else if (!sym.indirect){
 			if(!sym.fqname) {
 				// Presumably this is correct
 				sym.fqname = exp.func;
@@ -529,8 +537,11 @@ function analyze(text, root_ast) {
 			return {type: sym.type, code:call(sym.fqname, args)};
 		}
 		else {
-			let pos = getPositions(text, exp.context);
-			expError(exp, `{${exp.func}} is not a defined procedure in this scope`);
+			return {
+				type: sym.info.type.proc, 
+				code:indirect_call(sym.info.fqname, 
+					exp.args.map(a => analyzeExpression(a, context).code))
+			};
 		}
 	}
 
