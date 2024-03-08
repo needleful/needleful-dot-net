@@ -590,7 +590,7 @@ const ir_to_assembler = (ir_mod) => {
 		[M.tables, [T.funcref, 0x0, 0]],
 		[M.globals].concat(globals),
 		[M.exports].concat(exported),
-		[M.elements, [EK.nonActive | EK.tableOrDecl, 0, declares]],
+		[M.elements, [EK.nonActive | EK.declare, 0, declares]],
 		[M.code].concat(code)
 	];
 }
