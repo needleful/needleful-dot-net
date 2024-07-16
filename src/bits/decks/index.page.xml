@@ -1,0 +1,84 @@
+<page>
+	<basic-page>
+		<title>Decks</title>
+		<custom-content-class>wide</custom-content-class>
+		<custom-nav-list>
+			<el>
+				<link>/bits</link>
+				<title>Bits</title>
+			</el>
+		</custom-nav-list>
+		<content>
+			<style>
+				#decker {
+					margin:0;
+					display:flex;
+					align-items:center;
+					justify-content:space-between;
+					-webkit-user-select:none;
+					user-select:none;
+					touch-action:none;
+					min-width:512px;
+					width:100%;
+				}
+				.deck-item {
+					width:100%;
+				}
+				#deck-stuff {
+					float:left;
+					width:80%;
+					height:100%;
+				}
+				#decks-list {
+					float:left;
+					max-width:200px;
+					width:20%;
+					height:100%;
+					border-right:2px black;
+				}
+				#deck-caption {
+					margin: auto;
+					width: 100%;
+					max-width:1024px;
+					text-align: center;
+				}
+			</style>
+			<div id='decks-list'>
+				<h1>Decker</h1>
+				<p><a href="https://beyondloom.com/decker/">Decker's pretty cool.</a> it's some sort of computer gizmo-gadget.</p>
+				<p>The images below are Decks! Click to enjoy:</p>
+				<span title="needleful bingo">
+					<input type='image' class='deck-item' src='needleful_bingo.png' onclick='playDeck("bingo")' />
+				</span>
+				<p>It should be mentioned that I hacked the Decker web client to put it into my site lol. I didn't even get the source code, I just took apart one of the web builds. I'm pretty sure it leaks memory when you load a new deck, so refresh the page if it gets slow.</p>
+			</div>
+			<div id='deck-stuff'>
+				<div id='decker'>
+					<a id='target' style='display:none'></a>
+					<img id='loader' style='display:none'/>
+					<input id='source' type='file' style='display:none'></input>
+					<canvas id='render' style='display:none'></canvas>
+					<canvas id='lrender' style='display:none'></canvas>
+					<canvas id='rrender' style='display:none'></canvas>
+					<canvas width='0' height='0' id='ltools'></canvas>
+					<canvas id='display' tabindex='-1' autofocus='yes'></canvas>
+					<canvas width='0' height='0' id='rtools'></canvas>
+				</div>
+				<p class='caption full-line' id='deck-caption'></p>
+			</div>
+			<script type='text/javascript' src='decker.js'/>
+			<script type='text/javascript'>
+				const decks = {
+					bingo:{
+						path:"needleful_bingo.deck",
+						desc:"I made bingo for my stream! It has some of my common bad habits and frustrations from developing my game \"At the Ends of Eras\" (formerly Jak 4)."
+					}
+				};
+				function playDeck(d) {
+					loadDeck(decks[d].path);
+					document.getElementById("deck-caption").innerText = decks[d].desc;
+				}
+			</script>
+		</content>
+	</basic-page>
+</page>
