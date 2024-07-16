@@ -6,6 +6,8 @@
 			<h2><a href='/bits/sheets.html'>NP Sheets</a></h2>
 			<p>I made a simple spreadsheet program to do my taxes because I stopped using office and the other offerings are too slow!</p>
 			<p>I made numerous errors on my taxes due to improperly calculating my tax deductions, but the software itself works just fine!</p>
+			<h2><a href='/bits/decks'>Decks!</a></h2>
+			<p><a href="https://beyondloom.com/decker/">Decker is a neat little computer thing</a> that I've started making little odds and ends in! They're playable right on this very site!</p>
 			<h2><a href='/bits/wasm.html'>WASM "Compiler"</a></h2>
 			<p>You can "compile" some WASM in your browser on this page. You'll see what I mean if you click.</p>
 			<h2><a href="/bits/b5500/webUI/B5500Console.html">Retro-B5500</a></h2>
