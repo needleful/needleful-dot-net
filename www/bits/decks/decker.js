@@ -6336,12 +6336,17 @@ loop=stamp=>{
 }
 resize=_=>{
  const b=q('body');
- let parent=b;
- if (!is_fullscreen()){
-  parent=q('#decker');
+ let screen;
+ if (is_fullscreen()){
+  screen=rect(b.clientWidth, b.clientHeight);
+  zoom=0.25*(0|(4*min(screen.x/fb.size.x, screen.y/fb.size.y)));
  }
- let screen=rect(parent.clientWidth,parent.clientHeight);
- zoom=0.5*(0|(2*screen.x/fb.size.x));
+ else {
+  const d=q("#decker");
+  screen=rect(d.clientWidth,d.clientHeight);
+  zoom=0.5*(0|(2*screen.x/fb.size.x));
+ }
+ zoom=max(1, zoom);
  tzoom=min((screen.x-(zoom*fb.size.x))/(2*toolsize.x),screen.y/toolsize.y)
  const tz=tzoom*toolbars_enable
  const c =q('#display');c .width=fb.size .x*zoom,c.height =fb.size .y*zoom
