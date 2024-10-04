@@ -1,7 +1,7 @@
 <page>
 	<basic-page>
 		<title>NP-ToDo Manual</title>
-		<custom-content-class>blog</custom-content-class>
+		<contentClass>blog</contentClass>
 		<content>
 			<div class='wide' style='display:flex'>
 				<div style='display:inline-block;'>

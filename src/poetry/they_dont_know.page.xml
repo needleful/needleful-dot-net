@@ -1,12 +1,12 @@
 <page>
 	<basic-page>
 		<title>They Don't Know</title>
-		<custom-nav-list>
+		<navList>
 			<el>
 				<link>/poetry</link>
 				<title>Poetry</title>
 			</el>
-		</custom-nav-list>
+		</navList>
 		<content>
 			<p>
 				The fingers of the hand think they are free.<br/>

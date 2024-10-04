@@ -1,68 +1,19 @@
 <!-- Comic Formats -->
 <template name='comic-needleful'>
 	<param name='title' type='text'/>
-	<param name='page' type='text,integer'/>
-	<param name='source' type='text,file'/>
-	<param name='description' type='xml' required='False'/>
+	<param name='page' type='integer'/>
+	<param name='source' type='text'/>
+	<param name='description' type='xml' required='false'/>
 	<param name='transcript' type='xml'/>
 	<content>
-		<html>
-			<head>
-				<title>{{title}} - Needleful</title>
-				<link rel='stylesheet' href='/needleful.css'/>
-				<script type='text/javascript' src='/needleful.js'></script>
-			</head>
-			<body>
-				<div id='content'>
-					<div id='titlebar'>
-						<ul class='navbar'>
-							<li><a href='/'>needleful dot net</a> / </li>
-							<li><a href='/comic/needleful'>needleful comic</a> /</li>
-							<li>page {{page}} </li>
-						</ul>
-						<button id='burger-button' class='not-clicked' aria-label='burger button' onclick='burgerClicked()'>
-							<img id='burger-img' alt='burger button' src='/burger.svg'/>
-						</button>
-						<div id='burger-block' class='noshow'>
-							<img class='full-line' style='min-width: 400px;' src='/img/burger.jpg'/>
-							<p class='epic full-line'>Burger.</p>
-						</div>
-					</div>
-					<div class='comic-wrapper'>
-						<img class='comic' src='{{source}}' alt='Comic: {{title}}'/>
-					</div>
-					<ul id='comic-buttons'>
-						<Match value='{{page == 1}}'>
-							<True>
-								<li>At the first!</li>
-							</True>
-							<False>
-								<li><a href='/comic/needleful/1.html' class='align-left'>First</a></li>
-								<li><a href='/comic/needleful/{{page - 1}}.html' class='align-left'>Previous</a> </li>
-							</False>
-						</Match>
-						
-						<li><a href='/comic/needleful/archive' class='align-center'>Archive</a></li>
-
-						<Match f='src-file-exists' x='comic/needleful/{{page + 1}}.page.xml' html-class='inline-button'>
-							<True>
-								<li><a href='/comic/needleful/{{page + 1}}.html' class='align-right'>Next</a></li>
-							</True>
-							<False>
-								<li>Come back later!</li>
-							</False>
-						</Match>
-					</ul>
-					<h1>{{title}}</h1>
-					{{description}}
-					<details>
-						<summary>Transcript</summary>
-						{{transcript}}
-					</details>
-					<h2>Latest Comics:</h2>
-					<iframe src='latest.html' width='100%' height='400px'/>
-				</div>
-			</body>
-		</html>
+		<comic-needleful-multipage>
+			<title>[[title]]</title>
+			<page>[[page]]</page>
+			<sources>
+				<source>[[source]]</source>
+			</sources>
+			<description>[[description]]</description>
+			<transcript>[[transcript]]</transcript>
+		</comic-needleful-multipage>
 	</content>
 </template>

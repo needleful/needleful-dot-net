@@ -1,30 +1,30 @@
 <template name='latest-comics'>
 	<param name='title' type='text'/>
-	<param name='css' type='text,file'/>
+	<param name='css' type='text'/>
 	<param name='comics' type='list'>
 		<param name='comic' type='struct'>
 			<param name='title' type='text'/>
-			<param name='thumbnail' type='text,file'/>
-			<param name='href' type='text,file'/>
+			<param name='thumbnail' type='text'/>
+			<param name='href' type='text'/>
 		</param>
 	</param>
 	<content>
 		<html>
 			<head>
-				<title>{{title}} - Latest</title>
-				<link rel='stylesheet' href='{{css}}'/>
+				<title>[[title]] - Latest</title>
+				<link rel='stylesheet' href='[[css]]'/>
 				<base target='_top'/>
 			</head>
 			<body>
 				<ul class='comics-latest'>
-					<ForEach list='comics'>
+					<foreach list='comics'>
 						<li>
-							<a href='{{comic:href}}'>
-								<img class='thumbnail' src='{{comic:thumbnail}}'/>
-								<p class='thumbnail-title'>{{comic:title}}</p>
+							<a href='[[comic:href]]'>
+								<img class='thumbnail' src='[[comic:thumbnail]]'/>
+								<p class='thumbnail-title'>[[comic:title]]</p>
 							</a>
 						</li>
-					</ForEach>
+					</foreach>
 				</ul>
 			</body>
 		</html>

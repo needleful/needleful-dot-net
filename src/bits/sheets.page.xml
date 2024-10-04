@@ -1,50 +1,48 @@
-<page>
-	<basic-page>
-		<title>nP-Sheets</title>
-		<custom-content-class>wide</custom-content-class>
-		<custom-nav-list>
-			<el>
-				<link>/bits</link>
-				<title>Bits</title>
-			</el>
-		</custom-nav-list>
-		<content>
-			<h1>nP-Sheets</h1>
-			<p>This is my attempt at a spreadsheet software because I wanted to do my taxes but don't have Excel any more.</p>
-			<p>It's incredibly basic. Here's the rules: </p>
-			<ul>
-				<li>If text is wrapped in curly brackets, <code>{ like this }</code>, it's evaluated as Javascript. It breaks with spaces, it's very brittle!</li>
-				<li>The function <code>$(row, col)</code> can be used to access a table entry.</li>
-				<li>If the table entry is a number, it's returned as a number. Otherwise it's just the text.</li>
-				<li><code>$(row, col)</code> reads the output of a script, if the selected node is a script.</li>
-				<li>As of writing, this doesn't automatically update dependencies or anything. So if you edit a cell, you'll need to click on all the cells that depend on it to update them.</li>
-			</ul>
-			<div style='overflow:auto; margin:auto; width:100%;'>
-				<table id='main-table'>
-				</table>
-			</div>
+<basic-page>
+	<title>nP-Sheets</title>
+	<contentClass>wide</contentClass>
+	<navList>
+		<el>
+			<link>/bits</link>
+			<title>Bits</title>
+		</el>
+	</navList>
+	<content>
+		<h1>nP-Sheets</h1>
+		<p>This is my attempt at a spreadsheet software because I wanted to do my taxes but don't have Excel any more.</p>
+		<p>It's incredibly basic. Here's the rules: </p>
+		<ul>
+			<li>If text is wrapped in curly brackets, <code>{ like this }</code>, it's evaluated as Javascript. It breaks with spaces, it's very brittle!</li>
+			<li>The function <code>$(row, col)</code> can be used to access a table entry.</li>
+			<li>If the table entry is a number, it's returned as a number. Otherwise it's just the text.</li>
+			<li><code>$(row, col)</code> reads the output of a script, if the selected node is a script.</li>
+			<li>As of writing, this doesn't automatically update dependencies or anything. So if you edit a cell, you'll need to click on all the cells that depend on it to update them.</li>
+		</ul>
+		<div style='overflow:auto; margin:auto; width:100%;'>
+			<table id='main-table'>
+			</table>
+		</div>
+		<br/>
+		<div id='table-creation'>
+			<input id='rows' type='number' min='1' max='2000' value='10'/>
+			<label for='rows'>Rows</label>
 			<br/>
-			<div id='table-creation'>
-				<input id='rows' type='number' min='1' max='2000' value='10'/>
-				<label for='rows'>Rows</label>
-				<br/>
-				<input id='columns' type='number' min='1' max='99' value='8'/>
-				<label for='columns'>Columns</label>
-				<br/>
-				<button id='create-table' onclick='createTable()'>New Table</button>
-				<br/>
-			</div>
-			<div id='table-file-ops'>
-				<input id='export-results' type='checkbox'></input>
-				<label for='export-results'>Export Results (not scripts)</label>
-				<br/>
-				<button id='export-table' onclick='exportTable()'>Export TSV</button>
-				<br/>
-				<label for='tsv-import'>Import TSV:</label>
-				<br/>
-				<input id='tsv-import' type='file' accept=".tsv"/>
-			</div>
-			<script type='text/javascript' src='sheets.js'/>
-		</content>
-	</basic-page>
-</page>
+			<input id='columns' type='number' min='1' max='99' value='8'/>
+			<label for='columns'>Columns</label>
+			<br/>
+			<button id='create-table' onclick='createTable()'>New Table</button>
+			<br/>
+		</div>
+		<div id='table-file-ops'>
+			<input id='export-results' type='checkbox'></input>
+			<label for='export-results'>Export Results (not scripts)</label>
+			<br/>
+			<button id='export-table' onclick='exportTable()'>Export TSV</button>
+			<br/>
+			<label for='tsv-import'>Import TSV:</label>
+			<br/>
+			<input id='tsv-import' type='file' accept=".tsv"/>
+		</div>
+		<script type='text/javascript' src='sheets.js'/>
+	</content>
+</basic-page>

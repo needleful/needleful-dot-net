@@ -2,7 +2,7 @@
 	<param name='blogs' type='list'>
 		<param name='blog' type='struct'>
 			<param name='title' type='text'/>
-			<param name='href' type='text,file'/>
+			<param name='href' type='text'/>
 		</param>
 	</param>
 	<content>
@@ -14,9 +14,9 @@
 			</head>
 			<body>
 				<ul class='browser-list'>
-					<ForEach list='blogs'>
-						<li> <a href='{{blog:href}}'>{{blog:title}}</a></li>
-					</ForEach>
+					<foreach list='blogs'>
+						<li> <a href='[[blog:href]]'>[[blog:title]]</a></li>
+					</foreach>
 				</ul>
 			</body>
 		</html>

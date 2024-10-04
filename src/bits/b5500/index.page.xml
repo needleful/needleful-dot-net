@@ -1,9 +1,7 @@
-<page>
-	<basic-page>
-		<title>B5500</title>
-		<content>
-			<p>I put a copy of the <a href="https://github.com/pkimpel/retro-b5500">retro-b5500 emulator</a> on my site!</p>
-			<a href="webUI/B5500Console.html">Click Here to open the Emulator!</a>
-		</content>
-	</basic-page>
-</page>
+<basic-page>
+	<title>B5500</title>
+	<content>
+		<p>I put a copy of the <a href="https://github.com/pkimpel/retro-b5500">retro-b5500 emulator</a> on my site!</p>
+		<a href="webUI/B5500Console.html">Click Here to open the Emulator!</a>
+	</content>
+</basic-page>

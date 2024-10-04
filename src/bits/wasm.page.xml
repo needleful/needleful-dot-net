@@ -1,24 +1,23 @@
-<page>
-	<basic-page>
-		<title>WASM Test</title>
-		<custom-nav-list>
-			<el>
-				<link>/bits</link>
-				<title>Bits</title>
-			</el>
-		</custom-nav-list>
-		<content>
-			<script type='text/javascript' src='wasm.js'/>
-			<p>I'm trying some Wasm! I needed to test a few things:</p>
-			<ul>
-				<li>Can I compile WASM in the browser?</li>
-				<li>Do I understand the binary format?</li>
-			</ul>
-			<p>So I made this Wasm "compiler" where you write out the data in hexadecimal. It ignores every character that isn't 0-9 or a-f (case insensitive), so you can use some spacing. I also made it so you can put comments in regular parentheses <code>()</code>.</p>
-			<p>The header bytes (magic and version) are automatically added.</p>
-			<p>If it compiles successfully, it'll tell you what the exported functions are. Otherwise you'll need to check the console etc.</p>
-			<p>To call the function, you'd call <code>wasm_module.instance.exports.{your function}</code> in the console.</p>
-			<textarea id='byte_text' rows='15' cols='110'>
+<basic-page>
+	<title>WASM Test</title>
+	<navList>
+		<el>
+			<link>/bits</link>
+			<title>Bits</title>
+		</el>
+	</navList>
+	<content>
+		<script type='text/javascript' src='wasm.js'/>
+		<p>I'm trying some Wasm! I needed to test a few things:</p>
+		<ul>
+			<li>Can I compile WASM in the browser?</li>
+			<li>Do I understand the binary format?</li>
+		</ul>
+		<p>So I made this Wasm "compiler" where you write out the data in hexadecimal. It ignores every character that isn't 0-9 or a-f (case insensitive), so you can use some spacing. I also made it so you can put comments in regular parentheses <code>()</code>.</p>
+		<p>The header bytes (magic and version) are automatically added.</p>
+		<p>If it compiles successfully, it'll tell you what the exported functions are. Otherwise you'll need to check the console etc.</p>
+		<p>To call the function, you'd call <code>wasm_module.instance.exports.{your function}</code> in the console.</p>
+		<textarea id='byte_text' rows='15' cols='110'>
 (-- types section --)
 01
 (of 7 bytes with 1 type)
@@ -52,11 +51,10 @@
 20 00
 20 01
 6a 0f 0b
-			</textarea>
-			<br/>
-			<button onclick='compile()'>Compile</button>
-			<br />
-			<div id='result'>Result here</div>
-		</content>
-	</basic-page>
-</page>
+		</textarea>
+		<br/>
+		<button onclick='compile()'>Compile</button>
+		<br />
+		<div id='result'>Result here</div>
+	</content>
+</basic-page>

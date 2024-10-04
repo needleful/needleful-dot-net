@@ -1,44 +1,44 @@
 <template name='comic-archive'>
-	<param name='css' type='text,file'/>
-	<param name='page' type='text,integer'/>
+	<param name='css' type='text'/>
+	<param name='page' type='integer'/>
 	<param name='folder' type='text'/>
 	<param name='comics' type='list'>
 		<param name='comic' type='struct'>
 			<param name='title' type='text'/>
-			<param name='thumbnail' type='text,file'/>
-			<param name='href' type='text,file'/>
+			<param name='thumbnail' type='text'/>
+			<param name='href' type='text'/>
 		</param>
 	</param>
 	<content>
 		<html>
 			<head>
 				<title>Archives Subpage</title>
-				<link rel='stylesheet' href='{{css}}'/>
+				<link rel='stylesheet' href='[[css]]'/>
 				<base target='_top'/>
 			</head>
 			<body>
-				Page {{page}} |
-				<Match value='{{page==1}}'>
-					<False>
+				Page [[page]] |
+				<match val='page==1'>
+					<false>
 						<!-- TODO: fix bug with page not decrementing -->
 						| <a href='1.html' target='_self'>First</a> |
-						| <a href='{{page - 1}}.html' target='_self'>Previous</a> |
-					</False>
-				</Match>
-				<Match f='src-file-exists' x='{{folder}}/archive/{{page+1}}.page.xml'>
-					<True>
-						| <a href='{{page + 1}}.html' target='_self'>Next</a>
-					</True>
-				</Match>
+						| <a href='[[page - 1]].html' target='_self'>Previous</a> |
+					</false>
+				</match>
+				<match val='src_file_exists(folder|"/archive/"| page+1 |".page.xml")'>
+					<true>
+						| <a href='[[page + 1]].html' target='_self'>Next</a>
+					</true>
+				</match>
 				<ul class='comics-latest'>
-					<ForEach list='comics'>
+					<foreach list='comics'>
 						<li>
-							<a href='{{comic:href}}'>
-								<img class='thumbnail' src='{{comic:thumbnail}}'/>
-								<p class='thumbnail-title'>{{comic:title}}</p>
+							<a href='[[comic:href]]'>
+								<img class='thumbnail' src='[[comic:thumbnail]]'/>
+								<p class='thumbnail-title'>[[comic:title]]</p>
 							</a>
 						</li>
-					</ForEach>
+					</foreach>
 				</ul>
 			</body>
 		</html>

@@ -1,12 +1,12 @@
 <page>
 	<basic-page>
 		<title>To Dust it Goes</title>
-		<custom-nav-list>
+		<navList>
 			<el>
 				<link>/poetry</link>
 				<title>Poetry</title>
 			</el>
-		</custom-nav-list>
+		</navList>
 		<content>
 			<p>
 				The grass turns to ash beneath his feet. <br />

@@ -1,15 +1,15 @@
 <template name='comic-needleful-multipage'>
 	<param name='title' type='text'/>
-	<param name='page' type='text,integer'/>
+	<param name='page' type='integer'/>
 	<param name='sources' type='list'>
-		<param name='source' type='text,file'/>
+		<param name='source' type='text'/>
 	</param>
-	<param name='description' type='xml' required='False'/>
+	<param name='description' type='xml' required='false'/>
 	<param name='transcript' type='xml'/>
 	<content>
 		<html>
 			<head>
-				<title>{{title}} - Needleful</title>
+				<title>[[title]] - Needleful</title>
 				<link rel='stylesheet' href='/needleful.css'/>
 				<script type='text/javascript' src='/needleful.js'/>
 			</head>
@@ -19,7 +19,7 @@
 						<ul class='navbar'>
 							<li><a href='/'>needleful dot net</a> / </li>
 							<li><a href='/comic/needleful'>needleful comic</a> /</li>
-							<li>page {{page}} </li>
+							<li>page [[page]] </li>
 						</ul>
 						<button id='burger-button' class='not-clicked' aria-label='burger button' onclick='burgerClicked()'>
 							<img id='burger-img' alt='burger button' src='/burger.svg'/>
@@ -30,38 +30,38 @@
 						</div>
 					</div>
 					<div class='comic-wrapper'>
-						<ForEach list='sources' i='i' html-class='comic-wrapper'>
-							<img class='comic' src='{{source}}' alt='Comic: {{title}} page {{i}}'/>
+						<foreach list='sources' it='i'>
+							<img class='comic' src='[[source]]' alt='Comic: [[title]] page [[i]]'/>
 							<br />
-						</ForEach>
+						</foreach>
 					</div>
 					<ul id='comic-buttons'>
-						<Match value='{{page == 1}}' html-class='inline-button'>
-							<True>
+						<match val='page == 1'>
+							<true>
 								<li>At the first!</li>
-							</True>
-							<False>
+							</true>
+							<false>
 								<li><a href='/comic/needleful/1.html' class='align-left'>First</a></li>
-								<li><a href='/comic/needleful/{{page - 1}}.html' class='align-left'>Previous</a> </li>
-							</False>
-						</Match>
+								<li><a href='/comic/needleful/[[page - 1]].html' class='align-left'>Previous</a> </li>
+							</false>
+						</match>
 
 						<li><a href='/comic/needleful/archive' class='align-center'>Archive</a></li>
 
-						<Match f='src-file-exists' x='comic/needleful/{{page + 1}}.page.xml' html-class='inline-button'>
-							<True>
-								<li><a href='/comic/needleful/{{page + 1}}.html' class='align-right'>Next</a></li>
-							</True>
-							<False>
+						<match val='src_file_exists(page + 1|".page.xml")'>
+							<true>
+								<li><a href='/comic/needleful/[[page + 1]].html' class='align-right'>Next</a></li>
+							</true>
+							<false>
 								<li>Come back later!</li>
-							</False>
-						</Match>
+							</false>
+						</match>
 					</ul>
-					<h1>{{title}}</h1>
-					{{description}}
+					<h1>[[title]]</h1>
+					[[description]]
 					<details>
 						<summary>Transcript</summary>
-						{{transcript}}
+						[[transcript]]
 					</details>
 					<h2>Latest Comics:</h2>
 					<iframe src='latest.html' width='100%' height='400px'/>
