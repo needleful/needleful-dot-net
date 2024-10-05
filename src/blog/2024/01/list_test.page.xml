@@ -1,13 +1,11 @@
-<page>
-	<blog-basic>
-		<date>2024/01/17</date>
-		<title>A cool list tester</title>
-		<subtitle>look at this!</subtitle>
-		<keywords>list</keywords>
-		<content>
-			- Item 1 and _italics_ of *differnt* types
-			- Item 2 and __bold text__ of **other types**
-			- Item 3 with **arbitrary*_text_`~**
-		</content>
-	</blog-basic>
-</page>
+<blog-basic>
+	<date>2024/01/17</date>
+	<title>A cool list tester</title>
+	<subtitle>look at this!</subtitle>
+	<keywords>list</keywords>
+	<content>
+- Item 1 and _italics_ of *differnt* types
+- Item 2 and __bold text__ of **other types**
+- Item 3 with **arbitrary*_text_`~**
+	</content>
+</blog-basic>

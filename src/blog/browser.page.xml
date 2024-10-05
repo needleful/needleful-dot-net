@@ -1,14 +1,12 @@
-<page>
-	<blog-browser>
-		<blogs>
-			<blog>
-				<title>web3 = bad</title>
-				<href>/blog/2021/12/web3.html</href>
-			</blog>
-			<blog>
-				<title>I tried to make the perfect blog post</title>
-				<href>/blog/2021/03/perfectionism.html</href>
-			</blog>
-		</blogs>
-	</blog-browser>
-</page>
+<blog-browser>
+	<blogs>
+		<blog>
+			<title>web3 = bad</title>
+			<href>/blog/2021/12/web3.html</href>
+		</blog>
+		<blog>
+			<title>I tried to make the perfect blog post</title>
+			<href>/blog/2021/03/perfectionism.html</href>
+		</blog>
+	</blogs>
+</blog-browser>

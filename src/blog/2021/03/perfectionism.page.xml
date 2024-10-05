@@ -1,21 +1,19 @@
-<page>
-	<blog-basic>
-		<title>I tried to make the perfect blog post</title>
-		<subtitle>i have given up on the endeavor</subtitle>
+<blog-basic>
+	<title>I tried to make the perfect blog post</title>
+	<subtitle>i have given up on the endeavor</subtitle>
 
-		<date>2021/03/01</date>
-		<keywords>web development, blog, blogging, art, writing</keywords>
+	<date>2021/03/01</date>
+	<keywords>web development, blog, blogging, art, writing</keywords>
 
-		<content>
-			I tried to make the perfect blog post, the blog post that would expand your mind and make you see how cool and intelligent I am.
+	<content>
+I tried to make the perfect blog post, the blog post that would expand your mind and make you see how cool and intelligent I am.
 
-			But after a week of writing, I was nearly tempted to give up entirely.  The stress was too much for my small brain.
+But after a week of writing, I was nearly tempted to give up entirely.  The stress was too much for my small brain.
 
-			Then I thought to myself... "what if I just make an OK blog post".
+Then I thought to myself... "what if I just make an OK blog post".
 
-			I don't have subscribers.  I don't have ad contracts.  Odds are the only person who'll see this for the next few months are friends and family.  So why not take it easy for a bit.
+I don't have subscribers.  I don't have ad contracts.  Odds are the only person who'll see this for the next few months are friends and family.  So why not take it easy for a bit.
 
-			So this is my OK blog post.  You're welcome.
-		</content>
-	</blog-basic>
-</page>
+So this is my OK blog post.  You're welcome.
+	</content>
+</blog-basic>

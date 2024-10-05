@@ -1,69 +1,68 @@
-<page>
-	<comic-archive>
-		<css>needleful.css</css>
-		<page>1</page>
-		<folder>comic/needleful</folder>
-		<comics>
-			<comic>
-				<title>Confession Time</title>
-				<href>comic/needleful/1.html</href>
-				<thumbnail>img/needleful/confession_time_thumb.png</thumbnail>
-			</comic>
-			<comic>
-				<title>Cool Bones</title>
-				<href>comic/needleful/2.html</href>
-				<thumbnail>img/needleful/cool_bones_thumb.png</thumbnail>
-			</comic>
-			<comic>
-				<title>Stares</title>
-				<href>comic/needleful/3.html</href>
-				<thumbnail>img/needleful/stares_thumb.png</thumbnail>
-			</comic>
-			<comic>
-				<title>Recruitment</title>
-				<href>comic/needleful/4.html</href>
-				<thumbnail>img/needleful/recruitment_thumb.png</thumbnail>
-			</comic>
-			<comic>
-				<title>The Wires</title>
-				<href>comic/needleful/5.html</href>
-				<thumbnail>img/needleful/the_wires_thumb.png</thumbnail>
-			</comic>
-			<comic>
-				<title>Nutrition</title>
-				<href>comic/needleful/6.html</href>
-				<thumbnail>img/needleful/nutrition_thumb.png</thumbnail>
-			</comic>
-			<comic>
-				<title>Marvellous Means</title>
-				<href>comic/needleful/7.html</href>
-				<thumbnail>img/needleful/marvellous_means_thumb.png</thumbnail>
-			</comic>
-			<comic>
-				<title>Losing Focus</title>
-				<href>comic/needleful/8.html</href>
-				<thumbnail>img/needleful/losing_focus_thumb.png</thumbnail>
-			</comic>
-			<comic>
-				<title>Morning Birds</title>
-				<href>comic/needleful/9.html</href>
-				<thumbnail>img/needleful/birds_thumb.png</thumbnail>
-			</comic>
-			<comic>
-				<title>Like My Coffee</title>
-				<href>comic/needleful/10.html</href>
-				<thumbnail>img/needleful/like_my_coffee_thumb.png</thumbnail>
-			</comic>
-			<comic>
-				<title>Satisfied?</title>
-				<href>comic/needleful/11.html</href>
-				<thumbnail>img/needleful/satisfied_thumb.png</thumbnail>
-			</comic>
-			<comic>
-				<title>Candy Man</title>
-				<href>comic/needleful/12.html</href>
-				<thumbnail>img/needleful/candy_man_thumb.png</thumbnail>
-			</comic>
-		</comics>
-	</comic-archive>
-</page>
+<comic-archive>
+	<css>needleful.css</css>
+	<page>1</page>
+	<folder>comic/needleful</folder>
+	<comics>
+		<comic>
+			<title>Confession Time</title>
+			<href>comic/needleful/1.html</href>
+			<thumbnail>img/needleful/confession_time_thumb.png</thumbnail>
+		</comic>
+		<comic>
+			<title>Cool Bones</title>
+			<href>comic/needleful/2.html</href>
+			<thumbnail>img/needleful/cool_bones_thumb.png</thumbnail>
+		</comic>
+		<comic>
+			<title>Stares</title>
+			<href>comic/needleful/3.html</href>
+			<thumbnail>img/needleful/stares_thumb.png</thumbnail>
+		</comic>
+		<comic>
+			<title>Recruitment</title>
+			<href>comic/needleful/4.html</href>
+			<thumbnail>img/needleful/recruitment_thumb.png</thumbnail>
+		</comic>
+		<comic>
+			<title>The Wires</title>
+			<href>comic/needleful/5.html</href>
+			<thumbnail>img/needleful/the_wires_thumb.png</thumbnail>
+		</comic>
+		<comic>
+			<title>Nutrition</title>
+			<href>comic/needleful/6.html</href>
+			<thumbnail>img/needleful/nutrition_thumb.png</thumbnail>
+		</comic>
+		<comic>
+			<title>Marvellous Means</title>
+			<href>comic/needleful/7.html</href>
+			<thumbnail>img/needleful/marvellous_means_thumb.png</thumbnail>
+		</comic>
+		<comic>
+			<title>Losing Focus</title>
+			<href>comic/needleful/8.html</href>
+			<thumbnail>img/needleful/losing_focus_thumb.png</thumbnail>
+		</comic>
+		<comic>
+			<title>Morning Birds</title>
+			<href>comic/needleful/9.html</href>
+			<thumbnail>img/needleful/birds_thumb.png</thumbnail>
+		</comic>
+		<comic>
+			<title>Like My Coffee</title>
+			<href>comic/needleful/10.html</href>
+			<thumbnail>img/needleful/like_my_coffee_thumb.png</thumbnail>
+		</comic>
+		<comic>
+			<title>Satisfied?</title>
+			<href>comic/needleful/11.html</href>
+			<thumbnail>img/needleful/satisfied_thumb.png</thumbnail>
+		</comic>
+		<comic>
+			<title>Candy Man</title>
+			<href>comic/needleful/12.html</href>
+			<thumbnail>img/needleful/candy_man_thumb.png</thumbnail>
+		</comic>
+	</comics>
+</comic-archive>
+

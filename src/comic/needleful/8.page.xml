@@ -1,25 +1,23 @@
-<page>
-	<comic-needleful>
-		<title>Losing Focus</title>
-		<page>8</page>
-		<source>img/needleful/losing_focus.png</source>
-		<description>warning: not funny!  not even a little funny!</description>
-		<transcript>
+<comic-needleful>
+	<title>Losing Focus</title>
+	<page>8</page>
+	<source>img/needleful/losing_focus.png</source>
+	<description>warning: not funny!  not even a little funny!</description>
+	<transcript>
 
-			<p class='nr'> I... I don't know what to <em>do</em> with myself.</p>
+		<p class='nr'> I... I don't know what to <em>do</em> with myself.</p>
 
-			<p class='nr'>END TRANSCRIPT</p>
+		<p class='nr'>END TRANSCRIPT</p>
 
-			<p class='nr'>	Sometimes you just sit, not functioning.
+		<p class='nr'>	Sometimes you just sit, not functioning.
 
-				You can't figure out where you need to go, but you know it isn't here.
+			You can't figure out where you need to go, but you know it isn't here.
 
-				Dissatisfaction crawls all over you.
+			Dissatisfaction crawls all over you.
 
-				A looming dread that you've forgotten something important.
+			A looming dread that you've forgotten something important.
 
-				You're lost.
-			</p>
-		</transcript>
-	</comic-needleful>
-</page>
+			You're lost.
+		</p>
+	</transcript>
+</comic-needleful>

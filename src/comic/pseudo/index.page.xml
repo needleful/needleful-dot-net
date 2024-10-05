@@ -1,9 +1,7 @@
-<page>
-	<basic-page>
-		<title>Superior Pseudo</title>
-		<content>
-			<p>Superior Pseudo is a science-fiction horror comic.</p>
-			<p>Start reading <a href='/comic/pseudo/1'>right here</a></p>
-		</content>
-	</basic-page>
-</page>
+<basic-page>
+	<title>Superior Pseudo</title>
+	<content>
+		<p>Superior Pseudo is a science-fiction horror comic.</p>
+		<p>Start reading <a href='/comic/pseudo/1'>right here</a></p>
+	</content>
+</basic-page>

@@ -1,14 +1,12 @@
-<page>
-	<basic-page>
-		<title>needleful's blog</title>
-		<content>
-			<h1 class='title'>needleful's blog</h1>
-			<div id='sub-content'>
-				<p>this is the only blog on the internet to make this joke.</p>
-				<p>please, peruse my wares.  I have just what you're craving in the sidebar on the right</p>
-				<p>take a sip of my brain</p>
-			</div>
-			<iframe id='browser' src='/blog/browser.html' height='700px'/>
-		</content>
-	</basic-page>
-</page>
+<basic-page>
+	<title>needleful's blog</title>
+	<content>
+		<h1 class='title'>needleful's blog</h1>
+		<div id='sub-content'>
+			<p>this is the only blog on the internet to make this joke.</p>
+			<p>please, peruse my wares.  I have just what you're craving in the sidebar on the right</p>
+			<p>take a sip of my brain</p>
+		</div>
+		<iframe id='browser' src='/blog/browser.html' height='700px'/>
+	</content>
+</basic-page>

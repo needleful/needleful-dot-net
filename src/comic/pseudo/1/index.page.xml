@@ -1,8 +1,6 @@
-<page>
-	<comic-pseudo>
-		<issue>1</issue>
-		<page>0</page>
-		<source>img/pseudo/1/cover.png</source>
-		<description>I'm pretty cool</description>
-	</comic-pseudo>
-</page>
+<comic-pseudo>
+	<issue>1</issue>
+	<page>0</page>
+	<source>img/pseudo/1/cover.png</source>
+	<description>I'm pretty cool</description>
+</comic-pseudo>
