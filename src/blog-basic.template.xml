@@ -5,7 +5,7 @@
 	<param name='date' type='date'/>
 	<param name='keywords' type='text'/>
 
-	<param name='content' type='xml'/>
+	<param name='content' type='markdown'/>
 	<content>
 		<basic-page>
 			<title>[[title]] - needleful's blog</title>
