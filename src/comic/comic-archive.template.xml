@@ -18,17 +18,13 @@
 			</head>
 			<body>
 				Page [[page]] |
-				<match val='page==1'>
-					<false>
-						| <a href='1.html' target='_self'>First</a> |
-						| <a href='[[page - 1]].html' target='_self'>Previous</a> |
-					</false>
-				</match>
-				<match val='src_file_exists(page+1 |".page.xml")'>
-					<true>
-						| <a href='[[page + 1]].html' target='_self'>Next</a>
-					</true>
-				</match>
+				<when val='page gt 1'>
+					| <a href='1.html' target='_self'>First</a> |
+					| <a href='[[page - 1]].html' target='_self'>Previous</a> |
+				</when>
+				<when val='src_file_exists(page+1 |".page.xml")'>
+					| <a href='[[page + 1]].html' target='_self'>Next</a>
+				</when>
 				<ul class='comics-latest'>
 					<foreach list='comics'>
 						<li>
