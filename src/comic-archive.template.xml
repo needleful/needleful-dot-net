@@ -20,12 +20,11 @@
 				Page [[page]] |
 				<match val='page==1'>
 					<false>
-						<!-- TODO: fix bug with page not decrementing -->
 						| <a href='1.html' target='_self'>First</a> |
 						| <a href='[[page - 1]].html' target='_self'>Previous</a> |
 					</false>
 				</match>
-				<match val='src_file_exists(folder|"/archive/"| page+1 |".page.xml")'>
+				<match val='src_file_exists(page+1 |".page.xml")'>
 					<true>
 						| <a href='[[page + 1]].html' target='_self'>Next</a>
 					</true>

@@ -8,7 +8,7 @@
 	<param name='content' type='markdown'/>
 	<content>
 		<basic-page>
-			<title>[[title]] - needleful's blog</title>
+			<title>[[title]]</title>
 			<contentClass>blog</contentClass>
 			<navList>
 				<el>

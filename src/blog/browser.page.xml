@@ -1,6 +1,10 @@
 <blog-browser>
 	<blogs>
 		<blog>
+			<title>I read Arthur Whiteney's code and all I got was Mental Illness.</title>
+			<href>/blog/2024/01/arthur_whitney.html</href>
+		</blog>
+		<blog>
 			<title>web3 = bad</title>
 			<href>/blog/2021/12/web3.html</href>
 		</blog>

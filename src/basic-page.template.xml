@@ -1,4 +1,15 @@
 <templates>
+	<template name='burger'>
+		<content>
+			<button id='burger-button' class='not-clicked' aria-label='burger button' onclick='burgerClicked()'>
+				<img id='burger-img' alt='burger button' src='/burger.svg'/>
+			</button>
+			<div id='burger-block' class='noshow'>
+				<img class='full-line' style='min-width: 400px;' src='/img/burger.jpg'/>
+				<p class='epic full-line'>Burger.</p>
+			</div>
+		</content>
+	</template>
 	<template name='basic-page'>
 		<param name='title' type='text'/>
 		<param name='content' type='xml'/>
@@ -26,13 +37,7 @@
 								</foreach>
 								<li>[[title]]</li>
 							</ul>
-							<button id='burger-button' class='not-clicked' aria-label='burger button' onclick='burgerClicked()'>
-								<img id='burger-img' alt='burger button' src='/burger.svg'/>
-							</button>
-							<div id='burger-block' class='noshow'>
-								<img class='full-line' style='min-width: 400px;' src='/img/burger.jpg'/>
-								<p class='epic full-line'>Burger.</p>
-							</div>
+							<burger/>
 						</div>
 						[[content]]
 					</div>

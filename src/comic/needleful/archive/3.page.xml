@@ -1,38 +1,37 @@
-
 <comic-archive>
-<css>needleful.css</css>
+<css>/needleful.css</css>
 <page>3</page>
-<folder>comic/needleful</folder>
+<folder>/comic/needleful</folder>
 <comics>
 	<comic>
 		<title>14 Days of Valentine</title>
-		<href>comic/needleful/25.html</href>
-		<thumbnail>img/needleful/valentine_thumb.png</thumbnail>
+		<href>/comic/needleful/25.html</href>
+		<thumbnail>/img/needleful/valentine_thumb.png</thumbnail>
 	</comic>
 	<comic>
 		<title>Wisdom Tortoise</title>
-		<href>comic/needleful/26.html</href>
-		<thumbnail>img/needleful/wisdom_tortoise_thumb.png</thumbnail>
+		<href>/comic/needleful/26.html</href>
+		<thumbnail>/img/needleful/wisdom_tortoise_thumb.png</thumbnail>
 	</comic>
 	<comic>
 		<title>Apple</title>
-		<href>comic/needleful/27.html</href>
-		<thumbnail>img/needleful/apple_thumb.png</thumbnail>
+		<href>/comic/needleful/27.html</href>
+		<thumbnail>/img/needleful/apple_thumb.png</thumbnail>
 	</comic>
 	<comic>
 		<title>Bovine</title>
-		<href>comic/needleful/28.html</href>
-		<thumbnail>img/needleful/bovine_thumb.png</thumbnail>
+		<href>/comic/needleful/28.html</href>
+		<thumbnail>/img/needleful/bovine_thumb.png</thumbnail>
 	</comic>
 	<comic>
 		<title>Morning Bacon</title>
-		<href>comic/needleful/29.html</href>
-		<thumbnail>img/needleful/morning_bacon_thumb.png</thumbnail>
+		<href>/comic/needleful/29.html</href>
+		<thumbnail>/img/needleful/morning_bacon_thumb.png</thumbnail>
 	</comic>
 	<comic>
 		<title>Inktober: Eyeball</title>
-		<href>comic/needleful/30.html</href>
-		<thumbnail>img/needleful/inktober_eyeball_thumb.png</thumbnail>
+		<href>/comic/needleful/30.html</href>
+		<thumbnail>/img/needleful/inktober_eyeball_thumb.png</thumbnail>
 	</comic>
 </comics>
 </comic-archive>

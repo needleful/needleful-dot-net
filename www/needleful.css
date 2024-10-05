@@ -170,6 +170,7 @@ ul.browser-list {
 }
 .navbar {
 	display: inline;
+	padding:0pt;
 }
 .navbar li {
 	display: inline;

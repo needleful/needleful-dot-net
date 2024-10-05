@@ -14,6 +14,7 @@ But I'm not here to talk about boring things like "using software to make incomp
 For a very simple version of the programming language K, there's a [publicly available interpreter](https://github.com/kparc/ksimple) he wrote in a few days using about 50 lines of C to show the basics of interpreter writing. This is the C (specifically the January 16, 2024 version #2):
 
 ## a.h
+
 ```C
 typedef char*s,c;s Q=(s)128;
 #define _(e...) ({e;})
@@ -45,6 +46,7 @@ typedef char*s,c;s Q=(s)128;
 ```
 
 ## a.c
+
 ```C
 #include"a.h"//fF[+-!#,@] atom/vector 1byte(int/token) clang-13 -Os -oa a.c -w 
 #define r(n,e) _(s r=m(n);i(n,r[i]=e)r)
@@ -87,9 +89,17 @@ So I'm going to go line by line and explain my understanding. I tried to use the
 
 ## A reading of a.h
 
-```C typedef char*s,c;``` This already shows some funky C. It defines `s` as `char *`, and `c` as `char`, because the `*` attaches to the name, not the type. It's an oddity of C syntax that I've never been a fan of. Otherwise this is pretty straight forward: `s` is for string, and `c` is for character.
+```C
+typedef char*s,c;
+```
 
-```C s Q=(s)128;``` Fuck. Shit. He assigned 128 to a string named `Q`. What does it mean? `s` is `char *`. Why is Q a pointer to the address 128? I thought I must have misunderstood, and `s` was actually a character or something, but it's clearly specified as `char *`. `s` is for string!
+
+This already shows some funky C. It defines `s` as `char *`, and `c` as `char`, because the `*` attaches to the name, not the type. It's an oddity of C syntax that I've never been a fan of. Otherwise this is pretty straight forward: `s` is for string, and `c` is for character.
+
+```C
+s Q=(s)128;
+```
+Fuck. Shit. He assigned 128 to a string named `Q`. What does it mean? `s` is `char *`. Why is Q a pointer to the address 128? I thought I must have misunderstood, and `s` was actually a character or something, but it's clearly specified as `char *`. `s` is for string!
 I couldn't figure out the meaning, so I soon gave up and looked at the annotated code. The `char *` is `unsigned long long` in other versions, and they explain that the type is used for both integers and pointers. The code operates on vectors of 8-bit integers, either as ASCII or numbers, so it makes some sense to use `char *` from a memory layout perspective, but I don't use pointers as integers very often.
 
 ```C
@@ -118,7 +128,11 @@ These are error macros using that mysterious `Q` defined earlier. `Q` seems to h
 #define F(f,e)  _s(f,e,s a,s x)
 ```
 These replace function declarations, and we can see that `_` macro being used to add an implicit return.
-`_s` could be used like ```C _s(my_function, puts("I rock!!!");x*5+e, s x, int e)```, which would create basically this standard C:
+`_s` could be used like
+```C
+_s(my_function, puts("I rock!!!"); x*5+e, s x, int e)
+```
+, which would create basically this standard C:
 
 ```C
 char *my_function(char *x, int e) {
@@ -129,7 +143,10 @@ char *my_function(char *x, int e) {
 
 All the macros except the base `_s` also add implicit arguments like `a` and `x` and you bet it's hard to tell them apart.
 
-```C #define ax (256>x)``` This was another one that baffled me until I looked at the annotations. Remember how I said `s` values were either integers or pointers? 256 is the cutoff value for these integers, which the annotations call _atoms_, so ax means "is `x` an atom?"
+```C
+#define ax (256>x)
+```
+This was another one that baffled me until I looked at the annotations. Remember how I said `s` values were either integers or pointers? 256 is the cutoff value for these integers, which the annotations call _atoms_, so ax means "is `x` an atom?"
 
 ```C
 #define ix (c)x
@@ -147,33 +164,60 @@ These aren't too confusing. `ix` casts `x` to a `char`. `nx` implies `x` is some
 
 These copy `ax`, `ix`, and `nx` respectively to work on the `a` variable, which is an implicit argument in functions defined using the `F(f,e)` macro. You remembered the `x(name, expression)` macro for assigning to a locally-scoped `x`, right?
 
-```C #define oo w("oo\n")``` It prints `oo`. It's not used anywhere.
+```C
+#define oo w("oo\n")
+```
+It prints `oo`. It's not used anywhere.
 
 ## a reading of a.c
 
 I wound up not needing to refer to the annotated code at all to understand this. The C code is mostly using everything in the headers to build the interpreter.
 
-```C #define r(n,e) _(s r=m(n);i(n,r[i]=e)r)``` We create a vector `r` from `m(n)` (which is defined later (it's malloc)), fill `r` with the results of `e`, and return it out of the statement expression.
+```C
+#define r(n,e) _(s r=m(n);i(n,r[i]=e)r)
+```
+We create a vector `r` from `m(n)` (which is defined later (it's malloc)), fill `r` with the results of `e`, and return it out of the statement expression.
 
-```C f(w,write(1,ax?&amp;x:x,ax?1:strlen(x));x)``` This defines `s w(s x)`, which is our print function. If `x` is an atom (`ax?`), we print it as a single character by getting its address (`&amp;x`) and providing a length of 1. If it's a vector, we print it as a string using `strlen` to calculate how long it is, so now we also know vectors must be null-terminated here.
+```C
+f(w,write(1,ax?&amp;x:x,ax?1:strlen(x));x)
+```
+This defines `s w(s x)`, which is our print function. If `x` is an atom (`ax?`), we print it as a single character by getting its address (`&amp;x`) and providing a length of 1. If it's a vector, we print it as a string using `strlen` to calculate how long it is, so now we also know vectors must be null-terminated here.
 `write` and `strlen` are standard functions that we call without including the headers, because fuck headers. Let the linker figure it out.
 
-```C F(err,w(a);w((s)58);w(x);w((s)10);Q)``` Our fancy shmancy error printing function, `s err(s a, s x)`. The confusing thing is that `:` and the newline are represented by their ASCII numbers 58 and 10, respectively. This just prints a message in the format `{a}:{x}\n` and returns our special error value `Q`.
+```C
+F(err,w(a);w((s)58);w(x);w((s)10);Q)
+```
+Our fancy shmancy error printing function, `s err(s a, s x)`. The confusing thing is that `:` and the newline are represented by their ASCII numbers 58 and 10, respectively. This just prints a message in the format `{a}:{x}\n` and returns our special error value `Q`.
 
-```C _i(wi,s b[5];sprintf(b,"%d ",x);w(b);0)``` Defines `s wi(c x)`, which takes `x` as a `char`, formats it as an integer in up to ```C 5*sizeof(char*)/sizeof(char)``` characters (40 on 64-bit machines), and writes that.
+```C
+_i(wi,s b[5];sprintf(b,"%d ",x);w(b);0)
+```
+Defines `s wi(c x)`, which takes `x` as a `char`, formats it as an integer in up to `5*sizeof(char*)/sizeof(char)` characters (40 on 64-bit machines), and writes that.
 
-```C f(W,Q(x)$(ax,wi(ix))i(nx,wi(xi))w(10);x)``` Another print function, `s W(s x)` either writes `x` as an integer or a list of integers. It also refuses to print the `Q` vector.
+```C
+f(W,Q(x)$(ax,wi(ix))i(nx,wi(xi))w(10);x)
+```
+Another print function, `s W(s x)` either writes `x` as an integer or a list of integers. It also refuses to print the `Q` vector.
 
 ```C
 f(srt,Qz(1)0) f(uni,Qz(1)0) F(Cut,Qz(1)0) F(Drp,Qz(1)0)
 ```
 I figured out what `nyi` means! It means "Not yet implemented", as we can see from these function definitions.
 
-```C _i(m,s a=malloc(1+x);*a++=x;a)``` And we find our previously-used function `s m(c x)`, which allocates our buffer and returns a fat pointer (with the size at `x[-1]`, hence the `1+x` and `a++`). `x` is the length we're allocating here, which means our vectors are limited to 255 bytes. The repo suggests upgrading capacity as an exercise to the reader, which could be fun.
+```C
+_i(m,s a=malloc(1+x);*a++=x;a)
+```
+And we find our previously-used function `s m(c x)`, which allocates our buffer and returns a fat pointer (with the size at `x[-1]`, hence the `1+x` and `a++`). `x` is the length we're allocating here, which means our vectors are limited to 255 bytes. The repo suggests upgrading capacity as an exercise to the reader, which could be fun.
 
-```C #define A(c) ((s)memchr(a,c,na)?:a+na)-a``` This macro finds the first occurence of the character `c` in our vector `a` as an index into the string (hence the `-a`, since `memchr` returns a pointer). If the result is null, it just returns the length of the string (`a+na - a`). We see another fun bit of non-standard syntax, `?:`, which [I had to look up](https://stackoverflow.com/questions/3319075/ternary-conditional-operator-behaviour-when-leaving-one-expression-empty). `a ?: b` is equivalent to `a ? a : b` without evaluating `a` twice. Pretty snazzy!
+```C
+#define A(c) ((s)memchr(a,c,na)?:a+na)-a
+```
+This macro finds the first occurence of the character `c` in our vector `a` as an index into the string (hence the `-a`, since `memchr` returns a pointer). If the result is null, it just returns the length of the string (`a+na - a`). We see another fun bit of non-standard syntax, `?:`, which [I had to look up](https://stackoverflow.com/questions/3319075/ternary-conditional-operator-behaviour-when-leaving-one-expression-empty). `a ?: b` is equivalent to `a ? a : b` without evaluating `a` twice. Pretty snazzy!
 
-```C #define g(a,v) ax?255&amp;a:r(nx,v)``` Strange little operation, I'll have to see it in action. If `x` is an atom, it clamps `a` to be an atom with a simple mask (`255&amp;a`), otherwise it creates a new vector the same size as `x` filled with the result from `v`.
+```C
+#define g(a,v) ax?255&amp;a:r(nx,v)
+```
+Strange little operation, I'll have to see it in action. If `x` is an atom, it clamps `a` to be an atom with a simple mask (`255&amp;a`), otherwise it creates a new vector the same size as `x` filled with the result from `v`.
 
 ```C
 f(not,g(!ix,!xi)) f(sub,g(-ix,-xi)) F(At,Qr(aa)g(a[ix],a[xi])) F(_A,Qr(aa)g(A(ix),A(xi)))
@@ -195,7 +239,9 @@ These are some atom-only functions.
 - `s Ind(s a, s x)` does `x` modulo `a`, either on `x` as an integer or every value of the vector `x`.
 Honestly, I can buy that this method of coding produces fewer bugs, once you can actually write it, since you work only on small building blocks of the logic and reuse them. Like, where could a bug for `ind` even be? Maybe an off-by-one in `-ix-1-i`, but it's hard to miss what's happening once you can see the trees through the forest.
 
-```C #define G(f,o) F(f,ax?aa?255&amp;ia o ix:Ltn==f?f(sub(x),sub(a)):f(x,a):r(nx,(aa?ia:a[i])o xi))```
+```C
+#define G(f,o) F(f,ax?aa?255&amp;ia o ix:Ltn==f?f(sub(x),sub(a)):f(x,a):r(nx,(aa?ia:a[i])o xi))
+```
 That's too many trees! I can't understand this many nested ternary operators at the same time because I'm not the alien from _Arrival_. I process things in linear time. I have to chunk this up.
 
 ```C
@@ -208,11 +254,16 @@ F(f, ax ?
 		: r(nx,(aa?ia:a[i])o xi))
 ```
 Okay, I see. It's 3 cases from 2 conditions: `x` is an atom or a vector, and `a` is an atom or a vector.
-- `x` and `a` are atoms: apply some operator `o` to both values and clamp to 8 bits. I also didn't realize the bitwize and (`&amp;`) had a lower precedence than the operators this macro is used on, meaning it's always ```C 255 &amp; (ia o ix)```.
+- `x` and `a` are atoms: apply some operator `o` to both values and clamp to 8 bits. I also didn't realize the bitwize and (`&amp;`) had a lower precedence than the operators this macro is used on, meaning it's always 
+```C
+255 &amp; (ia o ix)
+```.
 - `x` is an atom and `a` is a vector: run this function with the arguments swapped. If the function is `Ltn`, also negate the arguments, since less-than depends on argument order.
 - `x` is a vector: create a new vector, either applying `a` or each value of `a` to `x` using the operator. It assumes vector `a` is at least as long as `x`, or it'll index past the end of `a`.
 
-```C G(Ltn,&lt;)G(Eql,==)G(Not,!=)G(Sum,+)G(Prd,*)G(And,&amp;)G(Or,|)```
+```C
+G(Ltn,&lt;)G(Eql,==)G(Not,!=)G(Sum,+)G(Prd,*)G(And,&amp;)G(Or,|)
+```
 Using our fancy new macro, we quickly define seven new functions for the vectors, where they're all element-wise applications of binary operators.
 
 ```C
@@ -230,7 +281,10 @@ F(Tak,Qr(!aa||ax)Qd(0>ia||ia>nx)At(x,ind(a))) F(Sub,Sum(a,sub(x))) F(Mtn,Ltn(x,a
 ```
 Some more simple functions. `Tak` returns the first `a` characters from the vector `x` as a new list; `Sub` subtracts; `Mtn` is "more than"; and `qz` returns our "not yet implemented" error.
 
-```C #define v(e) ((strchr(V,e)?:V)-V)``` A shorthand to get the first occurence of a character from a string `V`, returning an offset into the array or zero if it's not present. This seems ambiguous, since that's also the result if we match with the first character, but we'll see.
+```C
+#define v(e) ((strchr(V,e)?:V)-V)
+```
+A shorthand to get the first occurence of a character from a string `V`, returning an offset into the array or zero if it's not present. This seems ambiguous, since that's also the result if we match with the first character, but we'll see.
 
 ```C
 s U[26],V=" +-*&amp;|&lt;>=~!@?#_^,",
@@ -240,7 +294,7 @@ s U[26],V=" +-*&amp;|&lt;>=~!@?#_^,",
 Ah, we have seen. The first character of `V` is a space, and it looks like the arrays of function pointers match up with the characters of `V` to give us our functions, with space being null. However, I think `abs` is from the standard library here, since it's not defined anywhere else? That seems like a bug. It'd work for atoms, but it'd break vectors.
 This also defines an array of 26 vectors, which I assume will be our variables. 
 
-```C 
+```C
 _i(n, 10u>x-48? x-48 : 26u>x-97? U[x-97] : 0)
 ```
 `s n(c x)` reads a char and returns one of several things. I'll have to consult an ASCII table.

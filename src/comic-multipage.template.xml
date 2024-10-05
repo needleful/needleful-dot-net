@@ -21,17 +21,11 @@
 							<li><a href='/comic/needleful'>needleful comic</a> /</li>
 							<li>page [[page]] </li>
 						</ul>
-						<button id='burger-button' class='not-clicked' aria-label='burger button' onclick='burgerClicked()'>
-							<img id='burger-img' alt='burger button' src='/burger.svg'/>
-						</button>
-						<div id='burger-block' class='noshow'>
-							<img class='full-line' style='min-width: 400px;' src='/img/burger.jpg'/>
-							<p class='epic full-line'>Burger.</p>
-						</div>
+						<burger/>
 					</div>
 					<div class='comic-wrapper'>
 						<foreach list='sources' it='i'>
-							<img class='comic' src='[[source]]' alt='Comic: [[title]] page [[i]]'/>
+							<img class='comic' src='/[[source]]' alt='Comic: [[title]] page [[i+1]]'/>
 							<br />
 						</foreach>
 					</div>
