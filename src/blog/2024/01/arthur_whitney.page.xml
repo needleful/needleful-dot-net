@@ -8,8 +8,10 @@ Arthur Whitney is an esteemed computer scientist who led the design on a few wel
 - The A, K, and Q programming languages
 - kdb, a high-performance database built on K used in fintech
 - Shakti, which is like kdb but faster, designed for trillion-row datasets.
+
 I've never even seen a trillion numbers, much less calculated them, but kdb is apparently a standard tool on Wall Street. They probably care about money, so I'll assume kdb does its job well.
-His languages take significantly after APL, which was a very popular language for similar applications before the invention of <span class='tiny'>qwerty</span> keyboards.
+His languages take significantly after APL, which was a very popular language for similar applications before the invention of (qwerty) keyboards.
+
 But I'm not here to talk about boring things like "using software to make incomprehensible amounts of money in finance" or "human beings and their careers", I'm here to talk about how a guy writes C code weird.
 For a very simple version of the programming language K, there's a [publicly available interpreter](https://github.com/kparc/ksimple) he wrote in a few days using about 50 lines of C to show the basics of interpreter writing. This is the C (specifically the January 16, 2024 version #2):
 
@@ -110,6 +112,7 @@ I couldn't figure out the meaning, so I soon gave up and looked at the annotated
 ```
 These are all pretty straight forward, with one subtle caveat I only realized from the annotated code.
 They're all macros to make common operations more compact: wrapping an expression in a block, defining a variable `x` and using it, conditional statements, and running an expression `n` times.
+
 The subtle thing the annotations point out is the first macro, `({e;})`. The parentheses around curly brackets make this a _statement expression_, a non-standard C extension that allows you to treat a block of statements as a single expression, if the last statement is an expression that provides a value. In other words, `int x = ({int a = func1(); int b = func2(a); a+b;});` sets `x` to whatever `a+b` is. This is used everywhere in the code after this.
 
 ```C
@@ -228,6 +231,7 @@ All the above functions work either on `x` as an integer (`ix`), or on every ele
 - `s sub(s x)` does arithmetic negation.
 - `s At(s a, s x)` indexes into `a`, either to get one value or to shuffle them into a new vector. `a` has to be a vector.
 - `s _A(s a, s x)` searches a vector `a` for the value of `x` and gives us the index, either one value or every value in the vector.
+
 This is a lot of functionality in such a small bit of code.
 
 ```C
@@ -237,6 +241,7 @@ F(Ind,Qr(!aa)Qd(1>ia)g(ix%ia,xi%ia))
 These are some atom-only functions.
 - `s ind(s x)` creates a vector of length _|x|_ containing `0, 1... x-1` if `x` is positive, otherwise it contains `-x-1, -x-2... 0`. 
 - `s Ind(s a, s x)` does `x` modulo `a`, either on `x` as an integer or every value of the vector `x`.
+
 Honestly, I can buy that this method of coding produces fewer bugs, once you can actually write it, since you work only on small building blocks of the logic and reuse them. Like, where could a bug for `ind` even be? Maybe an off-by-one in `-ix-1-i`, but it's hard to miss what's happening once you can see the trees through the forest.
 
 ```C
@@ -298,9 +303,10 @@ This also defines an array of 26 vectors, which I assume will be our variables.
 _i(n, 10u>x-48? x-48 : 26u>x-97? U[x-97] : 0)
 ```
 `s n(c x)` reads a char and returns one of several things. I'll have to consult an ASCII table.
-- If `x` is between 48 and 57 (inclusive), we subtract 48 and return that. Meaning, if `x` is an ASCII character representing 0-9, we subtract 48 so it's the _integer_ 0-9, rather than the character. It's phrased strangely, `10u > x-48`, instead of the more obvious `x>47&amp;&amp;58>x". Maybe it's because it's two characters shorter. Maybe Arthur wanted to show the _length_ of the span of characters (10) more than the start and end, which this does once you understand it. Maybe he just thought the underflow trickery was neat.
+- If `x` is between 48 and 57 (inclusive), we subtract 48 and return that. Meaning, if `x` is an ASCII character representing 0-9, we subtract 48 so it's the _integer_ 0-9, rather than the character. It's phrased strangely, `10u > x-48`, instead of the more obvious `x>47&amp;&amp;58>x`. Maybe it's because it's two characters shorter. Maybe Arthur wanted to show the _length_ of the span of characters (10) more than the start and end, which this does once you understand it. Maybe he just thought the underflow trickery was neat.
 - If `x` is between 97 and 122 (inclusive), it's a lowercase character of the alphabet in ASCII, in which case the function returns one of our variables from the `U` array, mapping 'a' to 'z'.
 - Otherwise, the function returns 0.
+
 So it looks like this function is specifically to read values, either numerals or variables, all of which are one character.
 
 ```C
@@ -320,6 +326,7 @@ Okay, easy. It's a recursive function that checks each character of vector `x`, 
 If we're at the end of the string, we check if `i` is a value and return it.
 Otherwise, we first check if it's an operator (from our `V` string). If it is, we evaluate the rest of the string, check for errors, and then apply the operation to the result from the rest of the evaluation.
 If it wasn't an operation, we evaluate the rest of the string, skipping one character. If the skipped character is a colon (ASCII 58), we assign the result of the evaluation to one of the slots in `U` (if the character `i` is not a lowercase ASCII letter, this will corrupt memory, so don't write bugs).
+
 I'm pretty sure spaces are a syntax error in every location, and I don't see code to create array literals.
 If the skipped character is an operator, we instead apply that binary operator on the evaluation result and `n(i)`, which is either a variable or a number.
 This means code is executed from right to left, with no operator precedent, which is standard for APL-type languages from what I understand.
@@ -369,6 +376,7 @@ For code that's meant to be read by another person, there should probably be som
 
 This coding style feels most appropriate for "done" code, or code that's been worked out on paper or some other environment and is now being written down in a compact way. It's more like finalized mathematical notation than typical code.
 I don't see myself being able to effectively write code like this, since I tend to quickly jot down ideas, compile and run to validate, and edit what I've done based on the results. Making a small set of good primitives and building heavily on those requires basically having solved the problem before writing a single line. Otherwise you get bad primitives that cause more confusion than help, and adjusting those primitives would involve rewriting all the code that depends on them, which is all the code.
+
 But I think that's my key takeaway: I tend to work out problems _in the code_, which can lead to messy results. I write the dumbest possible solution, and then have to try and refactor as I develop a better mental model of the problem.
 What I like most about this code isn't how few characters are used, or everything fitting in one screen. I like how it seems the code was well-understood *before* it was written. You can't refactor a 500-line jumble of C into code like this.
 
