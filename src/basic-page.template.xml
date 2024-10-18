@@ -35,7 +35,7 @@
 								<foreach list='navList'>
 									<li><a href="[[el:link]]">[[el:title]]</a> / </li>
 								</foreach>
-								<li>[[title]]</li>
+								<li> [[title]]</li>
 							</ul>
 							<burger/>
 						</div>

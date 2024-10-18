@@ -3,6 +3,7 @@ body{
 	font-weight:200;
 	font-family: sans-serif;
 	letter-spacing:2px;
+	background-color:#FFF;
 }
 
 a{
@@ -87,9 +88,30 @@ img.comic {
 	display:block;
 }
 
+#hidden-skip {
+	left: 0%;
+	position: absolute;
+	padding: 8px;
+	transform: translateY(-100%);
+	font-color:#fff;
+}
+
+#hidden-skip:focus {
+	transform: translateY(0%);
+}
+
+#comic-buttons {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: auto;
+	padding:0;
+}
+
 #comic-buttons li {
 	display: inline-flex;
-	margin-right: 3em;
+	margin-right: 1em;
+	margin-left: 1em;
 }
 
 .nr {

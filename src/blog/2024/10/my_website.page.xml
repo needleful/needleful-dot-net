@@ -1,0 +1,88 @@
+<blog-basic>
+	<date>2024/10/17</date>
+	<title>This Website Runs on Prolog</title>
+	<subtitle>A brief look at my site generator, nng</subtitle>
+	<keywords>prolog, web design, programming</keywords>
+	<content>
+I switched my website from my old website generator, [needleful's personal site generator](https://github.com/needleful/npsg), to a full rewrite in Prolog, [needleful net generator](https://github.com/needleful/nng).
+
+It was a fun little project, so I wanted to talk about it.
+
+## Why do I have my own site generator?
+
+`npsg` and `nng` are both static site generators. Static site generators are kind of a solved problem, [with dozens of them already available](https://github.com/myles/awesome-static-generators).
+
+I made my own because I wanted to make a lightweight site without writing a bunch of duplicate HTML, but I didn't want to learn a bunch of stuff about an existing system. You look at [Hugo or something](https://gohugo.io/), and there's a whole world of things I'd have to learn:
+
+- [How to structure the file system](https://gohugo.io/getting-started/directory-structure/).
+- [How to make templates](https://gohugo.io/templates/)
+- [How to make themes](https://retrolog.io/blog/creating-a-hugo-theme-from-scratch/). This isn't even in the documentation. I'm just linking some guy's blog.
+
+I already know a decent amount of HTML, CSS, and JavaScript, so it wouldn't make much sense to learn a whole new layer of stuff on top of that for a simple personal site.
+
+Plus, I just like making tools.
+
+## How the generator works
+
+My site is split into templates and pages.
+
+For each folder, I first gather up all the templates. For a simple example, let's just look at a test templates.
+
+```xml
+&lt;template name='with-params'&gt;
+	&lt;param name='hello'/&gt;
+	&lt;content&gt;
+		&lt;p&gt;Hello, &lt;i&gt;[[hello]]!&lt;/i&gt;&lt;/p&gt;
+	&lt;/content&gt;
+&lt;/template&gt;
+```
+
+It has one parameter, `hello`, and it generates some content, swapping `[[hello]]` with whatever we put in the page.
+
+Using the template would look like this:
+
+```xml
+<with-params>
+	<hello>Gamer</hello>
+</with-params>
+```
+
+And that generates the resulting HTML, unsurprisingly:
+
+```xml
+&lt;p&gt;Hello, &lt;i&gt;Gamer!&lt;/i&gt;&lt;/p&gt;
+```
+
+There's also conditional statements, lists, expressions, and all the other things you would probably want:
+
+```xml
+<!-- a random example -->
+<when val='n mod 2 == 0'>EVEN NUMBER DETECTED</when>
+
+<!-- some snippets from my comics template -->
+<foreach list='sources' it='i'>
+	<img class='comic' src='/[[source]]' alt='Comic: [[title]] page [[i+1]]'/>
+	<br />
+</foreach>
+
+<match val='src_file_exists(page + 1|".page.xml")'>
+	<true>
+		<li><a href='/comic/needleful/[[page + 1]].html' class='align-right'>Next</a></li>
+	</true>
+	<false>
+		<li>Come back later!</li>
+	</false>
+</match>
+```
+
+It lets me focus on making content when I need to, but creating new templates is basically the same as making a regular HTML page.
+
+My original solution was written in C# and .NET, but it was pretty limited.
+
+- It didn't allow any templates within templates. Every type of page had to duplicate all the common stuff.
+- It was verbose and hard to modify.
+
+My entire site generates in about 0.6 seconds. It's not smart enough to detect if a file needs to be regenerated, so that's the time to compile all 56 pages.
+
+	</content>
+</blog-basic>

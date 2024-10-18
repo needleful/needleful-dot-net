@@ -14,12 +14,13 @@
 				<script type='text/javascript' src='/needleful.js'/>
 			</head>
 			<body>
+				<a id='hidden-skip' href='#comic-title'>Skip to content.</a>
 				<div id='content'>
 					<div id='titlebar'>
 						<ul class='navbar'>
 							<li><a href='/'>needleful dot net</a> / </li>
-							<li><a href='/comic/needleful'>needleful comic</a> /</li>
-							<li>page [[page]] </li>
+							<li><a href='/comic/needleful'>needleful comic</a> / </li>
+							<li>comic [[page]] </li>
 						</ul>
 						<burger/>
 					</div>
@@ -51,9 +52,9 @@
 							</false>
 						</match>
 					</ul>
-					<h1>[[title]]</h1>
+					<h1 id='comic-title'>[[title]]</h1>
 					[[description]]
-					<details>
+					<details id='transcript'>
 						<summary>Transcript</summary>
 						[[transcript]]
 					</details>
