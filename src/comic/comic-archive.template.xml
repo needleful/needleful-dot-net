@@ -15,6 +15,9 @@
 				<title>Archives Subpage</title>
 				<link rel='stylesheet' href='[[css]]'/>
 				<base target='_top'/>
+				<foreach list='comics'>
+					<link rel='preload' href='[[comic:href]]'/>
+				</foreach>
 			</head>
 			<body>
 				Page [[page]] |

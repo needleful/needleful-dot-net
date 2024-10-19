@@ -12,6 +12,9 @@
 				<title>[[title]] - Needleful</title>
 				<link rel='stylesheet' href='/needleful.css'/>
 				<script type='text/javascript' src='/needleful.js'/>
+				<foreach list='sources'>
+					<link rel='preload' href='[[source]]' as='image'/>
+				</foreach>
 			</head>
 			<body>
 				<a id='hidden-skip' href='#comic-title'>Skip to content.</a>
