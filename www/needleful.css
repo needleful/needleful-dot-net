@@ -3,7 +3,7 @@ body{
 	font-weight:200;
 	font-family: sans-serif;
 	letter-spacing:2px;
-	background-color:#FFF;
+	background-color:#CCC;
 }
 
 a{
@@ -167,14 +167,14 @@ ul.browser-list {
 	float: right;
 }
 .not-clicked {
-	background: white;
+	background: #CCC;
 }
 .clicked {
 	background: #5af;
 }
 #burger-block {
 	padding: 8px;
-	background: white;
+	background: #DDD;
 	border-right: 2px solid black;
 	border-left: 2px solid black;
 	position: absolute;
@@ -211,4 +211,8 @@ ul.browser-list {
 	margin: auto;
 	width: 100%;
 	text-align: center;
+}
+
+pre, code {
+	background: #DDD
 }

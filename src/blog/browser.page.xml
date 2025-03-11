@@ -1,6 +1,10 @@
 <blog-browser>
 	<blogs>
 		<blog>
+			<title>Stateful Prolog</title>
+			<href>/blog/2025/03/stateful_prolog.html</href>
+		</blog>
+		<blog>
 			<title>This Website Runs on Prolog</title>
 			<href>/blog/2024/10/my_website.html</href>
 		</blog>
