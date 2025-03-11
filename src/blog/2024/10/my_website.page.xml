@@ -84,5 +84,7 @@ My original solution was written in C# and .NET, but it was pretty limited.
 
 My entire site generates in about 0.6 seconds. It's not smart enough to detect if a file needs to be regenerated, so that's the time to compile all 56 pages.
 
+I think it's pretty cool.
+
 	</content>
 </blog-basic>

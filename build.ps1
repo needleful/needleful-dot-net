@@ -1,0 +1,1 @@
+swipl -s nng/nng.pl -- src www

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html><head><title>Stateful Prolog - Needleful.net</title><link rel="stylesheet" href="/needleful.css"><script type="text/javascript" src="/needleful.js"></script></head><body><div id="content" class="blog"><div id="titlebar"><ul class="navbar"><li><a href="/">needleful dot net</a> / </li><li><a href="/blog">needleful's blog</a> / </li><li> Stateful Prolog</li></ul><button id="burger-button" class="not-clicked" aria-label="burger button" onclick="burgerClicked()"><img id="burger-img" alt="burger button" src="/burger.svg"></button><div id="burger-block" class="noshow"><img class="full-line" style="min-width: 400px;" src="/img/burger.jpg"><p class="epic full-line">Burger.</p></div></div>
+						<div id="sub-content"><h3 class="subtitle">I don't know, thinking about Prolog</h3><h5 class="date">Written March 10, 2025</h5>
+					<p>Prolog is a programming language I use surprisingly often. It's just about perfect at what it does: manipulating tree-like structures called “Terms”. It's not good at anything else, but it turns out a lot of problems can be turned into manipulating Terms.</p><p>I use it a lot for making quick compilers, such as (this website's template system)[blog/2024/10/my_website.html]. However, it's annoying to do things with a lot of state.</p><p>Here's a theoretical example of the type of stuff I do, turning some Term into a list of instructions:</p><pre><code data-language="Prolog">
+compile(A+B, [CompiledA, CompiledB, add]) :-
+	compile(A, CompiledA),
+	compile(B, CompiledB).
+
+compile(N, [N, number_const]) :- number(N).
+compile(S, [S, string_const]) :- string(S).
+
+% Example 1: `compile(1+2, Code).`
+% Example 2: `compile("Hello "+"World", Code).`
+</code></pre><p>I wouldn't actually have a dedicated predicate for <code>+</code>, it would be generic over operators or something, but that's the gist.
+There could be dozens of little <code>compile</code> predicates like this, each manipulating some syntax and combining the results.</p><p>Very elegant, very terse.
+Of course, I'd probably want to do typechecking.
+No matter, I'll just go through every instance of <code>compile</code> and add it:</p><pre><code data-language="Prolog">
+compile(A+B, CommonType, [CodeA, CodeB, add]) :-
+	compile(A, TypeA, CodeA),
+	compile(B, TypeB, CodeB),
+	base_type(TypeA, TypeB, CommonType).
+
+compile(N, number, [N, number_const]) :- number(N).
+compile(S, string, [S, string_const]) :- string(S).
+
+% For demonstration, we just make sure the types are the same.
+base_type(T, T, T).
+
+% Example 1: `compile(1+2, Type, Code).`
+% Example 2: `compile("Hello "+"World", Type, Code).`
+% Failing example: `compile("Hello"+2, Type, Code).`
+</code></pre><p>But what about error handling? Right now, it just fails with no message when types are incompatible. We should implement that, and thread the position to the relevant term throughout.</p><pre><code data-language="Prolog">
+% Let's say Loc is a tuple (Index, SubPositions) for compounds, and just Index for atomic terms
+% We also add a lot of cuts to prevent misleading error messages on backtracking.
+compile(Loc, A+B, CommonType, [CodeA, CodeB, add]) :-  !,
+	(Index, [PA, PB]) = Loc,
+	compile(PA, A, TypeA, CodeA),
+	compile(PB, B, TypeB, CodeB),
+	(	base_type(TypeA, TypeB, CommonType)
+	;	compile_error(Index, "There's no common type for addition", (A:TypeA+B:TypeB))
+	), !.
+
+compile(_, N, number, [N, number_const]) :- number(N), !.
+compile(_, S, string, [S, string_const]) :- string(S), !.
+compile(Loc, Unknown, _, _) :-
+	compile_error(Loc, "Unknown syntax", Unknown).
+
+base_type(T, T, T).
+
+% A good old print-and-fail
+compile_error(Loc, String, Term) :-
+	% Position is either the tuple or the index
+	(	(Index, _) = Loc
+	;	Index = Loc
+	),
+	format("Compilation failed at ~w: ~w.~nProblem Term: ~w~n", [Index, String, Term]),
+	fail.
+
+% Successful example 1: `compile((1, [0, 2]), 10+20, Type, Code).`
+% Successful example 2: `compile((1, [0, 2]), "Hello "+"world", Type, Code).`
+% Failing example 1: `compile((1, [0, 2]), 10+"Hello", Type, Code).`
+% Failing example 2: `compile((1, [0, 2]), var+10, Type, Code).`
+</code></pre><p>But we shouldn't fail at the first error! We should thread a list of errors and compile as much of the program as possible, rather than forcing the developer to fix and recompile one error at a time. Of course, we now need to edit every call to <code>compile</code> again...</p><pre><code data-language="Prolog">
+% E is a tuple (Err, NewErr), for tracking errors.
+compile(E, Loc, A+B, CommonType, [CodeA, CodeB, add]) :-  !,
+	(Err, NewErr) = E,
+	(Index, [PA, PB]) = Loc,
+	compile((Err, EA), PA, A, TypeA, CodeA),
+	compile((EA, EB), PB, B, TypeB, CodeB),
+	(	base_type(TypeA, TypeB, CommonType),
+		NewErr=EB
+	;	compile_error((EB, NewErr), Index, "There's no common type for addition", (A:TypeA+B:TypeB)),
+		CommonType = invalid
+	), !.
+
+% (E,E) is necessary to say there's no new errors
+compile((E,E), _, N, number, [N, number_const]) :- number(N), !.
+compile((E,E), _, S, string, [S, string_const]) :- string(S), !.
+compile(E, Loc, Unknown, invalid, unknown_term) :-
+	compile_error(E, Loc, "Unknown syntax", Unknown).
+
+base_type(T, T, T).
+
+compile_error((E1, E2), Loc, String, Term) :-
+	(	(Index, _) = Loc
+	;	Index = Loc
+	),
+	append(E1, [error(Index, String, Term)], E2).
+
+% Successful example 1: `compile(([], Err), (1, [0, 2]), 10+20, Type, Code).`
+% Successful example 2: `compile(([], Err), (1, [0, 2]), "Hello "+"world", Type, Code).`
+% Failing example 1: `compile(([], Err), (1, [0, 2]), 10+"Hello", Type, Code).`
+% Failing example 2: `compile(([], Err), (1, [0, 2]), var+10, Type, Code).`
+</code></pre><p>This isn't as elegant and terse as I remember. Threading things like <code>Err, EA, EB, NewErr</code> or the necessary <code>(E,E)</code> in the constants creates many opportunities for errors.</p><p>And what about variables? We're going to need to thread more state, editing every instance of <code>compile</code> again. How many more times will I have to change almost every line of code?</p><p>Let's try to make this a little more robust and flexible. First, let's put all our state in a single compound, and manipulate it through predicates rather than destructuring.</p><pre><code data-language="Prolog">
+% I've changed positions to a flat list of integers, to make it much easier to get the next state.
+loc_next(L, (state(E, [L|Ls]), state(E, Ls))).
+err_push(Err, (state(E, L), state(E2, L))) :-
+	append(E, [Err], E2).
+
+% S is now a tuple of (State, NewState). It's also at the end for later changes
+compile(A+B, CommonType, [CodeA, CodeB, add], S) :-  !,
+	(State, NewState) = S,
+	loc_next(Loc, (State, SIn)),
+	compile(A, TypeA, CodeA, (SIn, SA)),
+	compile(B, TypeB, CodeB, (SA, SB)),
+	(	base_type(TypeA, TypeB, CommonType),
+		NewState = SB
+	;	compile_error(Loc, "There's no common type for addition", ((A as TypeA)+(B as TypeB)), (SB, NewState)),
+		CommonType = invalid
+	), !.
+
+compile(N, number, [N, number_const], S) :- number(N), !, loc_next(_,S).
+compile(St, string, [St, string_const], S) :- string(St), !, loc_next(_,S).
+compile(Unknown, invalid, unknown_term, (S, Sn)) :-
+	loc_next(L, (S, S1)),
+	compile_error(L, "Unknown syntax", Unknown, (S1, Sn)).
+
+base_type(T, T, T).
+
+compile_error(Loc, String, Term, S) :-
+	(	(Index, _) = Loc
+	;	Index = Loc
+	),
+	err_push(error(Index, String, Term), S).
+
+% Successful example 1: `compile(10+20, Type, Code, (state([], [1, 0, 2]), S2)).`
+% Successful example 2: `compile("Hello "+"world", Type, Code, (state([], [1, 0, 2]), S2)).`
+% Failing example 1: `compile(10+"Hello", Type, Code, (state([], [1, 0, 2]), S2)).`
+% Failing example 2: `compile(var+10, Type, Code, (state([], [1, 0, 2]), S2)).`
+% Failing example 3: `compile("string"+var+10+7, Type, Code, (state([], [5, 3, 1, 0, 2, 4, 6]), S2)).`
+</code></pre><p>That helped the complexity a smidge, but we still need to explicitly thread the state in a lot of places, and have ample room for error.
+At the very least, this makes adding new information to the state much less of a headache.
+For example, let's add variables:</p><pre><code data-language="Prolog">
+% New: variables as a list of tuples (Name, Type). I would use an association in real code.
+% Note how little code needed to change
+loc_next(L, (state(E, [L|Ls], V), state(E, Ls, V))).
+err_push(Err, (state(E, L, V), state(E2, L, V))) :-
+	append(E, [Err], E2).
+var_type(Var, Type, (S,S)) :-
+	state(_,_,V) = S,
+	var_type_(Var, Type, V).
+var_type_(Var, Type, [(Var, Type)|_]).
+var_type_(Var, Type, [_|X]) :- var_type_(Var, Type, X).
+
+compile(A+B, CommonType, [CodeA, CodeB, add], S) :-  !,
+	(State, NewState) = S,
+	loc_next(Loc, (State, SIn)),
+	compile(A, TypeA, CodeA, (SIn, SA)),
+	compile(B, TypeB, CodeB, (SA, SB)),
+	(	base_type(TypeA, TypeB, CommonType),
+		NewState = SB
+	;	compile_error(Loc, "There's no common type for addition", ((A as TypeA)+(B as TypeB)), (SB, NewState)),
+		CommonType = invalid
+	), !.
+
+compile(N, number, [N, number_const], S) :- number(N), !, loc_next(_,S).
+compile(St, string, [St, string_const], S) :- string(St), !, loc_next(_,S).
+compile(Var, Type, [Var, get_var], (S, Sn)) :- atom(Var), !,
+	loc_next(L, (S, S1)),
+	(	var_type(Var, Type, (S1, Sn))
+	;	compile_error(L, "Undefined variable", Var, (S1, Sn))
+	).
+compile(Unknown, invalid, unknown_term, (S, Sn)) :-
+	loc_next(L, (S, S1)),
+	compile_error(L, "Unknown syntax", Unknown, (S1, Sn)).
+
+base_type(T, T, T).
+
+compile_error(Loc, String, Term, S) :-
+	(	(Index, _) = Loc
+	;	Index = Loc
+	),
+	err_push(error(Index, String, Term), S).
+
+% Successful example 1: `compile(10+20, Type, Code, (state([], [1, 0, 2], []), S2)).`
+% Successful example 2: `compile("Hello "+"world", Type, Code, (state([], [1, 0, 2], []), S2)).`
+% Successful example 3: `compile(var+10, Type, Code, (state([], [1, 0, 2], [(var, number)]), S2)).`
+% Failing example 1: `compile(var+"Hello", Type, Code, (state([], [1, 0, 2], [(var, number)]), S2)).`
+% Failing example 2: `compile("string"+var+10+7, Type, Code, (state([], [5, 3, 1, 0, 2, 4, 6], []), S2)).`
+</code></pre><p>We didn't need to turn the whole world upside-down to add another parameter again! Nice!</p><p>But now I want to deal with all that state-passing. Let's remove it entirely.
+I had a vision while making this very blog post (it was originally going to be about something else), of a new predicate <code>with</code>, that lets us thread the state tuples implicitly.</p><pre><code data-language="Prolog">
+% New meta-predicate to thread the state through everything.
+% This is why the state was moved to the last parameter
+with(S, Code) :- with_s_do(S, Code).
+with_s_do((S, S2), (A, B)) :-
+	with_s_do((S, S1), A),
+	with_s_do((S1, S2), B).
+with_s_do((S, S2), (A; B)) :-
+	with_s_do((S, S2), A)
+	;	with_s_do((S, S2), B).
+with_s_do((S, S2), (A -&gt; B ; C)) :-
+	with_s_do((S, S1), A)
+	-&gt;	with_s_do((S1, S2), B)
+	;	with_s_do((S, S2), C).
+with_s_do((S, S2), (A -&gt; B)) :-
+	with_s_do((S, S1), A)
+	-&gt;	with_s_do((S1, S2), B).
+with_s_do((S,S), {Excluded}) :- !,
+	call(Excluded).
+with_s_do(S, Other) :-
+	call(Other, S).
+
+loc_next(L, (state(E, [L|Ls], V), state(E, Ls, V))).
+err_push(Err, (state(E, L, V), state(E2, L, V))) :-
+	append(E, [Err], E2).
+var_type(Var, Type, (S,S)) :-
+	state(_,_,V) = S,
+	var_type_(Var, Type, V).
+var_type_(Var, Type, [(Var, Type)|_]).
+var_type_(Var, Type, [_|X]) :- var_type_(Var, Type, X).
+
+compile(A+B, CommonType, [CodeA, CodeB, add], S) :-  !,
+	with(S, (
+		loc_next(Loc),
+		compile(A, TypeA, CodeA),
+		compile(B, TypeB, CodeB),
+		(	{ base_type(TypeA, TypeB, CommonType) }
+		;	compile_error(Loc, "There's no common type for addition", ((A as TypeA)+(B as TypeB))),
+			{CommonType = invalid}
+		)
+	)), !.
+
+compile(N, number, [N, number_const], S) :- number(N), !, loc_next(_,S).
+compile(St, string, [St, string_const], S) :- string(St), !, loc_next(_,S).
+compile(Var, Type, [Var, get_var], S) :- atom(Var), !,
+	with(S, (
+		loc_next(L),
+		(	var_type(Var, Type)
+		;	compile_error(L, "Undefined variable", Var)
+		)
+	)), !.
+compile(Unknown, invalid, unknown_term, S) :-
+	with(S, (
+		loc_next(L),
+		compile_error(L, "Unknown syntax", Unknown)
+	)).
+
+base_type(T, T, T).
+
+compile_error(Loc, String, Term, S) :-
+	(	(Index, _) = Loc
+	;	Index = Loc
+	),
+	err_push(error(Index, String, Term), S).
+
+% Successful example 1: `compile(10+20, Type, Code, (state([], [1, 0, 2], []), S2)).`
+% Successful example 2: `compile("Hello "+"world", Type, Code, (state([], [1, 0, 2], []), S2)).`
+% Successful example 3: `compile(var+10, Type, Code, (state([], [1, 0, 2], [(var, number)]), S2)).`
+% Failing example 1: `compile(var+"Hello", Type, Code, (state([], [1, 0, 2], [(var, number)]), S2)).`
+% Failing example 2: `compile("string"+var+10+7, Type, Code, (state([], [5, 3, 1, 0, 2, 4, 6], []), S2)).`
+
+</code></pre><p>Still not as elegant and terse as the original, of course, but we're doing a lot more stuff, and now at least we've condensed the dreaded <code>S, S1, S2</code> threading to a single predicate, <code>with_s_do</code>. There may be some cuts needed to prevent unwanted backtracing, but I'm quite happy with this, and I'll probably refactor my projects to use something like this in the future.</p><p>This blog post was originally going to be about features I wanted in programming languages, talking about my frustration with managing state and side-channel information in term-based languages like Prolog, and trying to imagine a language where it was easy, but then I thought “how much can I do with the language as-is?” It turns out, reasonably well.</p>
+				</div><iframe id="browser" src="/blog/browser.html"></iframe>
+					</div></body></html>
