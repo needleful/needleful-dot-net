@@ -20,12 +20,15 @@
 				<param name='title' type='text'/>
 			</param>
 		</param>
+		<param name='header_extras' required='false' type='xml'/>
 		<content>
 			<html>
 				<head>
 					<title>[[title]] - Needleful.net</title>
 					<link rel='stylesheet' href='/needleful.css'/>
 					<script type='text/javascript' src='/needleful.js'/>
+					<meta charset='utf-8'/>
+					[[header_extras]]
 				</head>
 				<body>
 					<div id='content' class='[[contentClass]]'>

@@ -10,6 +10,11 @@
 		<basic-page>
 			<title>[[title]]</title>
 			<contentClass>blog</contentClass>
+			<header_extras>
+				<meta name='keywords' content='[[keywords]]'/>
+				<meta name='description' content='subtitle'/>
+				<meta name='author' content='Devin Hastings aka needleful'/>
+			</header_extras>
 			<navList>
 				<el>
 					<link>/blog</link>
