@@ -6,7 +6,7 @@
 	<content>
 Prolog is a programming language I use surprisingly often. It's just about perfect at what it does: manipulating tree-like structures called “Terms”. It's not good at anything else, but it turns out a lot of problems can be turned into manipulating Terms.
 
-I use it a lot for making quick compilers, such as (this website's template system)[blog/2024/10/my_website.html]. However, it's annoying to do things with a lot of state.
+I use it a lot for making quick compilers, such as [this website's template system](/blog/2024/10/my_website.html). However, it's annoying to do things with a lot of state.
 
 Here's a theoretical example of the type of stuff I do, turning some Term into a list of instructions:
 
@@ -301,6 +301,8 @@ compile_error(Loc, String, Term, S) :-
 
 Still not as elegant and terse as the original, of course, but we're doing a lot more stuff, and now at least we've condensed the dreaded `S, S1, S2` threading to a single predicate, `with_s_do`. There may be some cuts needed to prevent unwanted backtracing, but I'm quite happy with this, and I'll probably refactor my projects to use something like this in the future.
 
-This blog post was originally going to be about features I wanted in programming languages, talking about my frustration with managing state and side-channel information in term-based languages like Prolog, and trying to imagine a language where it was easy, but then I thought “how much can I do with the language as-is?” It turns out, reasonably well.
+This blog post was originally going to be about features I wanted in programming languages, talking about my frustration with managing state and side-channel information in term-based languages like Prolog, and trying to imagine a language where it was easy, but then I thought “how much can I do with the language as-is?” It turns out, most of what I wanted.
+
+I guess that's the uh thesis.
 </content>
 </blog-basic>
