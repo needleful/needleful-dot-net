@@ -42,9 +42,9 @@ It has one parameter, `hello`, and it generates some content, swapping `[[hello]
 Using the template would look like this:
 
 ```xml
-<with-params>
-	<hello>Gamer</hello>
-</with-params>
+&lt;with-params>
+	&lt;hello>Gamer&lt;/hello>
+&lt;/with-params>
 ```
 
 And that generates the resulting HTML, unsurprisingly:
@@ -56,23 +56,23 @@ And that generates the resulting HTML, unsurprisingly:
 There's also conditional statements, lists, expressions, and all the other things you would probably want:
 
 ```xml
-<!-- a random example -->
-<when val='n mod 2 == 0'>EVEN NUMBER DETECTED</when>
+&lt;!-- a random example -->
+&lt;when val='n mod 2 == 0'>EVEN NUMBER DETECTED&lt;/when>
 
-<!-- some snippets from my comics template -->
-<foreach list='sources' it='i'>
-	<img class='comic' src='/[[source]]' alt='Comic: [[title]] page [[i+1]]'/>
-	<br />
-</foreach>
+&lt;!-- some snippets from my comics template -->
+&lt;foreach list='sources' it='i'>
+	&lt;img class='comic' src='/[[source]]' alt='Comic: [[title]] page [[i+1]]'/>
+	&lt;br />
+&lt;/foreach>
 
-<match val='src_file_exists(page + 1|".page.xml")'>
-	<true>
-		<li><a href='/comic/needleful/[[page + 1]].html' class='align-right'>Next</a></li>
-	</true>
-	<false>
-		<li>Come back later!</li>
-	</false>
-</match>
+&lt;match val='src_file_exists(page + 1|".page.xml")'>
+	&lt;true>
+		&lt;li>&lt;a href='/comic/needleful/[[page + 1]].html' class='align-right'>Next&lt;/a>&lt;/li>
+	&lt;/true>
+	&lt;false>
+		&lt;li>Come back later!&lt;/li>
+	&lt;/false>
+&lt;/match>
 ```
 
 It lets me focus on making content when I need to, but creating new templates is basically the same as making a regular HTML page.
@@ -81,6 +81,9 @@ My original solution was written in C# and .NET, but it was pretty limited.
 
 - It didn't allow any templates within templates. Every type of page had to duplicate all the common stuff.
 - It was verbose and hard to modify.
+- I use C# at work and don't like my personal projects using the same tech stack. 
+
+The killer feature was finding a [Markdown parser for Prolog](https://github.com/rla/prolog-markdown), which I now use for the blogs.
 
 My entire site generates in about 0.6 seconds. It's not smart enough to detect if a file needs to be regenerated, so that's the time to compile all 56 pages.
 

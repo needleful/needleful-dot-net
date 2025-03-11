@@ -8,10 +8,24 @@
 	&lt;content&gt;
 		&lt;p&gt;Hello, &lt;i&gt;[[hello]]!&lt;/i&gt;&lt;/p&gt;
 	&lt;/content&gt;
-&lt;/template&gt;</code></pre><p>It has one parameter, <code>hello</code>, and it generates some content, swapping <code>[[hello]]</code> with whatever we put in the page.</p><p>Using the template would look like this:</p><p><code></code>`xml</p><with-params><hello><p>Gamer</p></hello></with-params><pre><code>
-And that generates the resulting HTML, unsurprisingly:
+&lt;/template&gt;</code></pre><p>It has one parameter, <code>hello</code>, and it generates some content, swapping <code>[[hello]]</code> with whatever we put in the page.</p><p>Using the template would look like this:</p><pre><code data-language="xml">&lt;with-params&gt;
+	&lt;hello&gt;Gamer&lt;/hello&gt;
+&lt;/with-params&gt;</code></pre><p>And that generates the resulting HTML, unsurprisingly:</p><pre><code data-language="xml">&lt;p&gt;Hello, &lt;i&gt;Gamer!&lt;/i&gt;&lt;/p&gt;</code></pre><p>There's also conditional statements, lists, expressions, and all the other things you would probably want:</p><pre><code data-language="xml">&lt;!-- a random example --&gt;
+&lt;when val='n mod 2 == 0'&gt;EVEN NUMBER DETECTED&lt;/when&gt;
 
-```xml
-&lt;p&gt;Hello, &lt;i&gt;Gamer!&lt;/i&gt;&lt;/p&gt;</code></pre><p>There's also conditional statements, lists, expressions, and all the other things you would probably want:</p><p><code></code>`xml</p><when val="n mod 2 == 0"><p>EVEN NUMBER DETECTED</p></when><foreach list="sources" it="i"><img class="comic" src="/[[source]]" alt="Comic: [[title]] page [[i+1]]"><br></foreach><match val="src_file_exists(page + 1|&quot;.page.xml&quot;)"><true><li><a href="/comic/needleful/[[page + 1]].html" class="align-right"><p>Next</p></a></li></true><false><li><p>Come back later!</p></li></false></match><p><code></code>`</p><p>It lets me focus on making content when I need to, but creating new templates is basically the same as making a regular HTML page.</p><p>My original solution was written in C# and .NET, but it was pretty limited.</p><ul><li>It didn't allow any templates within templates. Every type of page had to duplicate all the common stuff.</li><li>It was verbose and hard to modify.</li></ul><p>My entire site generates in about 0.6 seconds. It's not smart enough to detect if a file needs to be regenerated, so that's the time to compile all 56 pages.</p><p>I think it's pretty cool.</p>
+&lt;!-- some snippets from my comics template --&gt;
+&lt;foreach list='sources' it='i'&gt;
+	&lt;img class='comic' src='/[[source]]' alt='Comic: [[title]] page [[i+1]]'/&gt;
+	&lt;br /&gt;
+&lt;/foreach&gt;
+
+&lt;match val='src_file_exists(page + 1|".page.xml")'&gt;
+	&lt;true&gt;
+		&lt;li&gt;&lt;a href='/comic/needleful/[[page + 1]].html' class='align-right'&gt;Next&lt;/a&gt;&lt;/li&gt;
+	&lt;/true&gt;
+	&lt;false&gt;
+		&lt;li&gt;Come back later!&lt;/li&gt;
+	&lt;/false&gt;
+&lt;/match&gt;</code></pre><p>It lets me focus on making content when I need to, but creating new templates is basically the same as making a regular HTML page.</p><p>My original solution was written in C# and .NET, but it was pretty limited.</p><ul><li>It didn't allow any templates within templates. Every type of page had to duplicate all the common stuff.</li><li>It was verbose and hard to modify.</li><li>I use C# at work and don't like my personal projects using the same tech stack. </li></ul><p>The killer feature was finding a <a href="https://github.com/rla/prolog-markdown">Markdown parser for Prolog</a>, which I now use for the blogs.</p><p>My entire site generates in about 0.6 seconds. It's not smart enough to detect if a file needs to be regenerated, so that's the time to compile all 56 pages.</p><p>I think it's pretty cool.</p>
 				</div><iframe id="browser" src="/blog/browser.html"></iframe>
 					</div></body></html>
