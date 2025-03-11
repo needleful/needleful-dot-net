@@ -366,7 +366,7 @@ And while I think more code can be put on a line, I'm not throwing out my space 
 At the same time, even using clang, the same compiler Arthur was using, I had to include `stdio.h` due to not linking `sprintf` otherwise. If I wanted to build using Visual Studio I'd just have to rewrite a bunch of stuff.
 Also, compiling without `-w` generates almost three compiler warnings per line of code. Those are useful sometimes, if they aren't flooded!
 - **Implicit arguments**. Many of the density gains in this code come from using the variables `x`, `a`, and `i` in nearly every context, allowing macros to use them by default and skip listing other parameters. I didn't find it to be a problem after a brief adjustment, but it's also a very small codebase.
-Implicit arguments are a feature in many dynamically typed languages, and in ("point-free" or "tacit" programming)[https://en.wikipedia.org/wiki/Tacit_programming], but it's fallen out of style due to its difficulty to parse at first glance.
+Implicit arguments are a feature in many dynamically typed languages, and in ["point-free" or "tacit" programming](https://en.wikipedia.org/wiki/Tacit_programming), but it's fallen out of style due to its difficulty to parse at first glance.
 Whitney's languages all being based around tacit programming is surely an influence on his tendency to make arguments implicit.
 - **Short names.** Beyond the very first introduction, there'd be virtually no benefit to renaming `ax` as `vector_is_atom(x)`, `_(...)` as 'execute(...)', or most other primitives after they're introduced.
 Most are small enough that you can parse what it does right away.
