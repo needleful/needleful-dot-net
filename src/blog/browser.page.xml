@@ -1,6 +1,10 @@
 <blog-browser>
 	<blogs>
 		<blog>
+			<title>Designing Characters for my Game - At the Ends of Eras Devlog</title>
+			<href>/blog/2025/04/eoe_devlog01_characters.html</href>
+		</blog>
+		<blog>
 			<title>Stateful Prolog</title>
 			<href>/blog/2025/03/stateful_prolog.html</href>
 		</blog>

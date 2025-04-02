@@ -77,6 +77,11 @@ details > summary {
 	letter-spacing: 0pt;
 }
 
+.blog img {
+	max-width: 100%;
+	margin: auto;
+}
+
 .comic-wrapper {
 	width: 100%;
 	display: block;
