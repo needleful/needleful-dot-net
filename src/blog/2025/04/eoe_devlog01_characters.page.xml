@@ -100,7 +100,7 @@ The most modern feature is the digital camo, which feeds into that anachronism I
 
 ![A sketch of a peacekeeper surrounded by reference images. In the top left: Iranian special police holding submachine guns. Bottom left: Iranian soldiers marching in formation. On the far right: an illustration of an Ottoman “Janissary”. Elements of the three are found in the sketch.](/img/blog/eoe/01_soldier_concept.webp)
 
-I implemented character randomization that I'll explain later, but here's a few of them in action.
+I implemented character randomization that I'll explain later, but here's a few of them in The Void.
 
 ![Three soldiers with random skin tones, facial features, heights, and sleeve fabrics.](/img/blog/eoe/01_soldier_models.webp)
 
@@ -115,16 +115,16 @@ In this case, Sadaq's entire face, hat, and little cape thing are unique, and bu
 (I imagine he finds the cape gaudy, but has to wear it as part of the uniform).
 
 <details>
-	<summary>An optional dissertation on names</summary>
-	Someone asked on stream if Sadaq was a reference to Saddam Hussein, which I thought was funny, and I figured I'd speak a little on how I name the characters.
+<summary>An optional dissertation on names</summary>
+Someone asked on stream if Sadaq was a reference to Saddam Hussein, which I thought was funny, and I figured I'd speak a little on how I name the characters.
 
-	“Sankhon” is derived from the Persian *sang khon* (سنگ خون), meaning “blood stone”, since his family is from the Sankhon Valley, a place in the game. The fictional language they speak, Yaqazi, is in the Iranian family, drawing from Persion, Pashto, and Tajik. I use a fictional language so I can pretend the bad translations are just unique aspects of the language.
+“Sankhon” is derived from the Persian *sang khon* (سنگ خون), meaning “blood stone”, since his family is from the Sankhon Valley, a place in the game. The fictional language they speak, Yaqazi, is in the Iranian family, drawing from Persian, Pashto, and Tajik. I use a fictional language so I can pretend the bad translations are just unique aspects of the language.
 
-	“Sadaq” comes from the Pashto *sadaq* and Arabic *sadiq*, meaning “truthful”. Muslim names are often derived from Arabic words for virtues. It also sounds like the Muslim tradition of *sadaqah*, basically charity, but that was a coincidence. I learned that because I google every character's name to make sure they're not a slur, like when I came up with the cool new original name “Hohal” for a different project.
+“Sadaq” comes from the Pashto *sadaq* and Arabic *sadiq*, meaning “truthful”. Muslim names are often derived from Arabic words for virtues. It also sounds like the Muslim tradition of *sadaqah*, basically charity, but that was a coincidence. I learned that because I google every character's name to make sure they're not a slur, like when I came up with the cool new original character “Hohal” for a different project.
 
-	I put a lot of thought into the names of the characters: the ethnicity of their surnames; the style of patronymic name (e.g. the child of Atash could use the Arabic “bin Atash” or the Yaqazi “Duratash”); and the meaning of any extra names, such as their home region, job, or nickname.
+I put a lot of thought into the names of the characters: the ethnicity of their surnames; the style of patronymic (e.g. the child of Atash could use the Arabic “bin Atash” or the Yaqazi “Duratash”); and the meaning of any extra names, such as their home region, job, or nickname.
 
-	You can learn a lot from what people call themselves and each other, but it really deserves its own writing as a separate topic.
+You can learn a lot from what people call themselves and each other, but this whole talk deserves its own blog post.
 </details>
 
 I also discovered the difference between a Santa Claus beard and Osama bin Laden beard, which is trimming the mustache to keep your upper lip clear.
@@ -156,7 +156,7 @@ I can set up a default outfit, and then add whatever variations I want as a list
 Combined with the randomly-generated coats, I get quite a diverse set of characters from just a few pieces, which means the game is Woke.
 I'm sorry you had to find out this way.
 
-Originally, I was going to make the male model taller than the female model, but then I watched [“Video Games &amp; the Sexy Gender Binary”](https://youtu.be/GhhJ27S7H3M), about how games implicitly reinforce strict gender binaries through restrictions on things like height. As a way to one-up *Bauldur's Gate 3*, I decided to give everyone the same range of heights, and men are only taller *on average* due to a different distribution in that range.
+Originally, I was going to make the male model taller than the female model, but then I watched [“Video Games &amp; the Sexy Gender Binary”](https://youtu.be/GhhJ27S7H3M), about how games implicitly reinforce strict gender binaries through restrictions on things like height. As a way to one-up *Bauldur's Gate 3*, one of the video's subjects, I decided to give everyone the same range of heights, and men are only taller *on average* due to a different distribution in that range.
 Basically, the game has short kings because it's Double Woke.
 I'm sorry you had to find out this way.
 
@@ -187,9 +187,13 @@ The fact Jackie doesn't have to wear a veil or have a male chaperone is a contri
 Speaking of unsupervised women, the last character I'll talk about is Raziah, a girl you can find in several locations throughout the area.
 She's from the capital of the country, which is a full-on urban center, with several million people, while the game takes place in a small, remote province.
 
-Just from looking at her compared to other women, it's clear Raziah's not from around here.
+Just looking at her, it's clear she's not from around here.
 The hat, the pants, the Adidas mid-tops, which - fun fact - were inspired by photos of Taliban soldiers. They don't even tie their shoes.
-We lost. We lost the war and they don't even tie their shoes.
+
+![]()
+
+The occupation of Afghanistan cost 2.3 trillion U.S. dollars and they don't even tie their shoes.
+
 She's meant to seem young, adventurous, and a bit anti-authority.
 She's here to explore ruins, and she'll dress as she needs to, even if it bends tradition.
 
