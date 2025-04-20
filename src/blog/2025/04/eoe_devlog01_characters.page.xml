@@ -1,33 +1,33 @@
 <blog-basic>
-	<date>2025/04/02</date>
-	<title>Designing Characters for my Game</title>
-	<subtitle>Certified C+ character design.</subtitle>
-	<keywords>at the ends of eras, game development, indie games</keywords>
-	<content>
+<date>2025/04/19</date>
+<title>Designing Characters for my Game</title>
+<subtitle>They're pretty cool.</subtitle>
+<keywords>at the ends of eras, game development, indie games</keywords>
+<content>
 This is the first in a new series of written devlogs for my game, *At the Ends of Eras*.
 
 My [beloved video devlogs](https://www.youtube.com/playlist?list=PLjnRnpGPUaKWlSVuyBFF8C72pOVpQQ5xT) take too long to produce, now that I'm working on a self-imposed deadline to release a demo to Steam by the end of May. In the time it took to write this script, I'd already done two more videos' worth of work, and editing would take weeks more!
 
 So without further ado, my devlog:
 
-# My Devlog
+# Designing Characters for “At the Ends of Eras”
 
 I decided it's finally time to do a little character design.
 Until now, all the NPCs besides your mom were these little guys.
 
-![A rendering of the little guy. Text: ICONIC SMALL GUY. Beloved Everywhere. Certified B+ Character Design. Unknown and Unknowable. Large Hips and Small Feet.](/img/blog/eoe/01_lil_guy.png)
+![A rendering of the little guy. Text: ICONIC SMALL GUY. Beloved Everywhere. Certified B+ Character Design. Unknown and Unknowable. Large Hips and Small Feet.](/img/blog/eoe/01_lil_guy.webp)
 
-They're a certified B+ character design, but I'm not going to get tastefully erotic fanart if this is all there is.
-Plus, it confuses people. They're not, like, robots or aliens or something. They're normal people, I just didn't want to do a lot of work. They took about three hours to sketch, model, and rig.
+They're great. Perfect, perhaps. But I'm not going to get tastefully erotic fanart if these little beasty boys are all there is.
+Plus, it confuses people. They're not, like, robots or aliens or something. They're normal people, I just didn't want to do a lot of work.
 
-The explanation I've used in the past is that Jackie can't tell the native people apart because she's racist.
+The explanation I've used in the past is that our protagonist Jackie can't tell the native people apart because she's racist, so this is like her mental abstraction of “people of colour”.
 Let me be clear: Jackie *is* racist, but in a game where the player has to talk to characters, it'd be good if you could tell them apart every now and then.
 
 Also, [I made a video poo-pooing the character designs in the game Concord](https://youtu.be/876qzV9IsTA?si=FcLGJKHn93rJLN6-), and that got me in the mood to put my money where my mouth is, and design at least the characters we meet in the vertical slice.
 
 Well, here they are.
 
-![A lineup of characters. Front to back, left to right: The protagonist, Jackie. A girl in a hijab and wide-brimmed hat. An officer in a red beret and digital camo. A bald man in a snowsuit. A woman in a hijab and similar snowsuit. A tall man in a long, white coat and slacks. Four women of differing heights and skin colors in simple dresses and hijabs. Five soldiers in berets of different heights and skin colors.](/img/blog/eoe/01_lineup.png)
+![A lineup of characters. Front to back, left to right: The protagonist, Jackie. A girl in a hijab and wide-brimmed hat. An officer in a red beret and digital camo. A bald man in a snowsuit. A woman in a hijab and similar snowsuit. A tall man in a long, white coat and slacks. Four women of differing heights and skin colors in simple dresses and hijabs. Five soldiers in berets of different heights and skin colors.](/img/blog/eoe/01_lineup.webp)
 
 Beautiful. Powerful. Certified C+ character designs.
 
@@ -38,41 +38,59 @@ The way a character dresses can tell you a story about the world and how they re
 
 We should perhaps start with Jackie herself.
 
-![The first sketch of Jackie.]
+Our protagonist, Jacqueline Southcott, a.k.a. Jackie, was designed on the second day of development, in about twenty-five minutes, with almost zero thought.
+I streamed it. [It's the first video in the playlist.](https://youtu.be/I5pDrw5TQDM?si=UopvLvA9eaWK-s3f&amp;t=5504)
 
-Our protagonist, Jacqueline Southcott, aka Jackie, was designed on the second day of development, in about twenty-five minutes, with almost zero thought.
-I streamed it. It's the first video in the playlist.
+![The first sketches of Jackie. Consisting of a few different body shapes, a picture of Betilla the fairy from Rayman Origins, and a very crude sketch of the character. It also has a side-profile of a knee-high boot with the question “Boot collar?” pointing to the top part, which is some sort of boot collar with a knee pad.](/img/blog/eoe/01_jackie01.webp)
+
 Having most of my development recorded has been really interesting.
-Looking back, I notice I didn't start with *any* real-life reference, and only used other games and media for design inspiration.
+Looking back, I notice I didn't start with *any* real-life reference. Jak and Daxter, anime, and the hot fairies from *Rayman: Origins* were my talking points when brainstorming for the design.
 
-It didn't really come together until I brought in this photo of a coat.
+It didn't really come together until I brought in a photo of a double-breasted coat as reference.
 And then, instant classic. Perfect character design.
 Simple, distinct, and appealing.
-From her design sprung basically everything else, from her personality, to the setting's Middle Eastern connection, to the deliberate anachronism I try to put everywhere.
+
+![Left: the earliest available version of Jackie. Right: the latest. The old model has a much larger head, and facial features are drawn onto a simple head shape. The new model is almost the same in every regard, except her head is smaller, her facial features are fully modeled, and her skin has a bit more color, with some subsurface scattering.](/img/blog/eoe/01_jackie_old_new.webp)
+
 She's since been through a few remodels and adjustments, like making her nose twice as long at 2 AM one night, but she's stayed the same overall.
 
+From her design sprung basically everything else:
+
+- Seeing her running around in the desert made me think of the Anglo-Afghan war and “The Great Game” style of imperialism, which became the seeds of the game's setting.
+
+- Jackie's personality has shifted over development to better match her outfit. It looks a lot like [horse-riding outfits](https://duckduckgo.com/?t=ffab&amp;q=horse-riding+outfit&amp;ia=images&amp;iax=images), which makes me think she's wealthy, sporty, competitive, and probably lives in Victorian England.
+
+- While Jackie's outfit is quite Victorian, her *hair* isn't. That sort of undercut pixie cut is straight from 2005. This anachronism has found its way into the rest of the game, from people in the villages using smart phones to breech-loaded cannons with muzzle brakes.
+
 I see a few different lessons.
+
 There's something to be said for shooting from the hip, just making something you like and running with it.
 Maybe I would have designed something better if I did more sketches and deliberation, but maybe I would have talked myself out of a good idea because it was “too obvious”.
-And do I need to agonize over every piece, when it's not even a puzzle yet?
+Do I need to agonize over every piece, when it's not even a puzzle yet?
 The rest of the world was designed around Jackie, so I didn't have any goals for the design, just to make something I liked.
 
 The other lesson I see is the value of real-world interests.
-I didn't have any particular vision for Jackie or the setting until this coat became the connection between the game and my interest in history and technology, and experiences as an ESL instructor.
-I think media, especially games, often draws too much from other media, and it not only leads to less interesting, more derivative work, but leaves the work emotionally detached.
-People love art because it speaks to them about real things: real emotions and real experiences.
+I didn't have any particular vision for Jackie or the setting until her coat reminded me of things I care about in the real world.
 
-I don't need to study for the video games test. I'm well aware of the Sonic the Hedgehog arcade game that was also a popcorn machine.
-Maybe it's better to reach outward and remind myself of what I care about in the real world, and make other people care, too.
+I think media, especially games, often draw too much from other media, and it not only leads to less interesting, more derivative work, but leaves the work emotionally detached.
+
+People love art because it speaks to them about real things: real emotions and real experiences.
+I don't need to study for the video games test. I'm well aware of the [Sonic the Hedgehog arcade game that was also a popcorn machine](https://sonic.fandom.com/wiki/SegaSonic_Popcorn_Shop). I'm making a video game because I have strong opinions about video games.
+
+Maybe it's time now to reach outward and remind myself of what I care about in the real world, and make other people care, too.
 
 But maybe I'm full of shit, given the topic of my next devlog.
 
-Anyway, she looks good. Next... guy, I guess.
+Anyway, she looks good is my point.
+
+## The Peacekeepers
 
 The first new design I'll show is the peacekeepers, because they're the most interesting.
 I first had to design men, because Jackie and her mom were the only human characters up until now.
 I decided to make a new model and rig with different proportions to reinforce my rigid gender norms.
 Broad shoulders and arms down to the knees, like God intended.
+
+![Sketch of the women's frame versus men. The men are quite stocky, with wide chests and short legs.](/img/blog/eoe/01_male.webp)
 
 Peacekeepers are a sort-of-police, sort-of-military force in Yaqaz, and their outfits are a mix of modern Afghan and Iranian police, with historic Umayyad and Ottoman soldiers, to infuse some older Muslim cultures into the design.
 I didn't get too fancy, though. This isn't a wealthy country, and I wanted to keep the logistics in mind.
@@ -80,35 +98,71 @@ Who makes these uniforms? How much do they cost?
 So they're pretty plain. No armor, no harnesses; just a coat, pants, boots, and beret.
 The most modern feature is the digital camo, which feeds into that anachronism I mentioned.
 
-One of the most important peacekeepers to the story is Muhammad Sankhon Sadaq, just Sadaq to you.
+![A sketch of a peacekeeper surrounded by reference images. In the top left: Iranian special police holding submachine guns. Bottom left: Iranian soldiers marching in formation. On the far right: an illustration of an Ottoman “Janissary”. Elements of the three are found in the sketch.](/img/blog/eoe/01_soldier_concept.webp)
+
+I implemented character randomization that I'll explain later, but here's a few of them in action.
+
+![Three soldiers with random skin tones, facial features, heights, and sleeve fabrics.](/img/blog/eoe/01_soldier_models.webp)
+
+And here's [where the VOD starts](https://youtu.be/YG1k9TWLlkM?si=D0bed3k9XNJPSsGW&amp;t=8764) for designing them. Ignore the Creatures, they were stream enrichment.
+
+One of the most important peacekeepers to the story is Muhammad Sankhon Sadaq (just Sadaq to you).
+
+![A three-quarters view of a man in a beret with a big beard.](/img/blog/eoe/01_sadaq.webp)
+
 For most major characters, like him, I want a few unique pieces, so they don't feel like just another random guy, but not too many, so I don't have to do a lot of work.
-In this case, Sadaq's entire face. hat, and little cape thing are unique.
-(I imagine he finds the cape gaudy, but has to wear it as part of the uniform.)
-I also discovered the difference between Santa Claus and Osama bin Laden, which is trimming the mustache to keep your upper lip clear.
+In this case, Sadaq's entire face, hat, and little cape thing are unique, and build on the generic peacekeeper model
+(I imagine he finds the cape gaudy, but has to wear it as part of the uniform).
+
+<details>
+	<summary>An optional dissertation on names</summary>
+	Someone asked on stream if Sadaq was a reference to Saddam Hussein, which I thought was funny, and I figured I'd speak a little on how I name the characters.
+
+	“Sankhon” is derived from the Persian *sang khon* (سنگ خون), meaning “blood stone”, since his family is from the Sankhon Valley, a place in the game. The fictional language they speak, Yaqazi, is in the Iranian family, drawing from Persion, Pashto, and Tajik. I use a fictional language so I can pretend the bad translations are just unique aspects of the language.
+
+	“Sadaq” comes from the Pashto *sadaq* and Arabic *sadiq*, meaning “truthful”. Muslim names are often derived from Arabic words for virtues. It also sounds like the Muslim tradition of *sadaqah*, basically charity, but that was a coincidence. I learned that because I google every character's name to make sure they're not a slur, like when I came up with the cool new original name “Hohal” for a different project.
+
+	I put a lot of thought into the names of the characters: the ethnicity of their surnames; the style of patronymic name (e.g. the child of Atash could use the Arabic “bin Atash” or the Yaqazi “Duratash”); and the meaning of any extra names, such as their home region, job, or nickname.
+
+	You can learn a lot from what people call themselves and each other, but it really deserves its own writing as a separate topic.
+</details>
+
+I also discovered the difference between a Santa Claus beard and Osama bin Laden beard, which is trimming the mustache to keep your upper lip clear.
 I have a Santa Claus beard, myself, and I have to hose it out every time I eat, so I have to admit: Osama bin Laden had a point.
 
+## The Other Guys
+
 The generic NPCs were more of a technical exercise than artistic.
+
+![A host of NPCs. Women in hijabs, men in button-up shirts, and in the front: a tall man in a labcoat, a woman in a snowsuit, and a man in a snowsuit.](/img/blog/eoe/01_other_guys.webp)
 
 I've talked about it before, but a core pillar of the story is talking to an AI reconstruction of Jackie's mom, based on her memories.
 As you learn more, the AI's personality and physical appearance change.
 I implemented this system a while ago. For ease of use, I went with a Mii-style thing, where I swap out different pieces for head shapes and facial features.
 For other women, all I did was rename the files, make some new pieces, and made the dress a bit less, uh, form-fitting.
+
+![A before and after on the dress. On the left, the dress tightly fits the woman's bust. On the left, less so.](/img/blog/eoe/01_boob.webp)
+
 At a certain point, it just feels disrespectful, you know?
 
 The civilians don't have many variations right now, since the main characters in the demo all wear snowsuits for reasons.
 For everybody else, I just have a button-up shirt and a simple dress.
 
-Anyway, I made an outfit randomizer that I'm quite happy with.
+To add the variations, I made an outfit randomizer that I'm quite happy with.
+
+![A woman in the editor, next to the properties of the randomizer. The properties expanded are the iris, showing a list of images of differently-colored eyes; size, showing a curve that's mostly toward the bottom of the graph; and skin_color, which ranges from pale to very dark skin tones.](/img/blog/eoe/01_randomizer.webp)
+
 I can set up a default outfit, and then add whatever variations I want as a list of options, a gradient for colors, or a curve, which I used for the character's height.
 Combined with the randomly-generated coats, I get quite a diverse set of characters from just a few pieces, which means the game is Woke.
 I'm sorry you had to find out this way.
 
-Originally, I was going to make the male model taller than the female model, but then I watched “The Sexy Gender Binary”, about how games implicitly show gender bias in character customization, including restrictions on height, and I decided to give them the same range of heights, though men are taller on average due to a different distribution in that range.
+Originally, I was going to make the male model taller than the female model, but then I watched [“Video Games &amp; the Sexy Gender Binary”](https://youtu.be/GhhJ27S7H3M), about how games implicitly reinforce strict gender binaries through restrictions on things like height. As a way to one-up *Bauldur's Gate 3*, I decided to give everyone the same range of heights, and men are only taller *on average* due to a different distribution in that range.
 Basically, the game has short kings because it's Double Woke.
 I'm sorry you had to find out this way.
 
 Some characters completely dwarf Jackie, but she's actually a little taller than most of them.
 Average height is correlated with income, both nation by nation and within countries, probably because things like a good diet, low stress, and medical care are good for growing.
+
 Money can't buy happiness, but it can buy everything you need to be happy except not being a little bitch.
 They call that “Maslow's hierarchy of needs”.
 
@@ -118,12 +172,17 @@ Malnutrition, illness, injury. They all leave their mark, even if it's not obvio
 
 Basically, Jackie is a 5'7" Amazon because the game is Triple Woke.
 I'm sorry you had to find out this way.
+
+![Jackie standing around people, all of whom are shorter than her.](/img/blog/eoe/01_tall_jackie.webp)
+
 Also, most of the characters are Muslim. I don't know if you could, like, infer that from context.
-It's not some fake religion that's like Islam, it is- it just *is* Islam.
+It's not some fake religion that's like Islam, it's *just* Islam.
 
 I don't know if that counts as Quadruple Woke, though, since the government is hard-line fundamentalist Muslim, mostly drawing from the Taliban and the Islamic Revolution in Iran.
 Less, “we're the religion of peace” and more “we overthrew the Western devils to implement our exact interpretation of Sharia law”.
 The fact Jackie doesn't have to wear a veil or have a male chaperone is a contrivance for the player's comfort, though I did make up an in-universe justification.
+
+## Raziah
 
 Speaking of unsupervised women, the last character I'll talk about is Raziah, a girl you can find in several locations throughout the area.
 She's from the capital of the country, which is a full-on urban center, with several million people, while the game takes place in a small, remote province.
@@ -144,8 +203,10 @@ More outfits and faces, of course, but I'd also love different postures, which w
 I could have spent months working on just the characters. I had so many ideas, and there's so many little things I dropped for the sake of time.
 It was a fun process, though. All of these characters were already written, but giving them their own outfits and faces brings something new, both to the game and how I see them.  
 
-If you want to keep up with development, almost all development is streamed on Twitch, and I post regular updates on Discord.
-If you want to fund development, there's a Patreon and I sell my ToDo list app on itch.io.
+If you want to keep up with development, almost all development is [streamed on Twitch](https://twitch.tv/needleful), and I post regular updates [on Discord](https://discord.gg/NGhZRCEQG3).
+
+If you want to fund development, there's [a Patreon](https://patreon.com/needleful) and I sell my ToDo list app [on itch.io](https://needleful.itch.io/np-todo).
+
 Ok, bye. Love you.
 </content>
 </blog-basic>

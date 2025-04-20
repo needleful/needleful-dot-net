@@ -31,9 +31,14 @@ h2{
 }
 
 details > summary {
-	font-size:1.35rem;
-	letter-spacing:3pt;
+	font-size:1.2rem;
+	letter-spacing:2pt;
 	font-weight:300;
+}
+
+details > p {
+	border-left: 1pt solid black;
+	padding-left: 15pt;
 }
 
 #content {
