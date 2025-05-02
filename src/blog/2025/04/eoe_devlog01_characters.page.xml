@@ -1,4 +1,4 @@
-<blog-basic>
+<blog-basic xmlns:nng='https://needleful.net/xml/nng-schema'>
 <date>2025/04/19</date>
 <title>Designing Characters for my Game</title>
 <subtitle>They're pretty cool.</subtitle>
@@ -27,9 +27,11 @@ Also, [I made a video poo-pooing the character designs in the game Concord](http
 
 Well, here they are.
 
+<nng:snippet name='eoe-cplus-characters'>
 ![A lineup of characters. Front to back, left to right: The protagonist, Jackie. A girl in a hijab and wide-brimmed hat. An officer in a red beret and digital camo. A bald man in a snowsuit. A woman in a hijab and similar snowsuit. A tall man in a long, white coat and slacks. Four women of differing heights and skin colors in simple dresses and hijabs. Five soldiers in berets of different heights and skin colors.](/img/blog/eoe/01_lineup.webp)
 
 Beautiful. Powerful. Certified C+ character designs.
+</nng:snippet>
 
 I don't have the illustration or modelling skills to make them look particularly good, so I focused on how the designs fit into the narrative.
 The way a character dresses can tell you a story about the world and how they relate to it.

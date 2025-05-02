@@ -1,0 +1,39 @@
+<basic-page xmlns:nng='https://needleful.net/xml/nng-schema'>
+<title>XML namespace: nng</title>
+<content>
+	<h1 class='title'>XML namespace: nng</h1>
+	<div id='sub-content'>
+		<p>This is the URL for the namespace used in <a href='https://github.com/needleful/nng'>nng, my site generator.</a></p>
+		<p>This namespace is only used for tags that occur within the content, not in the template. These are <code>snippet</code> and <code>refer</code>.</p>
+		<h2>Snippets</h2>
+		<nng:snippet name='nng-usage'>
+			<p>nng allows recording “snippets”, which are blocks of HTML, and then “referring” to them, which both copies the inner text of the snippet and provides a link to its source.</p>
+			<p>The below XML:</p>
+			<pre><code data-language="xml">
+&lt;page xmlns:nng='https://needleful.net/xml/nng-schema'>
+	&lt;!--making a snippet-->
+	&lt;nng:snippet name='example'>
+		&lt;p>This is an example snippet!&lt;/p>
+	&lt;\nng:snippet>
+
+	&lt;!--referring to it-->
+	&lt;nng:refer name='example'>
+&lt;\>
+			</code></pre>
+			<p>Transforms into something like the following HTML:</p>
+			<pre><code data-language="html">
+&lt;!--The snippet source-->
+&lt;div id='example' class='snippet-block'>
+	&lt;p>This is an example snippet!&lt;/p>
+&lt;\div>
+
+&lt;!--The Referer-->
+&lt;div id='example' class='snippet-block'>
+	&lt;p>This is an example snippet!&lt;/p>
+	&lt;a class='snippet-link' href='/source.html#example'>[Source]&lt;\a>
+&lt;\div>
+			</code></pre>
+		</nng:snippet>
+	</div>
+</content>
+</basic-page>

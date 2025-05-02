@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html><head><title>XML namespace: nng - Needleful.net</title><link rel="stylesheet" href="/needleful.css"><script type="text/javascript" src="/needleful.js"></script><meta charset="utf-8">
+					
+				</head><body><div id="content" class=""><div id="titlebar"><ul class="navbar"><li><a href="/">needleful dot net</a> / </li><li> XML namespace: nng</li></ul><button id="burger-button" class="not-clicked" aria-label="burger button" onclick="burgerClicked()"><img id="burger-img" alt="burger button" src="/burger.svg"></button><div id="burger-block" class="noshow"><img class="full-line" style="min-width: 400px;" src="/img/burger.jpg"><p class="epic full-line">Burger.</p></div></div>
+						<h1 class="title">XML namespace: nng</h1><div id="sub-content"><p>This is the URL for the namespace used in <a href="https://github.com/needleful/nng">nng, my site generator.</a></p><p>This namespace is only used for tags that occur within the content, not in the template. These are <code>snippet</code> and <code>refer</code>.</p><h2>Snippets</h2><nng:snippet name="nng-usage"><p>nng allows recording “snippets”, which are blocks of HTML, and then “referring” to them, which both copies the inner text of the snippet and provides a link to its source.</p><p>The below XML:</p><pre><code data-language="xml">&lt;page xmlns:nng='https://needleful.net/xml/nng-schema'&gt;
+	&lt;!--making a snippet--&gt;
+	&lt;nng:snippet name='example'&gt;
+		&lt;p&gt;This is an example snippet!&lt;/p&gt;
+	&lt;\nng:snippet&gt;
+
+	&lt;!--referring to it--&gt;
+	&lt;nng:refer name='example'&gt;
+&lt;\&gt;
+			</code></pre><p>Transforms into something like the following HTML:</p><pre><code data-language="html">&lt;!--The snippet source--&gt;
+&lt;div id='example' class='snippet-block'&gt;
+	&lt;p&gt;This is an example snippet!&lt;/p&gt;
+&lt;\div&gt;
+
+&lt;!--The Referer--&gt;
+&lt;div id='example' class='snippet-block'&gt;
+	&lt;p&gt;This is an example snippet!&lt;/p&gt;
+	&lt;a class='snippet-link' href='/source.html#example'&gt;[Source]&lt;\a&gt;
+&lt;\div&gt;
+			</code></pre></nng:snippet></div>
+					</div></body></html>
