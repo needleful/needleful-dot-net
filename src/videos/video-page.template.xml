@@ -1,0 +1,89 @@
+<templates>
+	<template name='vid-thumb'>
+		<param name='title' type='text'/>
+		<param name='thumb' type='text'/>
+		<param name='href' type='text'/>
+		<content>
+			<li>
+				<a href='[[href]]'>
+					<img class='thumbnail' src='[[thumb]]' style='max-width: 250px'/>
+					<p class='thumbnail-title'>[[title]]</p>
+				</a>
+			</li>
+		</content>
+	</template>
+	<template name='video-page'>
+		<param name='title' type='text'/>
+		<param name='description' type='markdown'/>
+		<param name='released' type='date'/>
+		<param name='transcript' type='markdown'/>
+		<param name='thumb' type='text'/>
+		<param name='comment_id' type='text'/>
+		<param name='sources' type='list'>
+			<param name='hi' type='struct'>
+				<param name='src' type='text'/>
+				<param name='type' type='text'/>
+			</param>
+		</param>
+
+		<content>
+			<basic-page>
+				<title>[[title]] - needleful's videos</title>
+				<contentClass>video-page</contentClass>
+				<navList>
+					<el>
+						<link>/videos</link>
+						<title>videos</title>
+					</el>
+				</navList>
+				<header_extras>
+					<style>
+						#main-video {
+							max-width: 85%;
+						}
+					</style>
+					<link rel="stylesheet" href="https://unpkg.com/bluesky-comments@0.13.1/dist/bluesky-comments.css"/>
+					<meta property='og:image' content='https://needleful.net[[thumb]]'/>
+					<meta property='og:type' content="website"/> 
+					<meta property='og:image:width' content='800'/>
+					<meta property='og:image:height' content='450'/>
+					<meta itemprop='image' content='https://needleful.net[[thumb]]'/>
+				</header_extras>
+				<content>
+					<div id='video-block'>
+						<video id='main-video' controls='yes'>
+							<foreach list='sources'>
+								<source src='[[hi:src]]' type='video/[[hi:type]]'/>
+							</foreach>
+							This video is not supported in your browser.
+						</video>
+					</div>
+					<h2>[[title]]</h2>
+					<h4>Released [[say_month(released)]] [[released:day]], [[released:year]]</h4>
+					<div id='vid-description'>[[description]]</div>
+					<details id='transcript'>
+						<summary>Transcript</summary>
+						[[transcript]]
+					</details>
+					<details id='comments'>
+						<p>Comments from <a href='https://bsky.app/profile/needleful.net/post/[[comment_id]]'>Bluesky!</a></p>
+						<summary>Comments</summary>
+						<div id='bluesky-comments'></div>
+					</details>
+					<script type="importmap">
+					{
+					  "imports": {
+					    "react": "https://esm.sh/react@19",
+					    "react-dom/client": "https://esm.sh/react-dom@19/client"
+					  }
+					}
+					</script>
+					<script type='module'>
+						import {initComments} from '/videos/comments.js';
+						initComments('[[comment_id]]');
+					</script>
+				</content>
+			</basic-page>
+		</content>
+	</template>
+</templates>

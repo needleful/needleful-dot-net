@@ -1,0 +1,17 @@
+<basic-page>
+	<title>needleful's cool videos!</title>
+	<content>
+		<h1>My videos!</h1>
+		<p>YouTube deleted one of my videos and gave me a community strike, so now I'm scared of incurring the wrath of YouTube and getting everything deleted.</p>
+		<p>To avoid that terrible fate, I'll just not upload things to YouTube! Or, at least, upload them to my own site, as well.</p>
+
+		<h2> Videos</h2>
+		<ul class='comics-latest'>
+			<vid-thumb>
+				<title>I've been CENSORED !!</title>
+				<href>/videos/weekly_22.html</href>
+				<thumb>/img/videos/thumb_22.png</thumb>
+			</vid-thumb>
+		</ul>
+	</content>
+</basic-page>

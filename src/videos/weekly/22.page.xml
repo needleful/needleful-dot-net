@@ -1,0 +1,70 @@
+<video-page>
+	<title>I've been CENSORED !!</title>
+	<description>
+An old video of mine was removed by YouTube and thought it was funny, so I made a video about it.
+
+I then got an actual community strike, so that's why I host videos here now!
+	</description>
+	<sources>
+		<hi>
+			<src>/img/videos/weekly_22.webm</src>
+			<type>webm</type>
+		</hi>
+		<hi>
+			<src>/img/videos/weekly_22.mp4</src>
+			<type>mp4</type>
+		</hi>
+	</sources>
+	<thumb>/img/videos/thumb_22.png</thumb>
+	<released>2026/02/11</released>
+	<comment_id>3m7ol23zlfc2d</comment_id>
+	<transcript>I've been *censored!*
+How could YouTube look at my video where I hold up a book titled “Taliban” and call it the book that quote “made me the man I am today”, and claim it's “endorsing terrorist or criminal organizations?”
+
+*Clearly* I meant “Taliban” by Ahmed Rashid gave me a deeper understanding of the political climate in Afghanistan from its informed documentation of the Taliban's rise to power.
+
+I don't even endorse the Taliban mostly!
+In fact, many of their policies, uh, I don't agree with.
+For example, I think women SHOULD be allowed to get a sixth grade education.
+An eight grade education, even.
+
+Wait, hang on.
+It's been a while since I saw the video.
+Uh, approximately one second later, I hold up “Technological Slavery” by Theodore Kaczynski a.k.a. The Unabomber, and call it “the book that REALLY made me the man I am today.”
+And I think that might have been what did it actually, I think that might have been the bigger issue.
+I didn't even mention that in my appeal.
+
+However, if you analyze the video, you'll see that I briefly pan to a collection of plush toys, including one of beloved character Pomni from The Amazing Digital Circus, thus proving my statement was ironic.
+If we eliminate technological society, as Ted says on the back of the book which is all I've read so far, then there's no Pomni.
+If there's no Pomni, then whose feet am I masturbating to?
+Check and mate, YouTube.
+In Ted Kaczynski's world, a goon cave would be an actual cave, filled with hand-carved wooden sculptures of Ragatha from The Amazing Circus.
+
+[uproarious applause]
+Thank you, thank you.
+
+Welcome to The Amazing Needleful Weekly. Now it's time for the video game news.
+Remember last week when I said I had to make art for seventeen more places in Kitty Found a Camera?
+It was more like twenty-five, so I've decided to make a proper schedule for the work.
+I decided how much time I wanted to spend on each place, either one day, or one, two, three, or four weeks.
+Even dividing them up like that, it was still twenty-three weeks of work, so I'm hoping to work faster than scheduled for once and get the game released before 2027.
+In three days, I got five of my one-day locations complete: the cave, the playhouse, the treehouse, the altar, and this dock, complete with fishing.
+Unfortunately, I forgot to put two of those on the schedule, so I'm not even ahead yet.
+I think I can beat the schedule, though. My secret doing a worse job.
+
+But as Kitty Found a Camera speeds up, At the Ends of Eras slows down.
+I made the titular Opulent Medium on Monday. Well, the layout for it.
+The machine will be cooler in the end, but this is the general idea.
+These panels come out of the wall to make a face or something, and then the player platforms on the panels to get behind the machine.
+This simplified version is mostly to check that it works, and it doesn't, really.
+
+I want it to do a few things
+- It should feel like you're breaking the game. I want it to look like it wasn't intended for the player to get behind here. With this design, the panels have to reach out of the wall and come so close to you that it's obvious you can jump on them. Maybe the answer is a more elaborate route up to the panels, probably hitching a ride on something that moves past the player.
+- Also, it should be infeasible to get here without the time gun, so players don't accidentally sequence break and skip the gun they were supposed to get from this area. Right now, you just jump on the panels and ride them out. There's no challenge at all.
+- It also needs to be easier for me to position the panels. This version has just 144, and it's already a pain to edit them. The final version will have three or four times as many tiles in this sort of cool pattern, and I don't want them linearly sliding into position. I'd like some procedural effects, like waves, a bit of simulated inertia, and probably something comparable to Blender's proportional editing. Maybe even a rig system to make the face do things without spending a billion years on it. I think doing all of that in Blender and rendering it as a series of animations would be the best bet, but I'd have to make some sophisticated Blender scripts, which is a horrific prospect.
+
+But I'm gonna make the rest of the level before revisiting this mechanism.
+At a certain point, I have to just make the video game.
+And I guess that's it for this week. You know what I'll be doing for the rest of the day so don't imagine it in too much detail, okay?
+</transcript>
+</video-page>
