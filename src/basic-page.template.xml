@@ -1,4 +1,10 @@
 <templates>
+	<template name='icon'>
+		<param name='source' type='text' only-param='true'/>
+		<content>
+			<img class='icon' aria-hidden='true' src='/img/icon/[[source]]'/>
+		</content>
+	</template>
 	<template name='burger'>
 		<content>
 			<button id='burger-button' class='not-clicked' aria-label='burger button' onclick='burgerClicked()'>

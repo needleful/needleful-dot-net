@@ -226,3 +226,9 @@ ul.browser-list {
 pre, code {
 	background: #DDD
 }
+
+.icon {
+	display: inline-block;
+	width: 1.3em;
+	max-height: 1.3em;
+}
