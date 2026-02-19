@@ -4,6 +4,8 @@
 <subtitle>They're pretty cool.</subtitle>
 <keywords>at the ends of eras, game development, indie games</keywords>
 <content>
+*(Fun fact: this blog post was sitting basically finished in my folders for almost a year (it's currently February 2026). I just needed to add two images, so I've done that and kept the old date for anti-archival purposes.)*
+
 This is the first in a new series of written devlogs for my game, *At the Ends of Eras*.
 
 My [beloved video devlogs](https://www.youtube.com/playlist?list=PLjnRnpGPUaKWlSVuyBFF8C72pOVpQQ5xT) take too long to produce, now that I'm working on a self-imposed deadline to release a demo to Steam by the end of May. In the time it took to write this script, I'd already done two more videos' worth of work, and editing would take weeks more!
@@ -29,9 +31,9 @@ Well, here they are.
 
 <nng:snippet name='eoe-cplus-characters'>
 ![A lineup of characters. Front to back, left to right: The protagonist, Jackie. A girl in a hijab and wide-brimmed hat. An officer in a red beret and digital camo. A bald man in a snowsuit. A woman in a hijab and similar snowsuit. A tall man in a long, white coat and slacks. Four women of differing heights and skin colors in simple dresses and hijabs. Five soldiers in berets of different heights and skin colors.](/img/blog/eoe/01_lineup.webp)
+</nng:snippet>
 
 Beautiful. Powerful. Certified C+ character designs.
-</nng:snippet>
 
 I don't have the illustration or modelling skills to make them look particularly good, so I focused on how the designs fit into the narrative.
 The way a character dresses can tell you a story about the world and how they relate to it.
@@ -143,7 +145,7 @@ As you learn more, the AI's personality and physical appearance change.
 I implemented this system a while ago. For ease of use, I went with a Mii-style thing, where I swap out different pieces for head shapes and facial features.
 For other women, all I did was rename the files, make some new pieces, and made the dress a bit less, uh, form-fitting.
 
-![A before and after on the dress. On the left, the dress tightly fits the woman's bust. On the left, less so.](/img/blog/eoe/01_boob.webp)
+![A before and after on the dress. On the left, the dress tightly fits the woman's bust. On the right, less so.](/img/blog/eoe/01_boob.webp)
 
 At a certain point, it just feels disrespectful, you know?
 
@@ -189,15 +191,19 @@ The fact Jackie doesn't have to wear a veil or have a male chaperone is a contri
 Speaking of unsupervised women, the last character I'll talk about is Raziah, a girl you can find in several locations throughout the area.
 She's from the capital of the country, which is a full-on urban center, with several million people, while the game takes place in a small, remote province.
 
+![A sketch of Raziah, showing references to Iranian women wearing a mix of modern and traditional clothing, and Taliban soldiers wearing sneakers.](/img/blog/eoe/01_raziah1.webp)
+
 Just looking at her, it's clear she's not from around here.
 The hat, the pants, the Adidas mid-tops, which - fun fact - were inspired by photos of Taliban soldiers. They don't even tie their shoes.
 
-![]()
+![The Taliban soldiers wearing sneakers again.](/img/blog/eoe/01_taliban.webp)
 
 The occupation of Afghanistan cost 2.3 trillion U.S. dollars and they don't even tie their shoes.
 
 She's meant to seem young, adventurous, and a bit anti-authority.
 She's here to explore ruins, and she'll dress as she needs to, even if it bends tradition.
+
+![A rather crummy screenshot of Raziah in-game. Be nice to me I had to dig up a VOD from YouTube.](/img/blog/eoe/01_raziah2.webp)
 
 Eventually she's also gonna have a fucking gun, like a Vetterli rifle, which might also draw some attention.
 She needs it, though (the gun, not the attention): the creatures out here are the size of motorcycles, and she needs to start pulling her weight in combat.

@@ -41,6 +41,14 @@ details > p {
 	padding-left: 15pt;
 }
 
+blockquote {
+	font-size: 1.1rem;
+	font-style:italic;
+	border-left: 2px solid black;
+	padding-left: 8pt;
+	margin-left: 2em;
+}
+
 #content {
 	border-right: 2px solid black;
 	border-left: 2px solid black;
@@ -84,6 +92,7 @@ details > p {
 
 .blog img {
 	max-width: 100%;
+	max-height: 60%;
 	margin: auto;
 }
 
